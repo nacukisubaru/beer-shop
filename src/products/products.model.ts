@@ -21,9 +21,6 @@ export class Products extends Model<Products> {
 
   @Column({type: DataType.INTEGER})
   quantity: number;
-  
-  @Column({type: DataType.INTEGER})
-  typeId: number;
 
   @Column({type: DataType.BOOLEAN, defaultValue: true})
   inStock: boolean;

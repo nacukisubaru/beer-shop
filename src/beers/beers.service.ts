@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { GradesService } from 'src/grades/grades.service';
 import { ProductsService } from 'src/products/products.service';
@@ -18,8 +18,7 @@ export class BeersService {
             description: dto.description,
             articule: "dsfsd545sd",
             price: dto.price,
-            quantity: dto.quantity,
-            typeId: 1
+            quantity: dto.quantity
         };
 
         const beerData = {
@@ -30,6 +29,11 @@ export class BeersService {
         };
         
         const grade = await this.gradeService.findByCode(dto.grade);
+
+        if(!grade) {
+            throw new HttpException('Сорт пива не существует', HttpStatus.BAD_REQUEST);
+        }
+
         const product = await this.productService.create(productData);
         const beer = await this.beerRepo.create(beerData);
   
