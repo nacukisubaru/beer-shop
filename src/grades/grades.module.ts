@@ -11,6 +11,7 @@ import { BeerGrades } from './beers-grades.model';
     providers: [GradesService],
     imports: [
         SequelizeModule.forFeature([Beers, Grades, BeerGrades])
-    ]
+    ],
+    exports: [GradesService]
 })
 export class GradesModule { }

@@ -7,13 +7,15 @@ import { Products } from 'src/products/products.model';
 import { Grades } from 'src/grades/grades.model';
 import { BeerGrades } from 'src/grades/beers-grades.model';
 import { ProductsModule } from 'src/products/products.module';
+import { GradesModule } from 'src/grades/grades.module';
 
 @Module({
     controllers: [BeersController],
     providers: [BeersService],
     imports: [
         SequelizeModule.forFeature([Beers, Products, Grades, BeerGrades]),
-        ProductsModule
+        ProductsModule,
+        GradesModule
     ]
 })
 export class BeersModule { }

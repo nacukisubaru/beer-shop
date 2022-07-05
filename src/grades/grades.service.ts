@@ -17,8 +17,8 @@ export class GradesService {
         return this.gradesRepo.findAll();
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} grade`;
+    async findByCode(code: string) {
+       return await this.gradesRepo.findOne({where: {code}, include: {all:true}});
     }
 
     update(id: number, updateGradeDto: UpdateGradeDto) {

@@ -17,11 +17,6 @@ export class GradesController {
     return this.gradesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.gradesService.findOne(+id);
-  }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateGradeDto: UpdateGradeDto) {
     return this.gradesService.update(+id, updateGradeDto);

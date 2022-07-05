@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { GradesService } from 'src/grades/grades.service';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -8,7 +9,8 @@ import { CreateBeerDto } from './dto/create-beer.dto';
 export class BeersService {
 
     constructor(@InjectModel(Beers) private beerRepo: typeof Beers,
-                private productService: ProductsService) { }
+                private productService: ProductsService,
+                private gradeService: GradesService) { }
 
     async create(dto: CreateBeerDto) {
         const productData = {
@@ -18,19 +20,20 @@ export class BeersService {
             price: dto.price,
             quantity: dto.quantity,
             typeId: 1
-        }
-        
-        const product = await this.productService.create(productData);
+        };
 
         const beerData = {
             compound: dto.compound,
             volume: dto.volume,
             fortress: dto.fortress,
             ibu: dto.ibu,
-           // productId: product.id
-        }
-
+        };
+        
+        const grade = await this.gradeService.findByCode(dto.grade);
+        const product = await this.productService.create(productData);
         const beer = await this.beerRepo.create(beerData);
+  
+        beer.$set('grades', [grade.id]);
         beer.productId = product.id;
         beer.save();
         return beer;
