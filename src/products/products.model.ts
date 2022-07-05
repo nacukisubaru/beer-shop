@@ -1,8 +1,8 @@
-import { Column, DataType, Model, Table, HasOne } from 'sequelize-typescript';
+import { Column, DataType, Model, Table, HasOne} from 'sequelize-typescript';
 import { Beers } from 'src/beers/beers.model';
 
 @Table({tableName: 'products'})
-export class Products extends Model {
+export class Products extends Model<Products> {
 
   @Column({type: DataType.INTEGER, unique: true, autoIncrement: true, primaryKey: true})
   id: number;

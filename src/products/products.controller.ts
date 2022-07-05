@@ -7,7 +7,7 @@ export class ProductsController {
     constructor(private productService: ProductsService) {}
 
     @Get()
-    get() {
+    getList() {
         return this.productService.getAll();
     }
 

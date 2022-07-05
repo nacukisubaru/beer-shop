@@ -1,4 +1,6 @@
-import { Column, DataType, Model, Table, BelongsTo, ForeignKey} from 'sequelize-typescript';
+import { Column, DataType, Model, Table, BelongsTo,  BelongsToMany, ForeignKey} from 'sequelize-typescript';
+import { BeerGrades } from 'src/grades/beers-grades.model';
+import { Grades } from 'src/grades/grades.model';
 import { Products } from 'src/products/products.model';
 
 @Table({tableName: 'beers'})
@@ -25,4 +27,7 @@ export class Beers extends Model {
 
   @BelongsTo(() => Products)
   product: Products
+
+  @BelongsToMany(() => Grades, () => BeerGrades)
+  grades: Grades[] 
 }
