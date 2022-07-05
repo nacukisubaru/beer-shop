@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { ProductsModule } from './products/products.module';
+import { BeersService } from './beers/beers.service';
+import { BeersModule } from './beers/beers.module';
+import { Products } from './products/products.model';
+import { Beers } from './beers/beers.model';
 
 @Module({
     imports: [
@@ -14,9 +19,11 @@ import { SequelizeModule } from '@nestjs/sequelize';
             username: process.env.POSTGRES_USER,
             password: process.env.POSTGRES_PASSWORD,
             database: process.env.POSTGRES_DB,
-            models: [],
+            models: [Products, Beers],
             autoLoadModels: true
-		  })
+		  }),
+        ProductsModule,
+        BeersModule
     ],
     controllers: [],
     providers: [],
