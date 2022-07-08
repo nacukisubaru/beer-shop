@@ -4,6 +4,7 @@ import { GradesService } from 'src/grades/grades.service';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
+import { UpdateBeerDto } from './dto/update-beer.dto';
 
 @Injectable()
 export class BeersService {
@@ -41,6 +42,36 @@ export class BeersService {
         beer.productId = product.id;
         beer.save();
         return beer;
+    }
+
+    async update(id: number, dto: UpdateBeerDto) {
+
+        const prodData = {
+            title: dto.title,
+            description: dto.description,
+            price: dto.price,
+            quantity: dto.quantity
+        };
+
+        const beerData = {
+            compound: dto.compound,
+            volume: dto.volume,
+            fortress: dto.fortress,
+            ibu: dto.ibu,
+        };
+
+        const beer = await this.beerRepo.findByPk(id);
+        if(!beer) {
+            throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
+        }
+        
+        const productId = beer.productId;
+        await this.productService.update(productId, prodData);
+        if(this.beerRepo.update({...beerData}, {where: {id}})) {
+            return true;
+        }
+        
+        return false;
     }
 
     async getById(id) {

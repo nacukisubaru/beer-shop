@@ -1,5 +1,6 @@
-import { IsString, Length, IsEmail, IsNumber } from "class-validator";
+import { IsString, Length, IsNumber } from "class-validator";
 export class CreateBeerDto {
+    
     @IsString({message: 'Должно быть строкой'})
     compound: string;
 
@@ -23,7 +24,7 @@ export class CreateBeerDto {
 
     @IsNumber({}, {message: 'Должно быть числом'})
     quantity: number;
-    
+
     @IsString({message: 'Должно быть строкой'})
     grade: string;
 }

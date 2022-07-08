@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { BeersService } from 'src/beers/beers.service';
 import { Beers } from 'src/beers/beers.model';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -17,4 +18,8 @@ export class ProductsService {
     async create(dto: CreateProductDto) {
         return await this.productRepo.create(dto);
     }
+
+    async update(id: number, dto: UpdateProductDto) {
+        return await this.productRepo.update({...dto}, {where: {id}})
+    } 
 }
