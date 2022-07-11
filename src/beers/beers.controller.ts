@@ -14,6 +14,11 @@ export class BeersController {
         return this.beerService.getAll();
     }
 
+    @Get('/getById/:id')
+    getById(@Param('id') id: string) {
+        return this.beerService.getById(Number(id));
+    }
+
     @UsePipes(ValidationPipe)
     @Post('/create')
     createBeer(@Body() dto: CreateBeerDto) {

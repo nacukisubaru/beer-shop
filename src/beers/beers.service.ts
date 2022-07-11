@@ -19,7 +19,6 @@ export class BeersService {
         const productData = {
             title: dto.title,
             description: dto.description,
-            articule: "dsfsd545sd",
             price: dto.price,
             quantity: dto.quantity
         };
@@ -86,7 +85,7 @@ export class BeersService {
         return await this.beerRepo.destroy({where: {id}});
     }
 
-    async getById(id): Promise<Beers> {
+    async getById(id: number): Promise<Beers> {
        return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
