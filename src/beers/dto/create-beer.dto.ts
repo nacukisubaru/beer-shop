@@ -1,4 +1,4 @@
-import { IsString, Length, IsNumber } from "class-validator";
+import { IsString, Length, IsNumber, isArray, IsArray, IsNotEmpty, IsNotEmptyObject } from "class-validator";
 export class CreateBeerDto {
     
     @IsString({message: 'Должно быть строкой'})
@@ -24,7 +24,8 @@ export class CreateBeerDto {
 
     @IsNumber({}, {message: 'Должно быть числом'})
     quantity: number;
-
-    @IsString({message: 'Должно быть строкой'})
-    grade: string;
+    
+    @IsArray()
+    @IsNotEmptyObject()
+    gradeIds: number[];
 }

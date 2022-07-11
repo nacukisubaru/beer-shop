@@ -3,6 +3,7 @@ import { CreateGradeDto } from './dto/create-grade.dto';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 import { Grades } from './grades.model';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class GradesService {
@@ -13,8 +14,12 @@ export class GradesService {
         return await this.gradesRepo.create(createGradeDto);
     }
 
-    async findByCode(code: string) {
-        return await this.gradesRepo.findOne({where: {code}, include: {all:true}});
+    async findById(id: number) {
+        return await this.gradesRepo.findByPk(id);
+    }
+
+    async findByIds(ids: number[]) {
+        return await this.gradesRepo.findAll({include: {all:true}, where: {id: { [Op.or]: ids }}});
     }
 
     async findAll() {

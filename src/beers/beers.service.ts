@@ -29,17 +29,16 @@ export class BeersService {
             fortress: dto.fortress,
             ibu: dto.ibu,
         };
-        
-        const grade = await this.gradeService.findByCode(dto.grade);
 
-        if(!grade) {
-            throw new HttpException('Сорт пива не существует', HttpStatus.BAD_REQUEST);
+        const grades = await this.gradeService.findByIds(dto.gradeIds);
+        if(grades.length !== dto.gradeIds.length) {
+            throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
         }
 
         const product = await this.productService.create(productData);
         const beer = await this.beerRepo.create(beerData);
-  
-        beer.$set('grades', [grade.id]);
+
+        beer.$set('grades', dto.gradeIds);
         beer.productId = product.id;
         beer.save();
         return beer;
@@ -65,7 +64,16 @@ export class BeersService {
         if(!beer) {
             throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
         }
-        
+
+        const grades = await this.gradeService.findByIds(dto.gradeIds);
+        if(grades.length !== dto.gradeIds.length) {
+            throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
+        }
+
+        if(dto.gradeIds) {
+            beer.$set('grades', dto.gradeIds);
+        }
+
         const productId = beer.productId;
         await this.productService.update(productId, prodData);
         if(this.beerRepo.update({...beerData}, {where: {id}})) {
