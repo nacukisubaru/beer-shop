@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, UsePipes } from '@nestjs/common';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { BeersService } from './beers.service';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -27,4 +27,9 @@ export class BeersController {
         delete dto.id;
         return this.beerService.update(id, dto);
     }
+
+    @Delete('/remove/:id')
+    remove(@Param('id') id: string) {
+        return this.beerService.remove(id);
+    }    
 }

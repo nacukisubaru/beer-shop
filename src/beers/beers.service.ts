@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Grades } from 'src/grades/grades.model';
 import { GradesService } from 'src/grades/grades.service';
+import { Products } from 'src/products/products.model';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -74,11 +76,28 @@ export class BeersService {
         return false;
     }
 
-    async getById(id) {
-        this.beerRepo.findByPk(id, { include: { all: true } });
+    async remove(id) {
+        const beer = await this.getById(id)
+        if(!beer) {
+            throw new HttpException("Товара не существует!", HttpStatus.NOT_FOUND);
+        }
+
+        await this.productService.remove(beer.productId);
+        return await this.beerRepo.destroy({where: {id}});
+    }
+
+    async getById(id): Promise<Beers> {
+       return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
     async getAll() {
-        return await this.beerRepo.findAll({ include: { all: true } });
+        const beerList = await this.beerRepo.findAll({include: { all: true }});
+        return beerList.filter((beer) => {
+            if(beer.product.getDataValue('isActive')) {
+                return beer;
+            }
+        })
     }
+
+
 }
