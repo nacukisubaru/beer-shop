@@ -1,4 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UsePipes } from '@nestjs/common';
+import { ValidationPipe } from 'src/pipes/validation.pipe';
+import { ActivateProductDto } from './dto/activate-product.dto';
 import { ProductsService } from './products.service';
 
 @Controller('products')
@@ -9,6 +11,12 @@ export class ProductsController {
     @Get()
     getList() {
         return this.productService.getAll();
+    }
+
+    @UsePipes(ValidationPipe)
+    @Post('/switchActive')
+    switchActivate(@Body() dto: ActivateProductDto) {
+        return this.productService.switchActive(dto.id, dto.isActive);
     }
 
 }

@@ -1,4 +1,6 @@
-import { Column, DataType, Model, Table, HasOne} from 'sequelize-typescript';
+import { Column, DataType, Model, Table, HasOne, BelongsToMany, BelongsTo} from 'sequelize-typescript';
+import { BasketProducts } from 'src/basket/basket-products.model';
+import { Basket } from 'src/basket/basket.model';
 import { Beers } from 'src/beers/beers.model';
 
 @Table({tableName: 'products'})
@@ -13,9 +15,6 @@ export class Products extends Model<Products> {
   @Column({type: DataType.STRING, allowNull: false})
   description: string;
 
-  @Column({type: DataType.STRING, allowNull: false})
-  articule: string;
-
   @Column({type: DataType.INTEGER})
   price: number;
 
@@ -25,7 +24,12 @@ export class Products extends Model<Products> {
   @Column({type: DataType.BOOLEAN, defaultValue: true})
   inStock: boolean;
 
+  @Column({type: DataType.BOOLEAN, defaultValue: true})
+  isActive: boolean
+
   @HasOne(()=>Beers)
   beer: Beers
-  
+
+  @BelongsToMany(() => Basket, () => BasketProducts)
+  baskets: Basket[]  
 }
