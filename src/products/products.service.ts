@@ -30,7 +30,7 @@ export class ProductsService {
     }
 
     async getAll(): Promise<Products[]> {
-        const product: any = await this.productRepo.findAll({include: {all:true, model: Grades}});
+        const product: any = await this.productRepo.findAll({include: {all:true}});
         return product;
     }
   
