@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
 import { BasketService } from './basket.service';
 import { CreateBasketDto } from './dto/create-basket.dto';
+import { RemoveProductBasketDto } from './dto/remove-product-basket.dto';
 import { UpdateBasketDto } from './dto/update-basket.dto';
 
 @Controller('basket')
@@ -19,12 +20,12 @@ export class BasketController {
     }
 
     @Post('/updProduct')
-    update(@Body() updateBasketDto: UpdateBasketDto) {
+    updateProduct(@Body() updateBasketDto: UpdateBasketDto) {
         return this.basketService.updateProduct(updateBasketDto);
     }
 
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.basketService.remove(+id);
+    @Post('/removeProduct')
+    removeProduct(@Body() removeProductDto: RemoveProductBasketDto) {
+        return this.basketService.removeProduct(removeProductDto);
     }
 }

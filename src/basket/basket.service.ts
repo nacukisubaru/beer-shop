@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { BasketProducts } from './basket-products.model';
 import { Basket } from './basket.model';
 import { CreateBasketDto } from './dto/create-basket.dto';
+import { RemoveProductBasketDto } from './dto/remove-product-basket.dto';
 import { UpdateBasketDto } from './dto/update-basket.dto';
 
 @Injectable()
@@ -40,7 +41,7 @@ export class BasketService {
 
     async updateProduct(updateBasketDto: UpdateBasketDto) {
         const basket = await this.basketRepo.findByPk(updateBasketDto.id, {include:{all:true}});
-        if(basket) {
+        if(basket && basket.products.length > 0) {
             const product: any = basket.products.filter((product) => {
                 if(product.id === updateBasketDto.productId) {
                     return product;
@@ -61,7 +62,19 @@ export class BasketService {
         throw new HttpException('Корзина или товар не найдены!', HttpStatus.BAD_REQUEST);
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} basket`;
+    async removeProduct(removeProductDto: RemoveProductBasketDto) {
+        const basket = await this.basketRepo.findByPk(removeProductDto.id, {include:{all:true}});
+        if(basket && basket.products.length > 0) {
+            const products: any = basket.products.filter((product) => {
+                if(product.id !== removeProductDto.productId) {
+                    return product.id;
+                }
+            });
+            
+            basket.$set('products', products);
+            return true;
+        }
+        
+        throw new HttpException('Корзина или товар не найдены!', HttpStatus.BAD_REQUEST);
     }
 }
