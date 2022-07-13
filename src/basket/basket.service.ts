@@ -15,7 +15,7 @@ export class BasketService {
         return await this.basketRepo.findAll({ include: { all: true } });
     }
 
-    async addProduct(createBasketDto: CreateBasketDto): Promise<boolean> {
+    async addProduct(createBasketDto: CreateBasketDto): Promise<Basket> {
         let basket;
         const productId = createBasketDto.productId;
         delete createBasketDto.productId;
@@ -32,7 +32,7 @@ export class BasketService {
                 this.basketProductRepo.update( {quantity: createBasketDto.quantity}, {where:{id: basketProduct[0].id}})
             }
 
-            return true;
+            return basket;
         }
  
         throw new HttpException('Корзина не найдена!', HttpStatus.NOT_FOUND);
