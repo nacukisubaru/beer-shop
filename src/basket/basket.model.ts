@@ -1,25 +1,25 @@
-import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, Model, Table} from 'sequelize-typescript';
+import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { Products } from 'src/products/products.model';
 import { Users } from 'src/users/users.model';
 import { BasketProducts } from './basket-products.model';
 
-@Table({tableName: 'basket'})
+@Table({ tableName: 'basket' })
 export class Basket extends Model<Basket> {
 
-  @Column({type: DataType.INTEGER, unique: true, autoIncrement: true, primaryKey: true})
-  id: number;
+    @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true, primaryKey: true })
+    id: number;
 
-  @Column({type: DataType.FLOAT})
-  amount: number;
-  
-  @ForeignKey(() => Users)
-  @Column({type: DataType.INTEGER})
-  userId: number;
+    @Column({ type: DataType.FLOAT })
+    amount: number;
 
-  @BelongsTo(() => Users)
-  customer: Users
+    @ForeignKey(() => Users)
+    @Column({ type: DataType.INTEGER })
+    userId: number;
 
-  @BelongsToMany(() => Products, () => BasketProducts)
-  products: Products[]
+    @BelongsTo(() => Users)
+    customer: Users
+
+    @BelongsToMany(() => Products, () => BasketProducts)
+    products: Products[]
 
 }
