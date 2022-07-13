@@ -18,14 +18,9 @@ export class BasketController {
         return this.basketService.getList();
     }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.basketService.findOne(+id);
-    }
-
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateBasketDto: UpdateBasketDto) {
-        return this.basketService.update(+id, updateBasketDto);
+    @Post('/updProduct')
+    update(@Body() updateBasketDto: UpdateBasketDto) {
+        return this.basketService.updateProduct(updateBasketDto);
     }
 
     @Delete(':id')

@@ -38,12 +38,27 @@ export class BasketService {
         throw new HttpException('Корзина не найдена!', HttpStatus.NOT_FOUND);
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} basket`;
-    }
+    async updateProduct(updateBasketDto: UpdateBasketDto) {
+        const basket = await this.basketRepo.findByPk(updateBasketDto.id, {include:{all:true}});
+        if(basket) {
+            const product: any = basket.products.filter((product) => {
+                if(product.id === updateBasketDto.productId) {
+                    return product;
+                }
+            });
 
-    update(id: number, updateBasketDto: UpdateBasketDto) {
-        return `This action updates a #${id} basket`;
+            if(product.length > 0) {
+                const basketProducts = product[0].BasketProducts;
+                if(basketProducts) {
+                    if(updateBasketDto.quantity !== basketProducts.quantity) {
+                        this.basketProductRepo.update({quantity: updateBasketDto.quantity}, {where: {id: basketProducts.id}});
+                    }
+                    return true;
+                }
+            }
+        }
+
+        throw new HttpException('Корзина или товар не найдены!', HttpStatus.BAD_REQUEST);
     }
 
     remove(id: number) {
