@@ -16,6 +16,7 @@ import { BasketModule } from './basket/basket.module';
 import { BasketProducts } from './basket/basket-products.model';
 import { Basket } from './basket/basket.model';
 import { Users } from './users/users.model';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
     imports: [
@@ -40,7 +41,8 @@ import { Users } from './users/users.model';
         BeersModule,
         GradesModule,
         UsersModule,
-        BasketModule
+        BasketModule,
+        OrdersModule,
     ],
     controllers: [],
     providers: [],
