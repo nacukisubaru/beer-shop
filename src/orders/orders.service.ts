@@ -13,8 +13,12 @@ export class OrdersService {
     constructor(@InjectModel(Order) private orderRepo: typeof Order,
                 private basketService: BasketService) {}
 
-    create(createOrderDto: CreateOrderDto) {
-        return 'This action adds a new order';
+    async create(createOrderDto: CreateOrderDto) {
+        const order = await this.orderRepo.create(createOrderDto);
+        const basket:any = await this.basketService.getById(createOrderDto.basketId);
+        basket.orderId = order.id;
+        basket.save();
+        return order;
     }
 
     async getOrdersWithProducts(userId: number = 0) {
@@ -42,8 +46,11 @@ export class OrdersService {
                         }
                         );
 
-                        if (basket) {
-                            orders[key].setDataValue('products', basket[0].products);
+                        if (basket && basket[0]) { 
+                            const product = basket[0].dataValues.products;
+                            if(product) {
+                                orders[key].setDataValue('products', product);
+                            }
                         }
                     });
                 }
@@ -56,7 +63,7 @@ export class OrdersService {
     }
 
     async getOrderWithProduct(id: number) {
-        const order = await this.orderRepo.findOne({include: { all: true }});
+        const order = await this.orderRepo.findOne({include: { all: true }, where: {id}});
         const basket: any = await this.basketService.getById(order.basket.id);
         if(basket) {
             order.setDataValue('products', basket.products);

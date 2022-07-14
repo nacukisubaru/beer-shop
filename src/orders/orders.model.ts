@@ -10,9 +10,6 @@ export class Order extends Model<Order> {
   @Column({type: DataType.INTEGER, unique: true, autoIncrement: true, primaryKey: true})
   id: number;
 
-  @Column({type: DataType.INTEGER})
-  basketId: number;
-
   @ForeignKey(() => Users)
   userId: number;
 
