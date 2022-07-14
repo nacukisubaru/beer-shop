@@ -11,7 +11,7 @@ import { Order } from './orders.model';
 export class OrdersService {
 
     constructor(@InjectModel(Order) private orderRepo: typeof Order,
-        private basketService: BasketService) { }
+                private basketService: BasketService) {}
 
     create(createOrderDto: CreateOrderDto) {
         return 'This action adds a new order';

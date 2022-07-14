@@ -17,6 +17,8 @@ import { BasketProducts } from './basket/basket-products.model';
 import { Basket } from './basket/basket.model';
 import { Users } from './users/users.model';
 import { OrdersModule } from './orders/orders.module';
+import { DeliveryModule } from './delivery/delivery.module';
+import { Delivery } from './delivery/delivery.model';
 
 @Module({
     imports: [
@@ -34,7 +36,7 @@ import { OrdersModule } from './orders/orders.module';
                 Products,
                 Beers,
                 Grades,
-                BeerGrades, BasketProducts, Basket, Users],
+                BeerGrades, BasketProducts, Basket, Users, Delivery],
             autoLoadModels: true
         }),
         ProductsModule,
@@ -43,6 +45,7 @@ import { OrdersModule } from './orders/orders.module';
         UsersModule,
         BasketModule,
         OrdersModule,
+        DeliveryModule,
     ],
     controllers: [],
     providers: [],
