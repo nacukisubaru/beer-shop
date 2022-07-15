@@ -15,4 +15,7 @@ export class CreateSnackDto {
 
     @IsNumber({}, {message: 'Должно быть числом'})
     weight: number;
+    
+    @IsNumber({}, {message: 'Должно быть числом'})
+    brandId: number;
 }

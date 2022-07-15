@@ -18,7 +18,8 @@ export class SnacksService {
             title: createSnackDto.title,
             description: createSnackDto.description,
             price: createSnackDto.price,
-            quantity: createSnackDto.quantity
+            quantity: createSnackDto.quantity,
+            brandId: createSnackDto.brandId
         };
 
         const product = await this.productService.create(productData);
@@ -46,15 +47,30 @@ export class SnacksService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async findOne(id: number) {
-        return `This action returns a #${id} snack`;
+    async getById(id: number) {
+        return await this.snackRepo.findByPk(id, {include:{all:true}});
     }
 
     async update(id: number, updateSnackDto: UpdateSnackDto) {
-        return `This action updates a #${id} snack`;
-    }
+        const prodData = {
+            title: updateSnackDto.title,
+            description: updateSnackDto.description,
+            price: updateSnackDto.price,
+            quantity: updateSnackDto.quantity,
+            brandId: updateSnackDto.brandId
+        };
 
-    async remove(id: number) {
-        return `This action removes a #${id} snack`;
+        const snack = await this.snackRepo.findByPk(id);
+        if(!snack) {
+            throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
+        }
+
+        const productId = snack.productId;
+        await this.productService.update(productId, prodData);
+        if(this.snackRepo.update({...snack, weight: updateSnackDto.weight}, {where: {id}})) {
+            return true;
+        }
+        
+        return false;
     }
 }

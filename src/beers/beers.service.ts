@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { BrandsService } from 'src/brands/brands.service';
 import { Grades } from 'src/grades/grades.model';
 import { GradesService } from 'src/grades/grades.service';
 import { paginate } from 'src/helpers/paginationHelper';
@@ -22,7 +23,8 @@ export class BeersService {
             title: dto.title,
             description: dto.description,
             price: dto.price,
-            quantity: dto.quantity
+            quantity: dto.quantity,
+            brandId: dto.brandId
         };
 
         const beerData = {
@@ -38,12 +40,17 @@ export class BeersService {
         }
 
         const product = await this.productService.create(productData);
-        const beer = await this.beerRepo.create(beerData);
-
-        beer.$set('grades', dto.gradeIds);
-        beer.productId = product.id;
-        beer.save();
-        return beer;
+        
+        try {
+            const beer = await this.beerRepo.create(beerData);
+                
+            beer.$set('grades', dto.gradeIds);
+            beer.productId = product.id;
+            beer.save();
+            return beer;
+        } catch(e) {
+            return e;
+        }
     }
 
     async update(id: number, dto: UpdateBeerDto) {

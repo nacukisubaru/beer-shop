@@ -12,23 +12,20 @@ export class SnacksController {
         return this.snacksService.create(createSnackDto);
     }
 
+    @Post('/update')
+    update(@Body() updateSnackDto: UpdateSnackDto) {
+        const id = updateSnackDto.id;
+        delete updateSnackDto.id;
+        return this.snacksService.update(id, updateSnackDto);
+    }
+
     @Get()
     getAll(@Query('page') page: string) {
         return this.snacksService.getList(Number(page));
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.snacksService.findOne(+id);
-    }
-
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateSnackDto: UpdateSnackDto) {
-        return this.snacksService.update(+id, updateSnackDto);
-    }
-
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.snacksService.remove(+id);
+    getById(@Param('id') id: string) {
+        return this.snacksService.getById(+id);
     }
 }

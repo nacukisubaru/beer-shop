@@ -24,7 +24,7 @@ export class Products extends Model<Products> {
     quantity: number;
 
     @ForeignKey(() => Brand)
-    brandId: Brand;
+    brandId: number;
 
     @Column({ type: DataType.BOOLEAN, defaultValue: true })
     inStock: boolean;
