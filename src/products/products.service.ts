@@ -34,4 +34,7 @@ export class ProductsService {
         return product;
     }
   
+    async getListByBrand(brandId: number) {
+       return await this.productRepo.findAll({include: {all:true}, where: {brandId}});
+    }
 }

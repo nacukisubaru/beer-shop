@@ -16,6 +16,15 @@ import { BasketModule } from './basket/basket.module';
 import { BasketProducts } from './basket/basket-products.model';
 import { Basket } from './basket/basket.model';
 import { Users } from './users/users.model';
+import { OrdersModule } from './orders/orders.module';
+import { DeliveryModule } from './delivery/delivery.module';
+import { Delivery } from './delivery/delivery.model';
+import { PaymentMethodsModule } from './payment-methods/payment-methods.module';
+import { PaymentMethod } from './payment-methods/payment-methods.model';
+import { BrandsModule } from './brands/brands.module';
+import { Brand } from './brands/brands.model';
+import { SnacksModule } from './snacks/snacks.module';
+import { Snack } from './snacks/snacks.model';
 
 @Module({
     imports: [
@@ -33,14 +42,22 @@ import { Users } from './users/users.model';
                 Products,
                 Beers,
                 Grades,
-                BeerGrades, BasketProducts, Basket, Users],
+                BeerGrades, 
+                BasketProducts, 
+                Basket,
+                Users, Delivery, PaymentMethod, Brand, Snack],
             autoLoadModels: true
         }),
         ProductsModule,
         BeersModule,
         GradesModule,
         UsersModule,
-        BasketModule
+        BasketModule,
+        OrdersModule,
+        DeliveryModule,
+        PaymentMethodsModule,
+        BrandsModule,
+        SnacksModule,
     ],
     controllers: [],
     providers: [],

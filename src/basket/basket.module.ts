@@ -12,6 +12,9 @@ import { BasketProducts } from './basket-products.model';
     providers: [BasketService],
     imports: [
         SequelizeModule.forFeature([Basket, Users, Products, BasketProducts])
+    ],
+    exports: [
+        BasketService
     ]
 })
 export class BasketModule { }

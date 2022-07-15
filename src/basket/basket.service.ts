@@ -10,7 +10,7 @@ import { UpdateBasketDto } from './dto/update-basket.dto';
 export class BasketService {
 
     constructor(@InjectModel(Basket) private basketRepo: typeof Basket,
-               @InjectModel(BasketProducts) private basketProductRepo: typeof BasketProducts) { }
+                @InjectModel(BasketProducts) private basketProductRepo: typeof BasketProducts) { }
 
     async getList() {
         return await this.basketRepo.findAll({ include: { all: true } });
@@ -74,7 +74,15 @@ export class BasketService {
             basket.$set('products', products);
             return true;
         }
-        
+
         throw new HttpException('Корзина или товар не найдены!', HttpStatus.BAD_REQUEST);
+    }
+
+    async getByIds(ids: number[]): Promise<Basket[]> {
+       return await this.basketRepo.findAll({include: {all: true}, where:{id: ids}});
+    }
+
+    async getById(id: number): Promise<Basket> {
+        return await this.basketRepo.findOne({include: {all: true}, where: {id}});
     }
 }
