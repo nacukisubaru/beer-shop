@@ -23,6 +23,8 @@ import { PaymentMethodsModule } from './payment-methods/payment-methods.module';
 import { PaymentMethod } from './payment-methods/payment-methods.model';
 import { BrandsModule } from './brands/brands.module';
 import { Brand } from './brands/brands.model';
+import { SnacksModule } from './snacks/snacks.module';
+import { Snack } from './snacks/snacks.model';
 
 @Module({
     imports: [
@@ -42,7 +44,8 @@ import { Brand } from './brands/brands.model';
                 Grades,
                 BeerGrades, 
                 BasketProducts, 
-                Basket, Users, Delivery, PaymentMethod, Brand],
+                Basket,
+                Users, Delivery, PaymentMethod, Brand, Snack],
             autoLoadModels: true
         }),
         ProductsModule,
@@ -54,6 +57,7 @@ import { Brand } from './brands/brands.model';
         DeliveryModule,
         PaymentMethodsModule,
         BrandsModule,
+        SnacksModule,
     ],
     controllers: [],
     providers: [],
