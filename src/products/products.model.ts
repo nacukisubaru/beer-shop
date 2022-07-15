@@ -1,7 +1,8 @@
-import { Column, DataType, Model, Table, HasOne, BelongsToMany, BelongsTo} from 'sequelize-typescript';
+import { Column, DataType, Model, Table, HasOne, BelongsToMany, BelongsTo, ForeignKey} from 'sequelize-typescript';
 import { BasketProducts } from 'src/basket/basket-products.model';
 import { Basket } from 'src/basket/basket.model';
 import { Beers } from 'src/beers/beers.model';
+import { Brand } from 'src/brands/brands.model';
 
 @Table({tableName: 'products'})
 export class Products extends Model<Products> {
@@ -21,14 +22,20 @@ export class Products extends Model<Products> {
   @Column({type: DataType.INTEGER})
   quantity: number;
 
+  @ForeignKey(() => Brand)
+  brandId: Brand
+
   @Column({type: DataType.BOOLEAN, defaultValue: true})
   inStock: boolean;
 
   @Column({type: DataType.BOOLEAN, defaultValue: true})
   isActive: boolean
 
-  @HasOne(()=>Beers)
+  @HasOne(() => Beers)
   beer: Beers
+
+  @BelongsTo(() => Brand)
+  brand: Brand;
 
   @BelongsToMany(() => Basket, () => BasketProducts)
   baskets: Basket[]  

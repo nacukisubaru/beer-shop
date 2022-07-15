@@ -21,6 +21,8 @@ import { DeliveryModule } from './delivery/delivery.module';
 import { Delivery } from './delivery/delivery.model';
 import { PaymentMethodsModule } from './payment-methods/payment-methods.module';
 import { PaymentMethod } from './payment-methods/payment-methods.model';
+import { BrandsModule } from './brands/brands.module';
+import { Brand } from './brands/brands.model';
 
 @Module({
     imports: [
@@ -39,7 +41,8 @@ import { PaymentMethod } from './payment-methods/payment-methods.model';
                 Beers,
                 Grades,
                 BeerGrades, 
-                BasketProducts, Basket, Users, Delivery, PaymentMethod],
+                BasketProducts, 
+                Basket, Users, Delivery, PaymentMethod, Brand],
             autoLoadModels: true
         }),
         ProductsModule,
@@ -50,6 +53,7 @@ import { PaymentMethod } from './payment-methods/payment-methods.model';
         OrdersModule,
         DeliveryModule,
         PaymentMethodsModule,
+        BrandsModule,
     ],
     controllers: [],
     providers: [],
