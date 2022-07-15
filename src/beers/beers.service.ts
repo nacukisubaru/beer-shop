@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Grades } from 'src/grades/grades.model';
 import { GradesService } from 'src/grades/grades.service';
 import { paginate } from 'src/helpers/paginationHelper';
+import { isNumber } from 'src/helpers/typesHelper';
 import { Products } from 'src/products/products.model';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
@@ -99,7 +100,7 @@ export class BeersService {
     }
 
     async getList(page: number) {
-        if(page) {
+        if(isNumber(page)) {
             const query = paginate({include: { all: true }}, page);
             const beerList = await this.beerRepo.findAndCountAll(query);
         
@@ -111,7 +112,7 @@ export class BeersService {
 
             return beerList;
         }
-        
+
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 

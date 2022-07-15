@@ -7,8 +7,8 @@ import { UpdateSnackDto } from './dto/update-snack.dto';
 export class SnacksController {
     constructor(private readonly snacksService: SnacksService) { }
 
-    @Post()
-    create(@Body() createSnackDto: CreateSnackDto) {
+    @Post('/create')
+    createSnack(@Body() createSnackDto: CreateSnackDto) {
         return this.snacksService.create(createSnackDto);
     }
 

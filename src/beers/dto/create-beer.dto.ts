@@ -1,4 +1,4 @@
-import { IsString, Length, IsNumber, isArray, IsArray, IsNotEmpty, IsNotEmptyObject } from "class-validator";
+import { IsString, IsNumber, IsArray, IsNotEmptyObject } from "class-validator";
 export class CreateBeerDto {
     
     @IsString({message: 'Должно быть строкой'})
