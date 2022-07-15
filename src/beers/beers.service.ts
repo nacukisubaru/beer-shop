@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Grades } from 'src/grades/grades.model';
 import { GradesService } from 'src/grades/grades.service';
+import { paginate } from 'src/helpers/paginationHelper';
 import { Products } from 'src/products/products.model';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
@@ -97,13 +98,21 @@ export class BeersService {
        return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getAll() {
-        const beerList = await this.beerRepo.findAll({include: { all: true }});
-        return beerList.filter((beer) => {
-            if(beer.product.getDataValue('isActive')) {
-                return beer;
-            }
-        })
+    async getList(page: number) {
+        if(page) {
+            const query = paginate({include: { all: true }}, page);
+            const beerList = await this.beerRepo.findAndCountAll(query);
+        
+            beerList.rows = beerList.rows.filter((beer) => {
+                if(beer.product.getDataValue('isActive')) {
+                    return beer;
+                }
+            });
+
+            return beerList;
+        }
+        
+        throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
 
