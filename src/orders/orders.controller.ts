@@ -17,9 +17,19 @@ export class OrdersController {
         return this.ordersService.getOrdersWithProducts();
     }
 
-    @Get('/getByUser/:userId')
-    getListByUserId(@Param('userId') userId: string) {
-        return this.ordersService.getOrdersWithProducts(Number(userId));
+    @Get('/users/:id')
+    getListByUserId(@Param('id') userId: string) {
+        return this.ordersService.getOrdersWithProducts({userId});
+    }
+
+    @Get('/delivery/:id')
+    getListByDeliveryId(@Param('id') deliveryId: string) {
+        return this.ordersService.getOrdersWithProducts({deliveryId});
+    }
+
+    @Get('/paymentMetods/:id')
+    getListByPaymentMethod(@Param('id') paymentMethodId: string) {
+        return this.ordersService.getOrdersWithProducts({paymentMethodId});
     }
 
     @Get(':id')

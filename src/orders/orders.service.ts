@@ -21,10 +21,10 @@ export class OrdersService {
         return order;
     }
 
-    async getOrdersWithProducts(userId: number = 0) {
+    async getOrdersWithProducts(expresion: object = {}) {
         let query: object = { include: { all: true } };
-        if (userId) {
-            query = { include: { all: true }, where: { userId } };
+        if (expresion !== {}) {
+            query = { include: { all: true }, where: expresion };
         }
 
         const orders: Order[] = await this.orderRepo.findAll(query);
