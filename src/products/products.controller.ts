@@ -13,6 +13,11 @@ export class ProductsController {
         return this.productService.getAll();
     }
 
+    @Get('/brand/:id')
+    getListByBrand(@Param('id') brandId: string) {
+        return this.productService.getListByBrand(Number(brandId));
+    }
+
     @UsePipes(ValidationPipe)
     @Post('/switchActive')
     switchActivate(@Body() dto: ActivateProductDto) {
