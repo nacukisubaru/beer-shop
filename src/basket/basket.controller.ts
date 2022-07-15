@@ -14,11 +14,6 @@ export class BasketController {
         return this.basketService.addProduct(createBasketDto);
     }
 
-    @Get()
-    getList() {
-        return this.basketService.getList();
-    }
-
     @Post('/updProduct')
     updateProduct(@Body() updateBasketDto: UpdateBasketDto) {
         return this.basketService.updateProduct(updateBasketDto);
@@ -27,5 +22,15 @@ export class BasketController {
     @Post('/removeProduct')
     removeProduct(@Body() removeProductDto: RemoveProductBasketDto) {
         return this.basketService.removeProduct(removeProductDto);
+    }
+
+    @Get('/freeBasket/:id')
+    getFreeBasketByUser(@Param('id') userId: string) {
+        return this.basketService.getFreeBasketByUser(Number(userId));
+    }
+
+    @Get()
+    getList() {
+        return this.basketService.getList();
     }
 }

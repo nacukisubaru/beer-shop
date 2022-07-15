@@ -85,4 +85,8 @@ export class BasketService {
     async getById(id: number): Promise<Basket> {
         return await this.basketRepo.findOne({include: {all: true}, where: {id}});
     }
+
+    async getFreeBasketByUser(userId: number) {
+        return await this.basketRepo.findOne({include:{all:true}, where: {userId, orderId: null}});
+    }
 }
