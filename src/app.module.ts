@@ -25,6 +25,8 @@ import { BrandsModule } from './brands/brands.module';
 import { Brand } from './brands/brands.model';
 import { SnacksModule } from './snacks/snacks.module';
 import { Snack } from './snacks/snacks.model';
+import { TokenModule } from './token/token.module';
+import { Token } from './token/token.model';
 
 @Module({
     imports: [
@@ -45,7 +47,8 @@ import { Snack } from './snacks/snacks.model';
                 BeerGrades, 
                 BasketProducts, 
                 Basket,
-                Users, Delivery, PaymentMethod, Brand, Snack],
+                Users, 
+                Delivery, PaymentMethod, Brand, Snack, Token],
             autoLoadModels: true
         }),
         ProductsModule,
@@ -58,6 +61,7 @@ import { Snack } from './snacks/snacks.model';
         PaymentMethodsModule,
         BrandsModule,
         SnacksModule,
+        TokenModule,
     ],
     controllers: [],
     providers: [],

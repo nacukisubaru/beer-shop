@@ -22,6 +22,12 @@ export class Users extends Model<Users> {
   @Column({type: DataType.STRING, allowNull: false})
   password: string;
 
+  @Column({type: DataType.BOOLEAN, allowNull: false})
+  isActivated: boolean;
+
+  @Column({type: DataType.STRING, allowNull: false})
+  activationLink: string;
+
   @HasMany(() => Basket)
   baskets: Basket[]
 }
