@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UsePipes } from '@nestjs/common';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { BeersService } from './beers.service';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -10,8 +10,8 @@ export class BeersController {
     constructor(private beerService: BeersService) {}
 
     @Get()
-    getList() {
-        return this.beerService.getAll();
+    getList(@Query('page') page: string) {
+        return this.beerService.getList(Number(page));
     }
 
     @Get('/getById/:id')

@@ -1,7 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { BrandsService } from 'src/brands/brands.service';
 import { Grades } from 'src/grades/grades.model';
 import { GradesService } from 'src/grades/grades.service';
+import { paginate } from 'src/helpers/paginationHelper';
+import { isNumber } from 'src/helpers/typesHelper';
 import { Products } from 'src/products/products.model';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
@@ -20,7 +23,8 @@ export class BeersService {
             title: dto.title,
             description: dto.description,
             price: dto.price,
-            quantity: dto.quantity
+            quantity: dto.quantity,
+            brandId: dto.brandId
         };
 
         const beerData = {
@@ -36,12 +40,17 @@ export class BeersService {
         }
 
         const product = await this.productService.create(productData);
-        const beer = await this.beerRepo.create(beerData);
-
-        beer.$set('grades', dto.gradeIds);
-        beer.productId = product.id;
-        beer.save();
-        return beer;
+        
+        try {
+            const beer = await this.beerRepo.create(beerData);
+                
+            beer.$set('grades', dto.gradeIds);
+            beer.productId = product.id;
+            beer.save();
+            return beer;
+        } catch(e) {
+            return e;
+        }
     }
 
     async update(id: number, dto: UpdateBeerDto) {
@@ -97,13 +106,21 @@ export class BeersService {
        return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getAll() {
-        const beerList = await this.beerRepo.findAll({include: { all: true }});
-        return beerList.filter((beer) => {
-            if(beer.product.getDataValue('isActive')) {
-                return beer;
-            }
-        })
+    async getList(page: number) {
+        if(isNumber(page)) {
+            const query = paginate({include: { all: true }}, page);
+            const beerList = await this.beerRepo.findAndCountAll(query);
+        
+            beerList.rows = beerList.rows.filter((beer) => {
+                if(beer.product.getDataValue('isActive')) {
+                    return beer;
+                }
+            });
+
+            return beerList;
+        }
+
+        throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
 

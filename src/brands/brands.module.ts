@@ -9,6 +9,9 @@ import { Brand } from './brands.model';
     providers: [BrandsService],
     imports: [
         SequelizeModule.forFeature([Brand])
+    ],
+    exports: [
+        BrandsService
     ]
 })
 export class BrandsModule { }
