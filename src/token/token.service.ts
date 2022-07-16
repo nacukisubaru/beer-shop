@@ -49,23 +49,16 @@ export class TokenService {
         return await this.tokenRepo.destroy({where:{refreshToken}});
     }
 
-    create(createTokenDto: CreateTokenDto) {
-        return 'This action adds a new token';
+    async validateRefreshToken(token: string): Promise<JwtService> {
+        try {
+            const userData = await this.jwtService.verifyAsync(token, {secret: process.env.JWT_REFRESH_SECRET});
+            return userData;
+        } catch (e) {
+            return null;
+        }
     }
 
-    findAll() {
-        return `This action returns all token`;
-    }
-
-    findOne(id: number) {
-        return `This action returns a #${id} token`;
-    }
-
-    update(id: number, updateTokenDto: UpdateTokenDto) {
-        return `This action updates a #${id} token`;
-    }
-
-    remove(id: number) {
-        return `This action removes a #${id} token`;
+    async findRefreshToken(refreshToken: string) {
+       return await this.tokenRepo.findOne({where: {refreshToken}});
     }
 }

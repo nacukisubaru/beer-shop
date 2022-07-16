@@ -40,6 +40,20 @@ export class UsersService {
         return await this.tokenService.removeToken(refreshToken);
     }
 
+    async refresh(refreshToken: string) {
+        if(!refreshToken) {
+            throw new UnauthorizedException();
+        }
+        const token = await this.tokenService.validateRefreshToken(refreshToken);
+        const tokenFromDb = await this.tokenService.findRefreshToken(refreshToken);
+        if(!token || !tokenFromDb) {
+            throw new UnauthorizedException();
+        }
+
+        const user = await this.getById(tokenFromDb.userId);
+        return await this.createTokensAndSave(user);
+    }
+
     private async createTokensAndSave(user: Users) {
         const payload = {id: user.id, email: user.email};
         const tokens = await this.tokenService.generateTokens(payload);
@@ -66,16 +80,16 @@ export class UsersService {
         return await this.userRepo.findOne({ where: { email }, include: { all: true } });
     }
 
+    async getById(id: number) {
+       return await this.userRepo.findOne({where: {id}});
+    }
+
     create(createUserDto: CreateUserDto) {
         return 'This action adds a new user';
     }
 
     findAll() {
         return `This action returns all users`;
-    }
-
-    findOne(id: number) {
-        return `This action returns a #${id} user`;
     }
 
     update(id: number, updateUserDto: UpdateUserDto) {

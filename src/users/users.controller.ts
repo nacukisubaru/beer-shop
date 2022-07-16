@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -25,11 +25,27 @@ export class UsersController {
     //не работает доделать
     @Post('/logout')
     logout(@Req() request, @Res() response) {
-        console.log(request);
         const {refreshToken} = request.cookies;
         const token = this.usersService.logout(refreshToken);
         response.clearCookie('refreshToken');
         return response.json(token);
+    }
+
+    @Get('/refresh/')
+    async refresh(@Request() request) {
+        console.log(request);
+        // try {
+        //     const {refreshToken} = request.cookies;
+        //     const userData = await this.usersService.refresh(refreshToken);
+        //     if(userData) {
+        //         const maxAge = 30 * 24 * 60 * 60 * 1000;
+        //         response.cookie('refreshToken', userData.refreshToken, {maxAge, httpOnly: true});
+        //     }
+
+        //     return response.json(userData);
+        // } catch(e) {
+        //     console.log(e);
+        // }
     }
 
     create(@Body() createUserDto: CreateUserDto) {
@@ -42,8 +58,8 @@ export class UsersController {
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.usersService.findOne(+id);
+    getById(@Param('id') id: string) {
+        return this.usersService.getById(+id);
     }
 
     @Patch(':id')
