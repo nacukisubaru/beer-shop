@@ -4,6 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthUserDto } from './dto/auth-user.dto';
 import { response } from 'express';
+import { setCookiesRefreshToken } from 'src/helpers/cookiesHelper';
 
 @Controller('users')
 export class UsersController {
@@ -12,17 +13,15 @@ export class UsersController {
     @Post('/registration')
     async registration(@Body() createUserDto: CreateUserDto, @Res({ passthrough: true }) response) {
         const userData = await this.usersService.registrate(createUserDto);
-        const maxAge = 30 * 24 * 60 * 60 * 1000;
-        response.cookie('refreshToken', userData.refreshToken, {maxAge, httpOnly: true});
-        return response.json(userData);
+        return setCookiesRefreshToken(response, userData);
     }
 
     @Post('/login')
-    login(@Body() authUserDto: AuthUserDto) {
-        return this.usersService.login(authUserDto);
+    async login(@Body() authUserDto: AuthUserDto, @Res({ passthrough: true }) response) {
+        const userData = await this.usersService.login(authUserDto);
+        return setCookiesRefreshToken(response, userData);
     }
 
-    //не работает доделать
     @Post('/logout')
     logout(@Req() request, @Res() response) {
         const {refreshToken} = request.cookies;
@@ -32,20 +31,18 @@ export class UsersController {
     }
 
     @Get('/refresh/')
-    async refresh(@Request() request) {
-        console.log(request);
-        // try {
-        //     const {refreshToken} = request.cookies;
-        //     const userData = await this.usersService.refresh(refreshToken);
-        //     if(userData) {
-        //         const maxAge = 30 * 24 * 60 * 60 * 1000;
-        //         response.cookie('refreshToken', userData.refreshToken, {maxAge, httpOnly: true});
-        //     }
-
-        //     return response.json(userData);
-        // } catch(e) {
-        //     console.log(e);
-        // }
+    async refresh(@Req() request) {
+       console.log(request.cookies);
+       try {
+           const {refreshToken} = request.cookies;
+           console.log(refreshToken);
+           const userData = await this.usersService.refresh(refreshToken);
+           console.log(userData);
+           return setCookiesRefreshToken(response, userData);
+       } catch(e) {
+           console.log(e);
+            return false;
+       }
     }
 
     create(@Body() createUserDto: CreateUserDto) {
