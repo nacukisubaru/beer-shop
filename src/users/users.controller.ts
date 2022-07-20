@@ -13,32 +13,32 @@ export class UsersController {
     @Post('/registration')
     async registration(@Body() createUserDto: CreateUserDto, @Res({ passthrough: true }) response) {
         const userData = await this.usersService.registrate(createUserDto);
-        return setCookiesRefreshToken(response, userData);
+        setCookiesRefreshToken(response, userData);
+        return userData;
     }
 
     @Post('/login')
     async login(@Body() authUserDto: AuthUserDto, @Res({ passthrough: true }) response) {
         const userData = await this.usersService.login(authUserDto);
-        return setCookiesRefreshToken(response, userData);
+        setCookiesRefreshToken(response, userData);
+        return userData;
     }
 
     @Post('/logout')
-    logout(@Req() request, @Res() response) {
+    logout(@Req() request, @Res({ passthrough: true }) response) {
         const {refreshToken} = request.cookies;
-        const token = this.usersService.logout(refreshToken);
+        this.usersService.logout(refreshToken);
         response.clearCookie('refreshToken');
-        return response.json(token);
+        return true;
     }
 
     @Get('/refresh/')
-    async refresh(@Req() request) {
-       console.log(request.cookies);
+    async refresh(@Req() request, @Res({ passthrough: true }) response) {
        try {
            const {refreshToken} = request.cookies;
-           console.log(refreshToken);
            const userData = await this.usersService.refresh(refreshToken);
-           console.log(userData);
-           return setCookiesRefreshToken(response, userData);
+           setCookiesRefreshToken(response, userData);
+           return userData;
        } catch(e) {
            console.log(e);
             return false;
