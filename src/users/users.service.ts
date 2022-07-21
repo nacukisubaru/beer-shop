@@ -6,12 +6,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Users } from './users.model';
 import * as bcrypt from 'bcryptjs';
 import { TokenService } from 'src/token/token.service';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UsersService {
 
     constructor(@InjectModel(Users) private userRepo: typeof Users,
-                private tokenService: TokenService) { }
+                private tokenService: TokenService,
+                private mailService: MailService) { }
 
     async registrate(createUserDto: CreateUserDto) {
         const userExist = await this.getUserByEmail(createUserDto.email)
@@ -28,6 +30,7 @@ export class UsersService {
             }
         );
         
+        this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
         return await this.createTokensAndSave(user);
     }
 
@@ -52,6 +55,17 @@ export class UsersService {
 
         const user = await this.getById(tokenFromDb.userId);
         return await this.createTokensAndSave(user);
+    }
+
+    async activate(activationLink) {
+        const user = await this.userRepo.findOne({where: {activationLink}});
+        if(!user) {
+            throw new HttpException("Некорректная ссылка активации", HttpStatus.NOT_FOUND);
+        }
+
+        user.isActivated = true;
+        user.save();
+        return true;
     }
 
     private async createTokensAndSave(user: Users) {

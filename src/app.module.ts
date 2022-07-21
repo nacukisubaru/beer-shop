@@ -27,6 +27,7 @@ import { SnacksModule } from './snacks/snacks.module';
 import { Snack } from './snacks/snacks.model';
 import { TokenModule } from './token/token.module';
 import { Token } from './token/token.model';
+import { MailModule } from './mail/mail.module';
 
 @Module({
     imports: [
@@ -62,6 +63,7 @@ import { Token } from './token/token.model';
         BrandsModule,
         SnacksModule,
         TokenModule,
+        MailModule
     ],
     controllers: [],
     providers: [],

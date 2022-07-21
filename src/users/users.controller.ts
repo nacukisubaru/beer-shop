@@ -41,8 +41,13 @@ export class UsersController {
            return userData;
        } catch(e) {
            console.log(e);
-            return false;
+           return false;
        }
+    }
+
+    @Get('/activate/:id')
+    activate(@Param('id') activationLink: string) {
+       return this.usersService.activate(activationLink);
     }
 
     create(@Body() createUserDto: CreateUserDto) {
