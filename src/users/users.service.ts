@@ -26,7 +26,10 @@ export class UsersService {
             { 
                 ...createUserDto, password: hashPassword,
                 activationLink: hashPassword,
-                isActivated: false
+                isActivated: false,
+                name: '',
+                surname: '',
+                phone: ''
             }
         );
         
