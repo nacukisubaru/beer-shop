@@ -13,7 +13,7 @@ export class SnacksService {
                 private productService: ProductsService) {}
 
 
-    async create(createSnackDto: CreateSnackDto) {
+    async create(createSnackDto: CreateSnackDto, image:any) {
         const productData = {
             title: createSnackDto.title,
             description: createSnackDto.description,
@@ -22,7 +22,7 @@ export class SnacksService {
             brandId: createSnackDto.brandId
         };
 
-        const product = await this.productService.create(productData);
+        const product = await this.productService.create(productData, image);
         const snack = await this.snackRepo.create({weight: createSnackDto.weight});
 
         snack.productId = product.id;

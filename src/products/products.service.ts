@@ -5,19 +5,23 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Grades } from 'src/grades/grades.model';
 import { BrandsService } from 'src/brands/brands.service';
+import { FilesService } from 'src/files/filtes.service';
 
 @Injectable()
 export class ProductsService {
     constructor(@InjectModel(Products) private productRepo: typeof Products,
-                private brandService: BrandsService) {}
+                private brandService: BrandsService,
+                private fileService: FilesService) {}
 
-    async create(dto: CreateProductDto) {
+    async create(dto: CreateProductDto, image:any) {
         const brand = await this.brandService.getById(dto.brandId);
         if(!brand) {
             throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
         }
 
-        const product = await this.productRepo.create(dto);
+        const fileName = await this.fileService.createFile(image);
+        
+        const product = await this.productRepo.create({...dto, image: fileName});
         product.$set('brand', brand.id);
         return product;
     }

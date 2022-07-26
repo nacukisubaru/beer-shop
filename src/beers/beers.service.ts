@@ -18,7 +18,7 @@ export class BeersService {
                 private productService: ProductsService,
                 private gradeService: GradesService) { }
 
-    async create(dto: CreateBeerDto) {
+    async create(dto: CreateBeerDto, image: any) {
         const productData = {
             title: dto.title,
             description: dto.description,
@@ -39,7 +39,7 @@ export class BeersService {
             throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
         }
 
-        const product = await this.productService.create(productData);
+        const product = await this.productService.create(productData, image);
         
         try {
             const beer = await this.beerRepo.create(beerData);

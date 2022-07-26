@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors, UsePipes } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { BeersService } from './beers.service';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -19,10 +20,11 @@ export class BeersController {
         return this.beerService.getById(Number(id));
     }
 
-    @UsePipes(ValidationPipe)
+   // @UsePipes(ValidationPipe)
     @Post('/create')
-    createBeer(@Body() dto: CreateBeerDto) {
-       return this.beerService.create(dto);
+    @UseInterceptors(FileInterceptor('image'))
+    createBeer(@Body() dto: CreateBeerDto, @UploadedFile() image) {
+       return this.beerService.create(dto, image);
     }
 
     @UsePipes(ValidationPipe)
