@@ -19,7 +19,7 @@ export class ProductsService {
             throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
         }
 
-        const fileName = await this.fileService.createFile(image);
+        const fileName = await this.fileService.createFile(image, 'products');
         
         const product = await this.productRepo.create({...dto, image: fileName});
         product.$set('brand', brand.id);
