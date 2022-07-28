@@ -106,9 +106,9 @@ export class BeersService {
        return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getList(page: number) {
+    async getList(page: number, limitPage:number) {
         if(isNumber(page)) {
-            const query = paginate({include: { all: true }}, page);
+            const query = paginate({include: { all: true }}, page, limitPage);
             const beerList = await this.beerRepo.findAndCountAll(query);
         
             beerList.rows = beerList.rows.filter((beer) => {
@@ -116,8 +116,7 @@ export class BeersService {
                     return beer;
                 }
             });
-
-            return beerList;
+            return {...beerList, nextPage: page + 1};
         }
 
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);

@@ -11,8 +11,8 @@ export class BeersController {
     constructor(private beerService: BeersService) {}
 
     @Get()
-    getList(@Query('page') page: string) {
-        return this.beerService.getList(Number(page));
+    getList(@Query('page') page: string, @Query('limitPage') limitPage: string) {
+        return this.beerService.getList(Number(page), Number(limitPage));
     }
 
     @Get('/getById/:id')
