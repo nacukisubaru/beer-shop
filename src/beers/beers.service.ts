@@ -111,6 +111,10 @@ export class BeersService {
             const query = paginate({include: { all: true }}, page, limitPage);
             const beerList = await this.beerRepo.findAndCountAll(query);
         
+            if(beerList.rows.length <= 0) {
+                throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
+            }
+
             beerList.rows = beerList.rows.filter((beer) => {
                 if(beer.product.getDataValue('isActive')) {
                     return beer;

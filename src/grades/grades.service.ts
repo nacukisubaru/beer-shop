@@ -23,7 +23,7 @@ export class GradesService {
     }
 
     async findAll() {
-        return await this.gradesRepo.findAll({include: {all:true}});
+        return await this.gradesRepo.findAll();
     }
 
     async update(id: number, updateGradeDto: UpdateGradeDto) {
