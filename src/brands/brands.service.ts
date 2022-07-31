@@ -9,16 +9,16 @@ export class BrandsService {
 
     constructor(@InjectModel(Brand) private brandRepo: typeof Brand) { }
 
-    async getById(id: number) {
-       return await this.brandRepo.findOne({include:{all: true}, where: {id}});
-    }
-
     async create(createBrandDto: CreateBrandDto) {
         return await this.brandRepo.create(createBrandDto);
     }
 
-    findAll() {
-        return `This action returns all brands`;
+    async getById(id: number) {
+        return await this.brandRepo.findOne({include:{all: true}, where: {id}});
+    }
+
+    async findAll() {
+        return await this.brandRepo.findAll();
     }
 
     findOne(id: number) {
