@@ -3,12 +3,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { BeersService } from './beers.service';
 import { CreateBeerDto } from './dto/create-beer.dto';
+import { FilterBeerDto } from './dto/filter-beer.dto';
 import { UpdateBeerDto } from './dto/update-beer.dto';
 
 @Controller('beers')
 export class BeersController {
 
-    constructor(private beerService: BeersService) {}
+    constructor(private beerService: BeersService) { }
 
     @Get()
     getList(@Query('page') page: string, @Query('limitPage') limitPage: string) {
@@ -20,11 +21,21 @@ export class BeersController {
         return this.beerService.getById(Number(id));
     }
 
-   // @UsePipes(ValidationPipe)
+    @Post('/getListByFilter')
+    getListByFilter(@Body() dto: FilterBeerDto) {
+        let {grades, brandIds, maxPrice, minPrice} = dto;
+        grades = grades ? grades : [];
+        brandIds = brandIds ? brandIds: [];
+        maxPrice = maxPrice ? maxPrice: 0;
+        minPrice = minPrice ? minPrice : 0;
+        return this.beerService.getListByFilter(grades, brandIds, minPrice, maxPrice);
+    }
+
+    // @UsePipes(ValidationPipe)
     @Post('/create')
     @UseInterceptors(FileInterceptor('image'))
     createBeer(@Body() dto: CreateBeerDto, @UploadedFile() image) {
-       return this.beerService.create(dto, image);
+        return this.beerService.create(dto, image);
     }
 
     @UsePipes(ValidationPipe)
@@ -38,5 +49,5 @@ export class BeersController {
     @Delete('/remove/:id')
     remove(@Param('id') id: string) {
         return this.beerService.remove(id);
-    }    
+    }
 }

@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { BrandsService } from 'src/brands/brands.service';
 import { Grades } from 'src/grades/grades.model';
 import { GradesService } from 'src/grades/grades.service';
@@ -126,5 +127,22 @@ export class BeersService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
+    async getListByFilter(grades:[] = [],  brandIds:[] = [], minPrice: number = 0, maxPrice: number = 0) {
+        const queryFilter: any = {
+            include: {all:true}, 
+            where: {},
+        };
+
+        let productIds = [];
+
+        if(grades.length > 0) {
+            const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
+            queryFilter.where.id = beerIds;
+            const beers = await this.beerRepo.findAll(queryFilter);
+            productIds = beers.map(item => {return item.productId});
+        }
+
+        return await this.productService.getListByFilter(productIds, brandIds, minPrice, maxPrice);
+    }
 
 }
