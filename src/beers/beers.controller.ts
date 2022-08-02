@@ -3,7 +3,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { BeersService } from './beers.service';
 import { CreateBeerDto } from './dto/create-beer.dto';
-import { FilterBeerDto } from './dto/filter-beer.dto';
 import { UpdateBeerDto } from './dto/update-beer.dto';
 
 @Controller('beers')
@@ -21,14 +20,11 @@ export class BeersController {
         return this.beerService.getById(Number(id));
     }
 
-    @Post('/getListByFilter')
-    getListByFilter(@Body() dto: FilterBeerDto) {
-        let {grades, brandIds, maxPrice, minPrice} = dto;
-        grades = grades ? grades : [];
-        brandIds = brandIds ? brandIds: [];
-        maxPrice = maxPrice ? maxPrice: 0;
-        minPrice = minPrice ? minPrice : 0;
-        return this.beerService.getListByFilter(grades, brandIds, minPrice, maxPrice);
+    @Get('/getListByFilter')
+    getListByFilter(@Query('grades') grades: number[], @Query('brandIds') brandIds: number[], 
+                    @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, 
+                    @Query('page') page: string, @Query('limitPage') limitPage: string) {
+        return this.beerService.getListByFilter(grades, brandIds, minPrice, maxPrice, Number(page), Number(limitPage));
     }
 
     // @UsePipes(ValidationPipe)

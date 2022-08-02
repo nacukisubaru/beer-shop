@@ -77,7 +77,7 @@ export class ProductsService {
             throw new HttpException('Не передан не один параметр для фильтрации', HttpStatus.BAD_REQUEST);
         }
 
-        return await this.productRepo.findAndCountAll(queryFilter);
+        return await this.productRepo.findAll(queryFilter);
     }
 
 }

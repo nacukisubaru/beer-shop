@@ -1,12 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { BrandsService } from 'src/brands/brands.service';
-import { Grades } from 'src/grades/grades.model';
 import { GradesService } from 'src/grades/grades.service';
 import { paginate } from 'src/helpers/paginationHelper';
-import { isNumber } from 'src/helpers/typesHelper';
-import { Products } from 'src/products/products.model';
+import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -107,15 +103,19 @@ export class BeersService {
        return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getList(page: number, limitPage:number) {
+    async getList(page: number, limitPage:number, filter:object = {}) {
         if(isNumber(page)) {
-            const query = paginate({include: { all: true }}, page, limitPage);
+            if(isEmptyObject(filter)) {
+                filter = {include: { all: true }};
+            }
+            
+            const query = paginate(filter, page, limitPage);
             const beerList = await this.beerRepo.findAndCountAll(query);
-        
+    
             if(beerList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
-
+           
             beerList.rows = beerList.rows.filter((beer) => {
                 if(beer.product.getDataValue('isActive')) {
                     return beer;
@@ -127,22 +127,28 @@ export class BeersService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async getListByFilter(grades:[] = [],  brandIds:[] = [], minPrice: number = 0, maxPrice: number = 0) {
+    async getListByFilter(grades:number[] = [], brandIds:number[] = [], minPrice: number = 0, 
+                        maxPrice: number = 0, page: number, limitPage:number) {
         const queryFilter: any = {
             include: {all:true}, 
             where: {},
         };
 
-        let productIds = [];
+        if(brandIds || minPrice || maxPrice) {
+            const products = await this.productService.getListByFilter([], brandIds, minPrice, maxPrice);
+            const productIds = products.map(product => {
+               return product.id;
+            });
+            queryFilter.where.productId = productIds;
+        }
 
         if(grades.length > 0) {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
             queryFilter.where.id = beerIds;
-            const beers = await this.beerRepo.findAll(queryFilter);
-            productIds = beers.map(item => {return item.productId});
         }
 
-        return await this.productService.getListByFilter(productIds, brandIds, minPrice, maxPrice);
+        const beers = await this.getList(page, limitPage, queryFilter);
+        return beers;
     }
 
 }

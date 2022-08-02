@@ -36,7 +36,7 @@ export class GradesService {
         return await this.gradesRepo.destroy({ where: { id } });
     }
 
-    async getBeersIdsByGrades(gradeIds: []) {
+    async getBeersIdsByGrades(gradeIds: number[]) {
         const beerIds = await this.beerGradesRepo.findAll({ include: { all: true }, where: { gradeId: { [Op.or]: gradeIds } } });
         return beerIds.map(item => {
            return item.getDataValue('beerId');
