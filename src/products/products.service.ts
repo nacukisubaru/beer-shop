@@ -69,8 +69,8 @@ export class ProductsService {
 
         if(minPrice && maxPrice) {
             queryFilter.where.price = {
-                [Op.gt]: minPrice, 
-                [Op.lt]: maxPrice
+                [Op.gte]: minPrice, 
+                [Op.lte]: maxPrice
             };
         }
 
