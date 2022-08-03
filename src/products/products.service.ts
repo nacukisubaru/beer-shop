@@ -7,6 +7,7 @@ import { Grades } from 'src/grades/grades.model';
 import { BrandsService } from 'src/brands/brands.service';
 import { FilesService } from 'src/files/filtes.service';
 import { Op } from 'sequelize';
+import sequelize from 'sequelize';
 
 @Injectable()
 export class ProductsService {
@@ -80,4 +81,9 @@ export class ProductsService {
         return await this.productRepo.findAll(queryFilter);
     }
 
+    async getMinAndMaxPrice() {
+        return await this.productRepo.findAll({
+            attributes: [[sequelize.fn('min', sequelize.col('price')), 'minPrice'], [sequelize.fn('max', sequelize.col('price')), 'maxPrice']],
+        });
+    }
 }

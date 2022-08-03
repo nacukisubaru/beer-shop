@@ -24,4 +24,9 @@ export class ProductsController {
         return this.productService.switchActive(dto.id, dto.isActive);
     }
 
+    @Get('/minMaxPrices/')
+    getMixAndMaxPrice() {
+        return this.productService.getMinAndMaxPrice();
+    }
+
 }
