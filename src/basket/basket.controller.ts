@@ -33,4 +33,9 @@ export class BasketController {
     getList() {
         return this.basketService.getList();
     }
+
+    @Get('/getBasket/:id')
+    getBasket(@Param('id') id: string) {
+        return this.basketService.getById(Number(id));
+    }
 }

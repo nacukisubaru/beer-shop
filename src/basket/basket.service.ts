@@ -16,7 +16,7 @@ export class BasketService {
         return await this.basketRepo.findAll({ include: { all: true } });
     }
 
-    async addProduct(createBasketDto: CreateBasketDto): Promise<Basket> {
+    async addProduct(createBasketDto: CreateBasketDto) {
         let basket;
         const productId = createBasketDto.productId;
         delete createBasketDto.productId;
@@ -29,10 +29,12 @@ export class BasketService {
 
         if(basket) {
             const basketProduct = await basket.$add('products', productId);
+            let prodId = productId;
             if(basketProduct) {
-                this.basketProductRepo.update( {quantity: createBasketDto.quantity}, {where:{id: basketProduct[0].id}})
+                prodId = basketProduct[0].id;
             }
 
+            this.basketProductRepo.update({quantity: createBasketDto.quantity}, {where:{id: prodId}});
             return basket;
         }
  

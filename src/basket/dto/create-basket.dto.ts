@@ -3,7 +3,7 @@ import { IsNumber } from "class-validator";
 export class CreateBasketDto {
     readonly id;
 
-    @IsNumber({}, {message: 'Должно быть числом'})
+  //  @IsNumber({}, {message: 'Должно быть числом'})
     readonly userId: number;
 
     @IsNumber({}, {message: 'Должно быть числом'})
