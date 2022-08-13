@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -40,8 +40,7 @@ export class UsersController {
            setCookiesRefreshToken(response, userData);
            return userData;
        } catch(e) {
-           console.log(e);
-           return false;
+            throw new UnauthorizedException();
        }
     }
 

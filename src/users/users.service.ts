@@ -47,7 +47,7 @@ export class UsersService {
     }
 
     async refresh(refreshToken: string) {
-        if(!refreshToken) {
+        if(!refreshToken || refreshToken == undefined) {
             throw new UnauthorizedException();
         }
         const token = await this.tokenService.validateRefreshToken(refreshToken);
