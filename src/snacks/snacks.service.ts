@@ -30,9 +30,9 @@ export class SnacksService {
         return snack;
     }
 
-    async getList(page: number) {
+    async getList(page: number, limitPage: number) {
         if(isNumber(page)) {
-            const query = paginate({include: { all: true }}, page);
+            const query = paginate({include: { all: true }}, page, limitPage);
             const snackList = await this.snackRepo.findAndCountAll(query);
             
             snackList.rows = snackList.rows.filter((snack) => {
@@ -40,8 +40,8 @@ export class SnacksService {
                     return snack;
                 }
             });
-
-            return snackList;
+            
+            return { ...snackList, nextPage: page + 1 };
         }
 
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);

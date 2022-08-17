@@ -22,8 +22,8 @@ export class SnacksController {
     }
 
     @Get()
-    getAll(@Query('page') page: string) {
-        return this.snacksService.getList(Number(page));
+    getAll(@Query('page') page: string, @Query('limitPage') limitPage: string) {
+        return this.snacksService.getList(Number(page), Number(limitPage));
     }
 
     @Get(':id')
