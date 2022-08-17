@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { isNumber } from 'src/helpers/typesHelper';
+import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
 import { paginate } from 'src/helpers/paginationHelper';
 import { ProductsService } from 'src/products/products.service';
 import { CreateSnackDto } from './dto/create-snack.dto';
@@ -30,9 +30,12 @@ export class SnacksService {
         return snack;
     }
 
-    async getList(page: number, limitPage: number) {
+    async getList(page: number, limitPage: number, filter: object = {}) {
         if(isNumber(page)) {
-            const query = paginate({include: { all: true }}, page, limitPage);
+            if (isEmptyObject(filter)) {
+                filter = { include: { all: true } };
+            }
+            const query = paginate(filter, page, limitPage);
             const snackList = await this.snackRepo.findAndCountAll(query);
             
             snackList.rows = snackList.rows.filter((snack) => {
@@ -40,7 +43,7 @@ export class SnacksService {
                     return snack;
                 }
             });
-            
+
             return { ...snackList, nextPage: page + 1 };
         }
 
@@ -72,5 +75,23 @@ export class SnacksService {
         }
         
         return false;
+    }
+
+    async getListByFilter(brandIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, page: number, limitPage: number) {
+        const queryFilter: any = {
+            include: { all: true },
+            where: {},
+        };
+
+        if (brandIds || minPrice || maxPrice) {
+            const products = await this.productService.getListByFilter([], brandIds, minPrice, maxPrice);
+            const productIds = products.map(product => {
+                return product.id;
+            });
+            queryFilter.where.productId = productIds;
+        }
+
+        const beers = await this.getList(page, limitPage, queryFilter);
+        return beers;
     }
 }

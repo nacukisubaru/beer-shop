@@ -26,8 +26,15 @@ export class SnacksController {
         return this.snacksService.getList(Number(page), Number(limitPage));
     }
 
-    @Get(':id')
+    @Get('getById/:id')
     getById(@Param('id') id: string) {
         return this.snacksService.getById(+id);
+    }
+
+    @Get('/getListByFilter')
+    getListByFilter(@Query('brandIds') brandIds: number[], 
+                    @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, 
+                    @Query('page') page: string, @Query('limitPage') limitPage: string) {
+        return this.snacksService.getListByFilter(brandIds, minPrice, maxPrice, Number(page), Number(limitPage));
     }
 }
