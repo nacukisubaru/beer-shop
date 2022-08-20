@@ -1,4 +1,5 @@
-import { Column, DataType, Model, Table, BelongsTo, BelongsToMany, ForeignKey} from 'sequelize-typescript';
+import { Column, DataType, Model, Table, BelongsTo, ForeignKey} from 'sequelize-typescript';
+import { ProductTypes } from 'src/product-types/product-type.model';
 
 @Table({tableName: 'brands'})
 export class Brand extends Model<Brand> {
@@ -11,4 +12,11 @@ export class Brand extends Model<Brand> {
 
   @Column({type: DataType.STRING, allowNull: false})
   code: string;
+
+  @BelongsTo(() => ProductTypes)
+  productType: ProductTypes;
+
+  @ForeignKey(() => ProductTypes)
+  @Column({type: DataType.INTEGER})
+  productTypeId: number;
 }

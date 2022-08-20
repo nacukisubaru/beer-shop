@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { ProductTypesService } from 'src/product-types/product-types.service';
 import { Brand } from './brands.model';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
@@ -7,7 +8,8 @@ import { UpdateBrandDto } from './dto/update-brand.dto';
 @Injectable()
 export class BrandsService {
 
-    constructor(@InjectModel(Brand) private brandRepo: typeof Brand) { }
+    constructor(@InjectModel(Brand) private brandRepo: typeof Brand,
+                private productTypeService: ProductTypesService) { }
 
     async create(createBrandDto: CreateBrandDto) {
         return await this.brandRepo.create(createBrandDto);
@@ -15,6 +17,11 @@ export class BrandsService {
 
     async getById(id: number) {
         return await this.brandRepo.findOne({include:{all: true}, where: {id}});
+    }
+
+    async getByProductType(type: string) {
+        const prodType = await this.productTypeService.getByCode(type);
+        return await this.brandRepo.findAll({where:{productTypeId: prodType.id}})
     }
 
     async findAll() {
