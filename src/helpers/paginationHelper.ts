@@ -1,8 +1,11 @@
 const limitPage = 5;
 
 export const paginate = (query: object, page: number, pageSize: number = limitPage) => {
-    const offset = page * pageSize;
-    const limit = pageSize;
+    let limit = pageSize;
+    if(!pageSize) {
+        limit = limitPage;
+    }
+    const offset = page * limit;
 
     return {
         ...query,

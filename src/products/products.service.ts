@@ -81,9 +81,25 @@ export class ProductsService {
         return await this.productRepo.findAll(queryFilter);
     }
 
-    async getMinAndMaxPrice() {
+    async getMinAndMaxPrice(productType: string = "beers") {
+        let where = {};
+        if(productType === "beers") {
+            where = {
+                beerId: {
+                    [Op.ne]: null
+                }
+            };
+        } else if (productType === "snacks") {
+            where = {
+                snackId: {
+                    [Op.ne]: null
+                }
+            };
+        }
+
         return await this.productRepo.findAll({
             attributes: [[sequelize.fn('min', sequelize.col('price')), 'minPrice'], [sequelize.fn('max', sequelize.col('price')), 'maxPrice']],
+            where
         });
     }
 }

@@ -35,7 +35,7 @@ export class BeersService {
         if (grades.length !== dto.gradeIds.length) {
             throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
         }
-
+    
         const product = await this.productService.create(productData, image);
 
         try {
@@ -43,6 +43,8 @@ export class BeersService {
 
             beer.$set('grades', dto.gradeIds);
             beer.productId = product.id;
+            product.beerId = beer.id;
+            product.save();
             beer.save();
             return beer;
         } catch (e) {
@@ -103,7 +105,7 @@ export class BeersService {
         return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getList(page: number, limitPage: number, filter: object = {}) {
+    async getList(page: number, limitPage: number = 0, filter: object = {}) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
                 filter = { include: { all: true } };

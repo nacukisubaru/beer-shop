@@ -26,11 +26,13 @@ export class SnacksService {
         const snack = await this.snackRepo.create({weight: createSnackDto.weight});
 
         snack.productId = product.id;
+        product.snackId = snack.id;
+        product.save();
         snack.save();
         return snack;
     }
 
-    async getList(page: number, limitPage: number, filter: object = {}) {
+    async getList(page: number, limitPage: number = 0, filter: object = {}) {
         if(isNumber(page)) {
             if (isEmptyObject(filter)) {
                 filter = { include: { all: true } };

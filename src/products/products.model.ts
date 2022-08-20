@@ -44,6 +44,14 @@ export class Products extends Model<Products> {
     @HasOne(() => Snack)
     snack: Snack;
 
+    @ForeignKey(() => Beers)
+    @Column({type: DataType.INTEGER})
+    beerId: number;
+
+    @ForeignKey(() => Snack)
+    @Column({type: DataType.INTEGER})
+    snackId: number;
+
     @BelongsTo(() => Brand)
     brand: Brand;
 

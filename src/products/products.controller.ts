@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UsePipes } from '@nestjs/common';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { ActivateProductDto } from './dto/activate-product.dto';
 import { ProductsService } from './products.service';
@@ -25,8 +25,8 @@ export class ProductsController {
     }
 
     @Get('/minMaxPrices/')
-    getMixAndMaxPrice() {
-        return this.productService.getMinAndMaxPrice();
+    getMixAndMaxPrice(@Query('productType') type: string) {
+        return this.productService.getMinAndMaxPrice(type);
     }
 
 }
