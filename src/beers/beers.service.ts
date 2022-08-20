@@ -1,11 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { BrandsService } from 'src/brands/brands.service';
-import { Grades } from 'src/grades/grades.model';
 import { GradesService } from 'src/grades/grades.service';
 import { paginate } from 'src/helpers/paginationHelper';
-import { isNumber } from 'src/helpers/typesHelper';
-import { Products } from 'src/products/products.model';
+import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -15,10 +12,10 @@ import { UpdateBeerDto } from './dto/update-beer.dto';
 export class BeersService {
 
     constructor(@InjectModel(Beers) private beerRepo: typeof Beers,
-                private productService: ProductsService,
-                private gradeService: GradesService) { }
+        private productService: ProductsService,
+        private gradeService: GradesService) { }
 
-    async create(dto: CreateBeerDto) {
+    async create(dto: CreateBeerDto, image: any) {
         const productData = {
             title: dto.title,
             description: dto.description,
@@ -35,20 +32,22 @@ export class BeersService {
         };
 
         const grades = await this.gradeService.findByIds(dto.gradeIds);
-        if(grades.length !== dto.gradeIds.length) {
+        if (grades.length !== dto.gradeIds.length) {
             throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
         }
+    
+        const product = await this.productService.create(productData, image);
 
-        const product = await this.productService.create(productData);
-        
         try {
             const beer = await this.beerRepo.create(beerData);
-                
+
             beer.$set('grades', dto.gradeIds);
             beer.productId = product.id;
+            product.beerId = beer.id;
+            product.save();
             beer.save();
             return beer;
-        } catch(e) {
+        } catch (e) {
             return e;
         }
     }
@@ -70,58 +69,87 @@ export class BeersService {
         };
 
         const beer = await this.beerRepo.findByPk(id);
-        if(!beer) {
+        if (!beer) {
             throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
         }
 
         const grades = await this.gradeService.findByIds(dto.gradeIds);
-        if(grades.length !== dto.gradeIds.length) {
+        if (grades.length !== dto.gradeIds.length) {
             throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
         }
 
-        if(dto.gradeIds) {
+        if (dto.gradeIds) {
             beer.$set('grades', dto.gradeIds);
         }
 
         const productId = beer.productId;
         await this.productService.update(productId, prodData);
-        if(this.beerRepo.update({...beerData}, {where: {id}})) {
+        if (this.beerRepo.update({ ...beerData }, { where: { id } })) {
             return true;
         }
-        
+
         return false;
     }
 
     async remove(id) {
         const beer = await this.getById(id)
-        if(!beer) {
+        if (!beer) {
             throw new HttpException("Товара не существует!", HttpStatus.NOT_FOUND);
         }
 
         await this.productService.remove(beer.productId);
-        return await this.beerRepo.destroy({where: {id}});
+        return await this.beerRepo.destroy({ where: { id } });
     }
 
     async getById(id: number): Promise<Beers> {
-       return await this.beerRepo.findByPk(id, { include: { all: true } });
+        return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getList(page: number) {
-        if(isNumber(page)) {
-            const query = paginate({include: { all: true }}, page);
+    async getList(page: number, limitPage: number = 0, filter: object = {}) {
+        if (isNumber(page)) {
+            if (isEmptyObject(filter)) {
+                filter = { include: { all: true } };
+            }
+
+            const query = paginate(filter, page, limitPage);
             const beerList = await this.beerRepo.findAndCountAll(query);
-        
+
+            if (beerList.rows.length <= 0) {
+                throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
+            }
+
             beerList.rows = beerList.rows.filter((beer) => {
-                if(beer.product.getDataValue('isActive')) {
+                if (beer.product.getDataValue('isActive')) {
                     return beer;
                 }
             });
-
-            return beerList;
+            return { ...beerList, nextPage: page + 1 };
         }
 
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
+    async getListByFilter(grades: number[] = [], brandIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, page: number, limitPage: number) {
+        const queryFilter: any = {
+            include: { all: true },
+            where: {},
+        };
+
+        if (brandIds || minPrice || maxPrice) {
+            const products = await this.productService.getListByFilter([], brandIds, minPrice, maxPrice);
+            const productIds = products.map(product => {
+                return product.id;
+            });
+            queryFilter.where.productId = productIds;
+        }
+
+        if (grades.length > 0) {
+            const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
+            queryFilter.where.id = beerIds;
+        }
+
+        const beers = await this.getList(page, limitPage, queryFilter);
+        return beers;
+    }
 
 }

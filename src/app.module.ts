@@ -28,6 +28,9 @@ import { Snack } from './snacks/snacks.model';
 import { TokenModule } from './token/token.module';
 import { Token } from './token/token.model';
 import { MailModule } from './mail/mail.module';
+import { FilesModule } from './files/files.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
     imports: [
@@ -52,6 +55,9 @@ import { MailModule } from './mail/mail.module';
                 Delivery, PaymentMethod, Brand, Snack, Token],
             autoLoadModels: true
         }),
+        ServeStaticModule.forRoot({
+            rootPath: join(__dirname, 'static'),
+        }),
         ProductsModule,
         BeersModule,
         GradesModule,
@@ -63,7 +69,8 @@ import { MailModule } from './mail/mail.module';
         BrandsModule,
         SnacksModule,
         TokenModule,
-        MailModule
+        MailModule,
+        FilesModule
     ],
     controllers: [],
     providers: [],

@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors, UsePipes } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { BeersService } from './beers.service';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -7,11 +8,11 @@ import { UpdateBeerDto } from './dto/update-beer.dto';
 @Controller('beers')
 export class BeersController {
 
-    constructor(private beerService: BeersService) {}
+    constructor(private beerService: BeersService) { }
 
     @Get()
-    getList(@Query('page') page: string) {
-        return this.beerService.getList(Number(page));
+    getList(@Query('page') page: string, @Query('limitPage') limitPage: string) {
+        return this.beerService.getList(Number(page), Number(limitPage));
     }
 
     @Get('/getById/:id')
@@ -19,10 +20,18 @@ export class BeersController {
         return this.beerService.getById(Number(id));
     }
 
-    @UsePipes(ValidationPipe)
+    @Get('/getListByFilter')
+    getListByFilter(@Query('grades') grades: number[], @Query('brandIds') brandIds: number[], 
+                    @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, 
+                    @Query('page') page: string, @Query('limitPage') limitPage: string) {
+        return this.beerService.getListByFilter(grades, brandIds, minPrice, maxPrice, Number(page), Number(limitPage));
+    }
+
+    // @UsePipes(ValidationPipe)
     @Post('/create')
-    createBeer(@Body() dto: CreateBeerDto) {
-       return this.beerService.create(dto);
+    @UseInterceptors(FileInterceptor('image'))
+    createBeer(@Body() dto: CreateBeerDto, @UploadedFile() image) {
+        return this.beerService.create(dto, image);
     }
 
     @UsePipes(ValidationPipe)
@@ -36,5 +45,5 @@ export class BeersController {
     @Delete('/remove/:id')
     remove(@Param('id') id: string) {
         return this.beerService.remove(id);
-    }    
+    }
 }

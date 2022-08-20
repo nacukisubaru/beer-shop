@@ -10,7 +10,10 @@ export class Grades extends Model<Grades> {
   id: number;
 
   @Column({type: DataType.STRING, allowNull: false})
-  name: string
+  name: string;
+
+  @Column({type: DataType.STRING, allowNull: false})
+  code: string;
 
   @BelongsToMany(() => Beers, () => BeerGrades)
   beers: Beers[]

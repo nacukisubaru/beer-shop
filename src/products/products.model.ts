@@ -17,6 +17,12 @@ export class Products extends Model<Products> {
     @Column({ type: DataType.STRING, allowNull: false })
     description: string;
 
+    @Column({type: DataType.STRING})
+    image:string;
+
+    @Column({type: DataType.ARRAY(DataType.STRING)})
+    images: string[];
+
     @Column({ type: DataType.INTEGER })
     price: number;
 
@@ -37,6 +43,14 @@ export class Products extends Model<Products> {
 
     @HasOne(() => Snack)
     snack: Snack;
+
+    @ForeignKey(() => Beers)
+    @Column({type: DataType.INTEGER})
+    beerId: number;
+
+    @ForeignKey(() => Snack)
+    @Column({type: DataType.INTEGER})
+    snackId: number;
 
     @BelongsTo(() => Brand)
     brand: Brand;

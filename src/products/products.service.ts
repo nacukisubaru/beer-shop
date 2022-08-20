@@ -5,19 +5,25 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Grades } from 'src/grades/grades.model';
 import { BrandsService } from 'src/brands/brands.service';
+import { FilesService } from 'src/files/filtes.service';
+import { Op } from 'sequelize';
+import sequelize from 'sequelize';
 
 @Injectable()
 export class ProductsService {
     constructor(@InjectModel(Products) private productRepo: typeof Products,
-                private brandService: BrandsService) {}
+                private brandService: BrandsService,
+                private fileService: FilesService) {}
 
-    async create(dto: CreateProductDto) {
+    async create(dto: CreateProductDto, image:any) {
         const brand = await this.brandService.getById(dto.brandId);
         if(!brand) {
             throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
         }
 
-        const product = await this.productRepo.create(dto);
+        const fileName = await this.fileService.createFile(image, 'products');
+        
+        const product = await this.productRepo.create({...dto, image: fileName});
         product.$set('brand', brand.id);
         return product;
     }
@@ -45,5 +51,55 @@ export class ProductsService {
   
     async getListByBrand(brandId: number) {
        return await this.productRepo.findAll({include: {all:true}, where: {brandId}});
+    }
+
+    async getListByFilter(ids: number[], brandIds:number[] = [], minPrice: number = 0, maxPrice: number = 0) {
+        const queryFilter: any = {
+            include: {all:true}, 
+            where: {}
+        };
+
+        if(ids.length > 0) {
+            queryFilter.where.id = {[Op.or]: ids};
+        }
+
+        if(brandIds.length > 0) {
+            queryFilter.where.brandId = {[Op.or]: brandIds};
+        }
+
+        if(minPrice && maxPrice) {
+            queryFilter.where.price = {
+                [Op.gte]: minPrice, 
+                [Op.lte]: maxPrice
+            };
+        }
+
+        if(queryFilter.where === {}) {
+            throw new HttpException('Не передан не один параметр для фильтрации', HttpStatus.BAD_REQUEST);
+        }
+
+        return await this.productRepo.findAll(queryFilter);
+    }
+
+    async getMinAndMaxPrice(productType: string = "beers") {
+        let where = {};
+        if(productType === "beers") {
+            where = {
+                beerId: {
+                    [Op.ne]: null
+                }
+            };
+        } else if (productType === "snacks") {
+            where = {
+                snackId: {
+                    [Op.ne]: null
+                }
+            };
+        }
+
+        return await this.productRepo.findAll({
+            attributes: [[sequelize.fn('min', sequelize.col('price')), 'minPrice'], [sequelize.fn('max', sequelize.col('price')), 'maxPrice']],
+            where
+        });
     }
 }

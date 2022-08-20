@@ -12,6 +12,6 @@ import { JwtModule } from '@nestjs/jwt';
         SequelizeModule.forFeature([Token]),
         JwtModule.register({})
     ],
-    exports: [TokenService]
+    exports: [TokenService, JwtModule, TokenModule]
 })
 export class TokenModule { }
