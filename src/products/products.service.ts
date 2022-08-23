@@ -8,6 +8,7 @@ import { BrandsService } from 'src/brands/brands.service';
 import { FilesService } from 'src/files/filtes.service';
 import { Op } from 'sequelize';
 import sequelize from 'sequelize';
+import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
 
 @Injectable()
 export class ProductsService {
@@ -97,8 +98,9 @@ export class ProductsService {
             };
         }
 
+        const query: any[] = getMinMaxQuery({colMin:'price', colMax: 'price', minOutput: 'minPrice', maxOutput: 'maxPrice'}); 
         return await this.productRepo.findAll({
-            attributes: [[sequelize.fn('min', sequelize.col('price')), 'minPrice'], [sequelize.fn('max', sequelize.col('price')), 'maxPrice']],
+            attributes: query,
             where
         });
     }

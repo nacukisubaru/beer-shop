@@ -1,12 +1,24 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { GradesService } from 'src/grades/grades.service';
 import { paginate } from 'src/helpers/paginationHelper';
+import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
 import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
 import { UpdateBeerDto } from './dto/update-beer.dto';
+
+interface IVolume {
+    minVolume: number,
+    maxVolume: number
+}
+
+interface IFortress { 
+    minFortress: number,
+    maxFortress: number,
+}
 
 @Injectable()
 export class BeersService {
@@ -35,7 +47,7 @@ export class BeersService {
         if (grades.length !== dto.gradeIds.length) {
             throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
         }
-    
+
         const product = await this.productService.create(productData, image);
 
         try {
@@ -129,7 +141,12 @@ export class BeersService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async getListByFilter(grades: number[] = [], brandIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, page: number, limitPage: number) {
+    async getListByFilter(grades: number[] = [], brandIds: number[] = [], minPrice: number = 0, 
+        maxPrice: number = 0, volume: IVolume, fortress: IFortress, page: number, limitPage: number) {
+
+        const { minVolume, maxVolume } = volume;
+        const { minFortress, maxFortress } = fortress;
+
         const queryFilter: any = {
             include: { all: true },
             where: {},
@@ -148,8 +165,39 @@ export class BeersService {
             queryFilter.where.id = beerIds;
         }
 
+        if(minVolume && maxVolume) {
+            queryFilter.where.volume = {
+                [Op.gte]: minVolume, 
+                [Op.lte]: maxVolume
+            };
+        }
+
+        if(minFortress && maxFortress) {
+            queryFilter.where.fortress = {
+                [Op.gte]: minFortress, 
+                [Op.lte]: maxFortress
+            };
+        }
+
         const beers = await this.getList(page, limitPage, queryFilter);
         return beers;
     }
 
+    async getMinAndMaxVolume() {
+        let where = {};
+        const query: any[] = getMinMaxQuery({colMin:'volume', colMax: 'volume', minOutput: 'minVolume', maxOutput: 'maxVolume'});
+        return await this.beerRepo.findAll({
+            attributes: query,
+            where
+        });
+    }
+
+    async getMinAndMaxFortress() {
+        let where = {};
+        const query: any[] = getMinMaxQuery({colMin:'fortress', colMax: 'fortress', minOutput: 'minFortress', maxOutput: 'maxFortress'});
+        return await this.beerRepo.findAll({
+            attributes: query,
+            where
+        });
+    }
 }

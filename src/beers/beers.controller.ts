@@ -21,10 +21,31 @@ export class BeersController {
     }
 
     @Get('/getListByFilter')
-    getListByFilter(@Query('grades') grades: number[], @Query('brandIds') brandIds: number[], 
-                    @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, 
-                    @Query('page') page: string, @Query('limitPage') limitPage: string) {
-        return this.beerService.getListByFilter(grades, brandIds, minPrice, maxPrice, Number(page), Number(limitPage));
+    getListByFilter(@Query('grades') grades: number[], @Query('brandIds') brandIds: number[],
+        @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number,
+        @Query('minVolume') minVolume: number, @Query('maxVolume') maxVolume: number,
+        @Query('minFortress') minFortress: number, @Query('maxFortress') maxFortress: number,
+        @Query('page') page: string, @Query('limitPage') limitPage: string) {
+        return this.beerService.getListByFilter(
+            grades, 
+            brandIds, 
+            minPrice, 
+            maxPrice, 
+            { minVolume, maxVolume }, 
+            { minFortress, maxFortress }, 
+            Number(page), 
+            Number(limitPage)
+        );
+    }
+
+    @Get('/getMinAndMaxVolume')
+    getMinAndMaxVolume() {
+       return this.beerService.getMinAndMaxVolume();
+    }
+
+    @Get('/getMinAndMaxFortress')
+    getMinAndMaxFortress() {
+       return this.beerService.getMinAndMaxFortress();
     }
 
     // @UsePipes(ValidationPipe)
