@@ -9,23 +9,31 @@ import { FilesService } from 'src/files/filtes.service';
 import { Op } from 'sequelize';
 import sequelize from 'sequelize';
 import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
+import { TypePackagingService } from 'src/type-packaging/type-packaging.service';
 
 @Injectable()
 export class ProductsService {
     constructor(@InjectModel(Products) private productRepo: typeof Products,
                 private brandService: BrandsService,
-                private fileService: FilesService) {}
+                private fileService: FilesService,
+                private typePackagingService: TypePackagingService) {}
 
     async create(dto: CreateProductDto, image:any) {
         const brand = await this.brandService.getById(dto.brandId);
         if(!brand) {
             throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
         }
+        
+        const typePackaging = await this.typePackagingService.getById(dto.typePackagingId);
+        if(!typePackaging) {
+            throw new HttpException('Тип упаковки не был найден', HttpStatus.BAD_REQUEST);
+        }
 
         const fileName = await this.fileService.createFile(image, 'products');
         
         const product = await this.productRepo.create({...dto, image: fileName});
         product.$set('brand', brand.id);
+        product.$set('typePackaging', typePackaging.id);
         return product;
     }
 
@@ -54,15 +62,11 @@ export class ProductsService {
        return await this.productRepo.findAll({include: {all:true}, where: {brandId}});
     }
 
-    async getListByFilter(ids: number[], brandIds:number[] = [], minPrice: number = 0, maxPrice: number = 0) {
+    async getListByFilter(brandIds:number[] = [], typesPackaging: number[] = [], minPrice: number = 0, maxPrice: number = 0) {
         const queryFilter: any = {
             include: {all:true}, 
             where: {}
         };
-
-        if(ids.length > 0) {
-            queryFilter.where.id = {[Op.or]: ids};
-        }
 
         if(brandIds.length > 0) {
             queryFilter.where.brandId = {[Op.or]: brandIds};
@@ -73,6 +77,10 @@ export class ProductsService {
                 [Op.gte]: minPrice, 
                 [Op.lte]: maxPrice
             };
+        }
+
+        if(typesPackaging.length > 0) {
+            queryFilter.where.typePackagingId = {[Op.or]: typesPackaging};
         }
 
         if(queryFilter.where === {}) {

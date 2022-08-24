@@ -7,6 +7,7 @@ import { Basket } from 'src/basket/basket.model';
 import { BasketProducts } from 'src/basket/basket-products.model';
 import { BrandsModule } from 'src/brands/brands.module';
 import { FilesModule } from 'src/files/files.module';
+import { TypePackagingModule } from 'src/type-packaging/type-packaging.module';
 
 @Module({
   controllers: [ProductsController],
@@ -14,7 +15,8 @@ import { FilesModule } from 'src/files/files.module';
   imports: [
     SequelizeModule.forFeature([Products, Basket, BasketProducts]),
     BrandsModule,
-    FilesModule
+    FilesModule,
+    TypePackagingModule
   ],
   exports:[ProductsService]
 })

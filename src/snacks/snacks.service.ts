@@ -19,7 +19,8 @@ export class SnacksService {
             description: createSnackDto.description,
             price: createSnackDto.price,
             quantity: createSnackDto.quantity,
-            brandId: createSnackDto.brandId
+            brandId: createSnackDto.brandId,
+            typePackagingId: createSnackDto.typePackagingId
         };
 
         const product = await this.productService.create(productData, image);
@@ -79,14 +80,14 @@ export class SnacksService {
         return false;
     }
 
-    async getListByFilter(brandIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, page: number, limitPage: number) {
+    async getListByFilter(brandIds: number[] = [], typesPackaging: number[] = [], minPrice: number = 0, maxPrice: number = 0, page: number, limitPage: number) {
         const queryFilter: any = {
             include: { all: true },
             where: {},
         };
 
         if (brandIds || minPrice || maxPrice) {
-            const products = await this.productService.getListByFilter([], brandIds, minPrice, maxPrice);
+            const products = await this.productService.getListByFilter(brandIds, typesPackaging, minPrice, maxPrice);
             const productIds = products.map(product => {
                 return product.id;
             });

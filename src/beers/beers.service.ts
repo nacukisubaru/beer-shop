@@ -33,7 +33,8 @@ export class BeersService {
             description: dto.description,
             price: dto.price,
             quantity: dto.quantity,
-            brandId: dto.brandId
+            brandId: dto.brandId,
+            typePackagingId: dto.typePackagingId
         };
 
         const beerData = {
@@ -141,7 +142,7 @@ export class BeersService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async getListByFilter(grades: number[] = [], brandIds: number[] = [], minPrice: number = 0, 
+    async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackaging: number[] = [], minPrice: number = 0, 
         maxPrice: number = 0, volume: IVolume, fortress: IFortress, page: number, limitPage: number) {
 
         const { minVolume, maxVolume } = volume;
@@ -152,8 +153,8 @@ export class BeersService {
             where: {},
         };
 
-        if (brandIds || minPrice || maxPrice) {
-            const products = await this.productService.getListByFilter([], brandIds, minPrice, maxPrice);
+        if (brandIds || typesPackaging || minPrice || maxPrice) {
+            const products = await this.productService.getListByFilter(brandIds, typesPackaging, minPrice, maxPrice);
             const productIds = products.map(product => {
                 return product.id;
             });

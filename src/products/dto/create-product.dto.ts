@@ -4,4 +4,5 @@ export class CreateProductDto {
     price: number;
     quantity: number;
     brandId: number;
+    typePackagingId: number;
 }
