@@ -63,7 +63,8 @@ export class SnacksService {
             description: updateSnackDto.description,
             price: updateSnackDto.price,
             quantity: updateSnackDto.quantity,
-            brandId: updateSnackDto.brandId
+            brandId: updateSnackDto.brandId,
+            typePackagingId: updateSnackDto.typePackagingId
         };
 
         const snack = await this.snackRepo.findByPk(id);

@@ -42,6 +42,7 @@ export class BeersService {
             volume: dto.volume,
             fortress: dto.fortress,
             ibu: dto.ibu,
+            forBottling: dto.forBottling
         };
 
         const grades = await this.gradeService.findByIds(dto.gradeIds);
@@ -71,7 +72,8 @@ export class BeersService {
             title: dto.title,
             description: dto.description,
             price: dto.price,
-            quantity: dto.quantity
+            quantity: dto.quantity,
+            typePackagingId: dto.typePackagingId
         };
 
         const beerData = {
@@ -79,6 +81,7 @@ export class BeersService {
             volume: dto.volume,
             fortress: dto.fortress,
             ibu: dto.ibu,
+            forBottling: dto.forBottling
         };
 
         const beer = await this.beerRepo.findByPk(id);
@@ -143,7 +146,7 @@ export class BeersService {
     }
 
     async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackaging: number[] = [], minPrice: number = 0, 
-        maxPrice: number = 0, volume: IVolume, fortress: IFortress, page: number, limitPage: number) {
+        maxPrice: number = 0, volume: IVolume, fortress: IFortress, forBottling:boolean = false, page: number, limitPage: number) {
 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
@@ -180,6 +183,7 @@ export class BeersService {
             };
         }
 
+        queryFilter.where.forBottling = forBottling;
         const beers = await this.getList(page, limitPage, queryFilter);
         return beers;
     }

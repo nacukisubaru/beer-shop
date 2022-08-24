@@ -33,4 +33,6 @@ export class CreateBeerDto {
     @IsArray()
    // @IsNotEmptyObject()
     gradeIds: number[];
+
+    forBottling:boolean;
 }

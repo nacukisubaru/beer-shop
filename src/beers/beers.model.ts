@@ -30,4 +30,7 @@ export class Beers extends Model {
 
   @BelongsToMany(() => Grades, () => BeerGrades)
   grades: Grades[] 
+
+  @Column({ type: DataType.BOOLEAN, defaultValue: false })
+  forBottling: boolean;
 }
