@@ -35,4 +35,6 @@ export class CreateBeerDto {
     gradeIds: number[];
 
     forBottling:boolean;
+
+    filtered: boolean;
 }

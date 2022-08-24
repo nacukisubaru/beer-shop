@@ -33,4 +33,7 @@ export class Beers extends Model {
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   forBottling: boolean;
+
+  @Column({ type: DataType.BOOLEAN, defaultValue: true })
+  filtered: boolean;
 }

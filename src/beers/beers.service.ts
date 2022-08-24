@@ -20,6 +20,11 @@ interface IFortress {
     maxFortress: number,
 }
 
+interface IStateBeer {
+    forBottling:boolean,
+    filtered:boolean
+}
+
 @Injectable()
 export class BeersService {
 
@@ -34,7 +39,7 @@ export class BeersService {
             price: dto.price,
             quantity: dto.quantity,
             brandId: dto.brandId,
-            typePackagingId: dto.typePackagingId
+            typePackagingId: dto.typePackagingId,
         };
 
         const beerData = {
@@ -42,7 +47,8 @@ export class BeersService {
             volume: dto.volume,
             fortress: dto.fortress,
             ibu: dto.ibu,
-            forBottling: dto.forBottling
+            forBottling: dto.forBottling,
+            filtered: dto.filtered
         };
 
         const grades = await this.gradeService.findByIds(dto.gradeIds);
@@ -81,7 +87,8 @@ export class BeersService {
             volume: dto.volume,
             fortress: dto.fortress,
             ibu: dto.ibu,
-            forBottling: dto.forBottling
+            forBottling: dto.forBottling,
+            filtered: dto.filtered
         };
 
         const beer = await this.beerRepo.findByPk(id);
@@ -146,7 +153,7 @@ export class BeersService {
     }
 
     async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackaging: number[] = [], minPrice: number = 0, 
-        maxPrice: number = 0, volume: IVolume, fortress: IFortress, forBottling:boolean = false, page: number, limitPage: number) {
+        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, page: number, limitPage: number) {
 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
@@ -182,8 +189,16 @@ export class BeersService {
                 [Op.lte]: maxFortress
             };
         }
+        
+        const {forBottling, filtered} = stateBeer;
+        if(forBottling) {
+            queryFilter.where.forBottling = forBottling;
+        }
 
-        queryFilter.where.forBottling = forBottling;
+        if(filtered) {
+            queryFilter.where.filtered = filtered;
+        }
+        
         const beers = await this.getList(page, limitPage, queryFilter);
         return beers;
     }
