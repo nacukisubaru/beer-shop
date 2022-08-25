@@ -7,7 +7,7 @@ export class TypePackaging extends Model<TypePackaging> {
     id: number;
 
     @Column({ type: DataType.STRING, allowNull: false })
-    title: string;
+    name: string;
 
     @BelongsTo(() => ProductTypes)
     productType: ProductTypes;

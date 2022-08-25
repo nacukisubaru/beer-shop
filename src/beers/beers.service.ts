@@ -152,7 +152,7 @@ export class BeersService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackaging: number[] = [], minPrice: number = 0, 
+    async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, 
         maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, page: number, limitPage: number) {
 
         const { minVolume, maxVolume } = volume;
@@ -163,8 +163,8 @@ export class BeersService {
             where: {},
         };
 
-        if (brandIds || typesPackaging || minPrice || maxPrice) {
-            const products = await this.productService.getListByFilter(brandIds, typesPackaging, minPrice, maxPrice);
+        const products = await this.productService.getListByFilter(brandIds, typesPackagingIds, minPrice, maxPrice);
+        if(products) {
             const productIds = products.map(product => {
                 return product.id;
             });
@@ -175,15 +175,15 @@ export class BeersService {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
             queryFilter.where.id = beerIds;
         }
-
-        if(minVolume && maxVolume) {
+        
+        if(minVolume && maxVolume  && minVolume > 0 && maxVolume > 0) {
             queryFilter.where.volume = {
                 [Op.gte]: minVolume, 
                 [Op.lte]: maxVolume
             };
         }
 
-        if(minFortress && maxFortress) {
+        if(minFortress && maxFortress && minFortress > 0 && maxFortress > 0) {
             queryFilter.where.fortress = {
                 [Op.gte]: minFortress, 
                 [Op.lte]: maxFortress

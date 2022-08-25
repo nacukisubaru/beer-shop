@@ -62,7 +62,7 @@ export class ProductsService {
        return await this.productRepo.findAll({include: {all:true}, where: {brandId}});
     }
 
-    async getListByFilter(brandIds:number[] = [], typesPackaging: number[] = [], minPrice: number = 0, maxPrice: number = 0) {
+    async getListByFilter(brandIds:number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0) {
         const queryFilter: any = {
             include: {all:true}, 
             where: {}
@@ -72,15 +72,15 @@ export class ProductsService {
             queryFilter.where.brandId = {[Op.or]: brandIds};
         }
 
-        if(minPrice && maxPrice) {
+        if(minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
             queryFilter.where.price = {
                 [Op.gte]: minPrice, 
                 [Op.lte]: maxPrice
             };
         }
 
-        if(typesPackaging.length > 0) {
-            queryFilter.where.typePackagingId = {[Op.or]: typesPackaging};
+        if(typesPackagingIds.length > 0) {
+            queryFilter.where.typePackagingId = {[Op.or]: typesPackagingIds};
         }
 
         if(queryFilter.where === {}) {

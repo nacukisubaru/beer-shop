@@ -40,6 +40,9 @@ export class SnacksService {
             }
             const query = paginate(filter, page, limitPage);
             const snackList = await this.snackRepo.findAndCountAll(query);
+            if (snackList.rows.length <= 0) {
+                throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
+            }
             
             snackList.rows = snackList.rows.filter((snack) => {
                 if(snack.product.getDataValue('isActive')) {
@@ -81,21 +84,21 @@ export class SnacksService {
         return false;
     }
 
-    async getListByFilter(brandIds: number[] = [], typesPackaging: number[] = [], minPrice: number = 0, maxPrice: number = 0, page: number, limitPage: number) {
+    async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, page: number, limitPage: number) {
         const queryFilter: any = {
             include: { all: true },
             where: {},
         };
-
-        if (brandIds || minPrice || maxPrice) {
-            const products = await this.productService.getListByFilter(brandIds, typesPackaging, minPrice, maxPrice);
+      
+        const products = await this.productService.getListByFilter(brandIds, typesPackagingIds, minPrice, maxPrice);
+        if(products) {
             const productIds = products.map(product => {
                 return product.id;
             });
             queryFilter.where.productId = productIds;
         }
 
-        const beers = await this.getList(page, limitPage, queryFilter);
-        return beers;
+        const snacks = await this.getList(page, limitPage, queryFilter);
+        return snacks;
     }
 }
