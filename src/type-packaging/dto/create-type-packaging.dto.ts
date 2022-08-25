@@ -1,4 +1,4 @@
 export class CreateTypePackagingDto {
-    title: string
+    name: string
     productTypeId: number
 }

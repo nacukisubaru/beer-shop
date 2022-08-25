@@ -21,8 +21,8 @@ interface IFortress {
 }
 
 interface IStateBeer {
-    forBottling:boolean,
-    filtered:boolean
+    forBottling:any,
+    filtered:any
 }
 
 @Injectable()
@@ -191,14 +191,14 @@ export class BeersService {
         }
         
         const {forBottling, filtered} = stateBeer;
-        if(forBottling) {
+        if(forBottling != 'undefined' && forBottling != undefined) {
             queryFilter.where.forBottling = forBottling;
         }
 
-        if(filtered) {
+        if(filtered != 'undefined' && filtered != undefined) {
             queryFilter.where.filtered = filtered;
         }
-        
+   
         const beers = await this.getList(page, limitPage, queryFilter);
         return beers;
     }
