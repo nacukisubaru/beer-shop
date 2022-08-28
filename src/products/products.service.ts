@@ -30,10 +30,11 @@ export class ProductsService {
         }
 
         const fileName = await this.fileService.createFile(image, 'products');
-        
         const product = await this.productRepo.create({...dto, image: fileName});
-        product.$set('brand', brand.id);
-        product.$set('typePackaging', typePackaging.id);
+        
+        product.brandName = brand.name;
+        product.typePackagingName = typePackaging.name;
+        product.save();
         return product;
     }
 

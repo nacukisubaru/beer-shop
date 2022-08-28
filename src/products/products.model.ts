@@ -33,6 +33,12 @@ export class Products extends Model<Products> {
     @ForeignKey(() => Brand)
     brandId: number;
 
+    @Column({ type: DataType.STRING })
+    brandName: string;
+
+    @Column({ type: DataType.STRING })
+    typePackagingName: string;
+
     @Column({ type: DataType.BOOLEAN, defaultValue: true })
     inStock: boolean;
 
