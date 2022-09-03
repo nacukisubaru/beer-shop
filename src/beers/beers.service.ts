@@ -229,12 +229,12 @@ export class BeersService {
         });
     }
 
-    async addShow(id: number) {
-       const beer = await this.beerRepo.findByPk(id);
-       if(!beer) {
-            throw new HttpException('Пиво не найдено', HttpStatus.BAD_REQUEST);
+    async addShow(productId: number) {
+       const product = await this.productService.getById(productId);
+       if(!product) {
+            throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
        }
 
-       return this.beerRepo.update({show: beer.show + 1}, {where: {id}});
+       return this.beerRepo.update({show: product.beer.show + 1}, {where: {id: product.beer.id}});
     }    
 }

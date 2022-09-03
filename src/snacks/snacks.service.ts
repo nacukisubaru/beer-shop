@@ -107,12 +107,12 @@ export class SnacksService {
         return snacks;
     }
 
-    async addShow(id: number) {
-        const snack = await this.snackRepo.findByPk(id);
-        if(!snack) {
-             throw new HttpException('Закуска не найдена', HttpStatus.BAD_REQUEST);
+    async addShow(productId: number) {
+        const product = await this.productService.getById(productId);
+        if(!product) {
+             throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
         }
         
-        return this.snackRepo.update({show: snack.show + 1}, {where: {id}});
+        return this.snackRepo.update({show: product.snack.show + 1}, {where: {id: product.snack.id}});
      }
 }
