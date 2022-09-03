@@ -22,4 +22,7 @@ export class Snack extends Model<Snack> {
 
   @Column({ type: DataType.INTEGER })
   price: number;
+
+  @Column({ type: DataType.INTEGER })
+  show: number;
 }

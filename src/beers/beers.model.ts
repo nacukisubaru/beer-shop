@@ -43,4 +43,7 @@ export class Beers extends Model {
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   filtered: boolean;
+
+  @Column({ type: DataType.INTEGER })
+  show: number;
 }

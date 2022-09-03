@@ -45,4 +45,9 @@ export class SnacksController {
             Number(limitPage)
         );
     }
+
+    @Get('/addShow/:id')
+    addShow(@Param('id') id: string) {
+        this.snacksService.addShow(Number(id));
+    }
 }

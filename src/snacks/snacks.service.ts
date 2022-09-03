@@ -105,4 +105,13 @@ export class SnacksService {
         const snacks = await this.getList(page, limitPage, queryFilter, sort);
         return snacks;
     }
+
+    async addShow(id: number) {
+        const snack = await this.snackRepo.findByPk(id);
+        if(!snack) {
+             throw new HttpException('Закуска не найдена', HttpStatus.BAD_REQUEST);
+        }
+        
+        return this.snackRepo.update({show: snack.show + 1}, {where: {id}});
+     }
 }

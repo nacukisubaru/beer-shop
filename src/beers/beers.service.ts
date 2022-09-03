@@ -227,4 +227,13 @@ export class BeersService {
             where
         });
     }
+
+    async addShow(id: number) {
+       const beer = await this.beerRepo.findByPk(id);
+       if(!beer) {
+            throw new HttpException('Пиво не найдено', HttpStatus.BAD_REQUEST);
+       }
+
+       return this.beerRepo.update({show: beer.show + 1}, {where: {id}});
+    }    
 }
