@@ -66,6 +66,7 @@ export class BeersService {
             beer.productId = product.id;
             beer.price = product.price;
             beer.name = product.title;
+            beer.show = 0;
             product.beerId = beer.id;
             product.save();
             beer.save();

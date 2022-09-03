@@ -29,6 +29,7 @@ export class SnacksService {
         snack.productId = product.id;
         snack.price = product.price;
         snack.name = product.title;
+        snack.show = 0;
         product.snackId = snack.id;
         product.save();
         snack.save();
