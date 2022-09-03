@@ -5,6 +5,7 @@ import { GradesService } from 'src/grades/grades.service';
 import { paginate } from 'src/helpers/paginationHelper';
 import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
 import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
+import { Products } from 'src/products/products.model';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -63,6 +64,7 @@ export class BeersService {
 
             beer.$set('grades', dto.gradeIds);
             beer.productId = product.id;
+            beer.price = product.price;
             product.beerId = beer.id;
             product.save();
             beer.save();
@@ -87,6 +89,7 @@ export class BeersService {
             volume: dto.volume,
             fortress: dto.fortress,
             ibu: dto.ibu,
+            price: dto.price,
             forBottling: dto.forBottling,
             filtered: dto.filtered
         };
@@ -128,13 +131,15 @@ export class BeersService {
         return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}) {
+    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['id', 'ASC']) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
-                filter = { include: { all: true } };
+                filter = { include: { all: true, model:Products } };
             }
 
-            const query = paginate(filter, page, limitPage);
+            const query:any = paginate(filter, page, limitPage);
+            query.order = [sort];
+
             const beerList = await this.beerRepo.findAndCountAll(query);
 
             if (beerList.rows.length <= 0) {
@@ -153,7 +158,7 @@ export class BeersService {
     }
 
     async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, 
-        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, page: number, limitPage: number) {
+        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, sort:[string, string] = ['id', 'ASC'], page: number, limitPage: number) {
 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
@@ -199,7 +204,7 @@ export class BeersService {
             queryFilter.where.filtered = filtered;
         }
    
-        const beers = await this.getList(page, limitPage, queryFilter);
+        const beers = await this.getList(page, limitPage, queryFilter, sort);
         return beers;
     }
 

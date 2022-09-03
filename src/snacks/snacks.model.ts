@@ -16,4 +16,7 @@ export class Snack extends Model<Snack> {
 
   @BelongsTo(() => Products)
   product: Products;
+
+  @Column({ type: DataType.INTEGER })
+  price: number;
 }

@@ -20,10 +20,7 @@ export class Products extends Model<Products> {
 
     @Column({type: DataType.STRING})
     image:string;
-
-    @Column({type: DataType.ARRAY(DataType.STRING)})
-    images: string[];
-
+    
     @Column({ type: DataType.INTEGER })
     price: number;
 

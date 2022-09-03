@@ -10,10 +10,10 @@ import { Snack } from './snacks.model';
 @Injectable()
 export class SnacksService {
     constructor(@InjectModel(Snack) private snackRepo: typeof Snack,
-                private productService: ProductsService) {}
+        private productService: ProductsService) { }
 
 
-    async create(createSnackDto: CreateSnackDto, image:any) {
+    async create(createSnackDto: CreateSnackDto, image: any) {
         const productData = {
             title: createSnackDto.title,
             description: createSnackDto.description,
@@ -24,28 +24,31 @@ export class SnacksService {
         };
 
         const product = await this.productService.create(productData, image);
-        const snack = await this.snackRepo.create({weight: createSnackDto.weight});
+        const snack = await this.snackRepo.create({ weight: createSnackDto.weight });
 
         snack.productId = product.id;
+        snack.price = product.price;
         product.snackId = snack.id;
         product.save();
         snack.save();
         return snack;
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}) {
-        if(isNumber(page)) {
+    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['id', 'ASC']) {
+        if (isNumber(page)) {
             if (isEmptyObject(filter)) {
                 filter = { include: { all: true } };
             }
-            const query = paginate(filter, page, limitPage);
+            const query: any = paginate(filter, page, limitPage);
+            query.order = [sort];
+
             const snackList = await this.snackRepo.findAndCountAll(query);
             if (snackList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
-            
+
             snackList.rows = snackList.rows.filter((snack) => {
-                if(snack.product.getDataValue('isActive')) {
+                if (snack.product.getDataValue('isActive')) {
                     return snack;
                 }
             });
@@ -57,7 +60,7 @@ export class SnacksService {
     }
 
     async getById(id: number) {
-        return await this.snackRepo.findByPk(id, {include:{all:true}});
+        return await this.snackRepo.findByPk(id, { include: { all: true } });
     }
 
     async update(id: number, updateSnackDto: UpdateSnackDto) {
@@ -71,34 +74,34 @@ export class SnacksService {
         };
 
         const snack = await this.snackRepo.findByPk(id);
-        if(!snack) {
+        if (!snack) {
             throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
         }
 
         const productId = snack.productId;
         await this.productService.update(productId, prodData);
-        if(this.snackRepo.update({...snack, weight: updateSnackDto.weight}, {where: {id}})) {
+        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight, price: updateSnackDto.price }, { where: { id } })) {
             return true;
         }
-        
+
         return false;
     }
 
-    async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, page: number, limitPage: number) {
+    async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, sort: [string, string] = ['id', 'ASC'], page: number, limitPage: number) {
         const queryFilter: any = {
             include: { all: true },
             where: {},
         };
-      
+
         const products = await this.productService.getListByFilter(brandIds, typesPackagingIds, minPrice, maxPrice);
-        if(products) {
+        if (products) {
             const productIds = products.map(product => {
                 return product.id;
             });
             queryFilter.where.productId = productIds;
         }
 
-        const snacks = await this.getList(page, limitPage, queryFilter);
+        const snacks = await this.getList(page, limitPage, queryFilter, sort);
         return snacks;
     }
 }
