@@ -65,6 +65,7 @@ export class BeersService {
             beer.$set('grades', dto.gradeIds);
             beer.productId = product.id;
             beer.price = product.price;
+            beer.name = product.title;
             product.beerId = beer.id;
             product.save();
             beer.save();
@@ -90,6 +91,7 @@ export class BeersService {
             fortress: dto.fortress,
             ibu: dto.ibu,
             price: dto.price,
+            name: dto.title,
             forBottling: dto.forBottling,
             filtered: dto.filtered
         };
@@ -131,7 +133,7 @@ export class BeersService {
         return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['id', 'ASC']) {
+    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
                 filter = { include: { all: true, model:Products } };
@@ -158,7 +160,7 @@ export class BeersService {
     }
 
     async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, 
-        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, sort:[string, string] = ['id', 'ASC'], page: number, limitPage: number) {
+        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, sort:[string, string] = ['price', 'ASC'], page: number, limitPage: number) {
 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;

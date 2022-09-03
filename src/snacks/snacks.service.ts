@@ -28,13 +28,14 @@ export class SnacksService {
 
         snack.productId = product.id;
         snack.price = product.price;
+        snack.name = product.title;
         product.snackId = snack.id;
         product.save();
         snack.save();
         return snack;
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['id', 'ASC']) {
+    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
                 filter = { include: { all: true } };
@@ -80,14 +81,14 @@ export class SnacksService {
 
         const productId = snack.productId;
         await this.productService.update(productId, prodData);
-        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight, price: updateSnackDto.price }, { where: { id } })) {
+        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight, price: updateSnackDto.price, name: updateSnackDto.title }, { where: { id } })) {
             return true;
         }
 
         return false;
     }
 
-    async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, sort: [string, string] = ['id', 'ASC'], page: number, limitPage: number) {
+    async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, sort: [string, string] = ['price', 'ASC'], page: number, limitPage: number) {
         const queryFilter: any = {
             include: { all: true },
             where: {},

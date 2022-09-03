@@ -22,6 +22,9 @@ export class Beers extends Model {
   @Column({type: DataType.FLOAT, allowNull: false})
   ibu: number;
 
+  @Column({type: DataType.STRING, allowNull: false})
+  name: string;
+
   @Column({ type: DataType.INTEGER })
   price: number;
 
