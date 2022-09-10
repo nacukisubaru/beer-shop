@@ -118,8 +118,8 @@ export class ProductsService {
         const products = await this.productRepo.findAll({
             where: {
                 [Op.or] : [
-                    {title: {[Op.like]: `%${q}%`}}, 
-                    {description: {[Op.like]: `%${q}%`}}
+                    {title: {[Op.iLike]: `%${q}%`}}, 
+                    {description: {[Op.iLike]: `%${q}%`}}
                 ]
             }
         });
