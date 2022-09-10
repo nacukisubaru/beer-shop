@@ -6,7 +6,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Grades } from 'src/grades/grades.model';
 import { BrandsService } from 'src/brands/brands.service';
 import { FilesService } from 'src/files/filtes.service';
-import { Op } from 'sequelize';
+import { Op, where } from 'sequelize';
 import sequelize from 'sequelize';
 import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
 import { TypePackagingService } from 'src/type-packaging/type-packaging.service';
@@ -111,6 +111,20 @@ export class ProductsService {
         return await this.productRepo.findAll({
             attributes: query,
             where
+        });
+    }
+
+    async searchByTitleAndDesc(q: string) {
+        const products = await this.productRepo.findAll({
+            where: {
+                [Op.or] : [
+                    {title: {[Op.like]: `%${q}%`}}, 
+                    {description: {[Op.like]: `%${q}%`}}
+                ]
+            }
+        });
+        return products.map((product) => {
+           return product.id;
         });
     }
 }

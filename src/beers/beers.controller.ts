@@ -53,6 +53,11 @@ export class BeersController {
        return this.beerService.getMinAndMaxFortress();
     }
 
+    @Get('/search')
+    search(@Query('q') q: string, @Query('page') page: string, @Query('limitPage') limitPage: string,  @Query('sort') sort: [string, string]) {
+        return this.beerService.searchByName(q, Number(page), Number(limitPage), sort);
+    }
+
     // @UsePipes(ValidationPipe)
     @Post('/create')
     @UseInterceptors(FileInterceptor('image'))

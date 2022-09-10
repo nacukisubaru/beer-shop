@@ -46,6 +46,11 @@ export class SnacksController {
         );
     }
 
+    @Get('/search')
+    search(@Query('q') q: string, @Query('page') page: string, @Query('limitPage') limitPage: string) {
+        return this.snacksService.searchByName(q, Number(page), Number(limitPage));
+    }
+
     @Get('/addShow/:id')
     addShow(@Param('id') id: string) {
         this.snacksService.addShow(Number(id));

@@ -236,5 +236,11 @@ export class BeersService {
        }
 
        return this.beerRepo.update({show: product.beer.show + 1}, {where: {id: product.beer.id}});
-    }    
+    }
+
+    async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
+        const productsIds = await this.productService.searchByTitleAndDesc(q);
+        const query = {include: {all: true}, where: {productId: productsIds}};
+        return await this.getList(page, limitPage, query, sort);
+    }
 }
