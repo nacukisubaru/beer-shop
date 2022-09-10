@@ -116,9 +116,9 @@ export class SnacksService {
         return this.snackRepo.update({show: product.snack.show + 1}, {where: {id: product.snack.id}});
     }
 
-    async searchByName(q: string, page: number, limitPage: number = 0) {
+    async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
         const productsIds = await this.productService.searchByTitleAndDesc(q);
         const query = {include: {all: true}, where: {productId: productsIds}};
-        return await this.getList(page, limitPage, query);
+        return await this.getList(page, limitPage, query, sort);
     }
 }
