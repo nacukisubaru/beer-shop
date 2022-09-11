@@ -31,6 +31,10 @@ import { MailModule } from './mail/mail.module';
 import { FilesModule } from './files/files.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ProductTypesModule } from './product-types/product-types.module';
+import { ProductTypes } from './product-types/product-type.model';
+import { TypePackagingModule } from './type-packaging/type-packaging.module';
+import { TypePackaging } from './type-packaging/type-packaging.model';
 
 @Module({
     imports: [
@@ -52,7 +56,8 @@ import { join } from 'path';
                 BasketProducts, 
                 Basket,
                 Users, 
-                Delivery, PaymentMethod, Brand, Snack, Token],
+                Delivery,
+                TypePackaging, ProductTypes, PaymentMethod, Brand, Snack, Token],
             autoLoadModels: true
         }),
         ServeStaticModule.forRoot({
@@ -70,7 +75,9 @@ import { join } from 'path';
         SnacksModule,
         TokenModule,
         MailModule,
-        FilesModule
+        FilesModule,
+        ProductTypesModule,
+        TypePackagingModule
     ],
     controllers: [],
     providers: [],

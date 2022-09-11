@@ -28,7 +28,13 @@ export class CreateBeerDto {
     @IsNumber({}, {message: 'Должно быть числом'})
     brandId: number;
 
+    typePackagingId: number;
+
     @IsArray()
    // @IsNotEmptyObject()
     gradeIds: number[];
+
+    forBottling:boolean;
+
+    filtered: boolean;
 }

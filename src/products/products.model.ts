@@ -4,10 +4,11 @@ import { Basket } from 'src/basket/basket.model';
 import { Beers } from 'src/beers/beers.model';
 import { Brand } from 'src/brands/brands.model';
 import { Snack } from 'src/snacks/snacks.model';
+import { TypePackaging } from 'src/type-packaging/type-packaging.model';
 
 @Table({ tableName: 'products' })
 export class Products extends Model<Products> {
-
+    
     @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true, primaryKey: true })
     id: number;
 
@@ -19,10 +20,7 @@ export class Products extends Model<Products> {
 
     @Column({type: DataType.STRING})
     image:string;
-
-    @Column({type: DataType.ARRAY(DataType.STRING)})
-    images: string[];
-
+    
     @Column({ type: DataType.INTEGER })
     price: number;
 
@@ -31,6 +29,12 @@ export class Products extends Model<Products> {
 
     @ForeignKey(() => Brand)
     brandId: number;
+
+    @Column({ type: DataType.STRING })
+    brandName: string;
+
+    @Column({ type: DataType.STRING })
+    typePackagingName: string;
 
     @Column({ type: DataType.BOOLEAN, defaultValue: true })
     inStock: boolean;
@@ -57,4 +61,11 @@ export class Products extends Model<Products> {
 
     @BelongsToMany(() => Basket, () => BasketProducts)
     baskets: Basket[];
+
+    @BelongsTo(() => TypePackaging)
+    typePackaging: TypePackaging;
+
+    @ForeignKey(() => TypePackaging)
+    @Column({type: DataType.INTEGER})
+    typePackagingId: number;
 }

@@ -1,4 +1,5 @@
-import { Column, DataType, Model, Table, BelongsTo,  BelongsToMany, ForeignKey} from 'sequelize-typescript';
+import { Column, DataType, Model, Table, BelongsTo,  BelongsToMany, ForeignKey, addAssociation, HasOne} from 'sequelize-typescript';
+import { Association } from 'sequelize/types';
 import { BeerGrades } from 'src/grades/beers-grades.model';
 import { Grades } from 'src/grades/grades.model';
 import { Products } from 'src/products/products.model';
@@ -21,6 +22,12 @@ export class Beers extends Model {
   @Column({type: DataType.FLOAT, allowNull: false})
   ibu: number;
 
+  @Column({type: DataType.STRING, allowNull: false})
+  name: string;
+
+  @Column({ type: DataType.INTEGER })
+  price: number;
+
   @ForeignKey(() => Products)
   @Column({type: DataType.INTEGER})
   productId: number;
@@ -30,4 +37,13 @@ export class Beers extends Model {
 
   @BelongsToMany(() => Grades, () => BeerGrades)
   grades: Grades[] 
+
+  @Column({ type: DataType.BOOLEAN, defaultValue: false })
+  forBottling: boolean;
+
+  @Column({ type: DataType.BOOLEAN, defaultValue: false })
+  filtered: boolean;
+
+  @Column({ type: DataType.INTEGER })
+  show: number;
 }

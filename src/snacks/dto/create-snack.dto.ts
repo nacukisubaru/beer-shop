@@ -18,4 +18,6 @@ export class CreateSnackDto {
     
     @IsNumber({}, {message: 'Должно быть числом'})
     brandId: number;
+
+    typePackagingId:number;
 }

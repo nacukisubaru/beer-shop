@@ -6,25 +6,35 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { Grades } from 'src/grades/grades.model';
 import { BrandsService } from 'src/brands/brands.service';
 import { FilesService } from 'src/files/filtes.service';
-import { Op } from 'sequelize';
+import { Op, where } from 'sequelize';
 import sequelize from 'sequelize';
+import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
+import { TypePackagingService } from 'src/type-packaging/type-packaging.service';
 
 @Injectable()
 export class ProductsService {
     constructor(@InjectModel(Products) private productRepo: typeof Products,
                 private brandService: BrandsService,
-                private fileService: FilesService) {}
+                private fileService: FilesService,
+                private typePackagingService: TypePackagingService) {}
 
     async create(dto: CreateProductDto, image:any) {
         const brand = await this.brandService.getById(dto.brandId);
         if(!brand) {
             throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
         }
+        
+        const typePackaging = await this.typePackagingService.getById(dto.typePackagingId);
+        if(!typePackaging) {
+            throw new HttpException('Тип упаковки не был найден', HttpStatus.BAD_REQUEST);
+        }
 
         const fileName = await this.fileService.createFile(image, 'products');
-        
         const product = await this.productRepo.create({...dto, image: fileName});
-        product.$set('brand', brand.id);
+        
+        product.brandName = brand.name;
+        product.typePackagingName = typePackaging.name;
+        product.save();
         return product;
     }
 
@@ -53,25 +63,25 @@ export class ProductsService {
        return await this.productRepo.findAll({include: {all:true}, where: {brandId}});
     }
 
-    async getListByFilter(ids: number[], brandIds:number[] = [], minPrice: number = 0, maxPrice: number = 0) {
+    async getListByFilter(brandIds:number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0) {
         const queryFilter: any = {
             include: {all:true}, 
             where: {}
         };
 
-        if(ids.length > 0) {
-            queryFilter.where.id = {[Op.or]: ids};
-        }
-
         if(brandIds.length > 0) {
             queryFilter.where.brandId = {[Op.or]: brandIds};
         }
 
-        if(minPrice && maxPrice) {
+        if(minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
             queryFilter.where.price = {
                 [Op.gte]: minPrice, 
                 [Op.lte]: maxPrice
             };
+        }
+
+        if(typesPackagingIds.length > 0) {
+            queryFilter.where.typePackagingId = {[Op.or]: typesPackagingIds};
         }
 
         if(queryFilter.where === {}) {
@@ -97,9 +107,24 @@ export class ProductsService {
             };
         }
 
+        const query: any[] = getMinMaxQuery({colMin:'price', colMax: 'price', minOutput: 'minPrice', maxOutput: 'maxPrice'}); 
         return await this.productRepo.findAll({
-            attributes: [[sequelize.fn('min', sequelize.col('price')), 'minPrice'], [sequelize.fn('max', sequelize.col('price')), 'maxPrice']],
+            attributes: query,
             where
+        });
+    }
+
+    async searchByTitleAndDesc(q: string) {
+        const products = await this.productRepo.findAll({
+            where: {
+                [Op.or] : [
+                    {title: {[Op.iLike]: `%${q}%`}}, 
+                    {description: {[Op.iLike]: `%${q}%`}}
+                ]
+            }
+        });
+        return products.map((product) => {
+           return product.id;
         });
     }
 }

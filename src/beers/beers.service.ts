@@ -1,12 +1,30 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { GradesService } from 'src/grades/grades.service';
 import { paginate } from 'src/helpers/paginationHelper';
+import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
 import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
+import { Products } from 'src/products/products.model';
 import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
 import { UpdateBeerDto } from './dto/update-beer.dto';
+
+interface IVolume {
+    minVolume: number,
+    maxVolume: number
+}
+
+interface IFortress { 
+    minFortress: number,
+    maxFortress: number,
+}
+
+interface IStateBeer {
+    forBottling:any,
+    filtered:any
+}
 
 @Injectable()
 export class BeersService {
@@ -21,7 +39,8 @@ export class BeersService {
             description: dto.description,
             price: dto.price,
             quantity: dto.quantity,
-            brandId: dto.brandId
+            brandId: dto.brandId,
+            typePackagingId: dto.typePackagingId,
         };
 
         const beerData = {
@@ -29,13 +48,15 @@ export class BeersService {
             volume: dto.volume,
             fortress: dto.fortress,
             ibu: dto.ibu,
+            forBottling: dto.forBottling,
+            filtered: dto.filtered
         };
 
         const grades = await this.gradeService.findByIds(dto.gradeIds);
         if (grades.length !== dto.gradeIds.length) {
             throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
         }
-    
+
         const product = await this.productService.create(productData, image);
 
         try {
@@ -43,6 +64,9 @@ export class BeersService {
 
             beer.$set('grades', dto.gradeIds);
             beer.productId = product.id;
+            beer.price = product.price;
+            beer.name = product.title;
+            beer.show = 0;
             product.beerId = beer.id;
             product.save();
             beer.save();
@@ -58,7 +82,8 @@ export class BeersService {
             title: dto.title,
             description: dto.description,
             price: dto.price,
-            quantity: dto.quantity
+            quantity: dto.quantity,
+            typePackagingId: dto.typePackagingId
         };
 
         const beerData = {
@@ -66,6 +91,10 @@ export class BeersService {
             volume: dto.volume,
             fortress: dto.fortress,
             ibu: dto.ibu,
+            price: dto.price,
+            name: dto.title,
+            forBottling: dto.forBottling,
+            filtered: dto.filtered
         };
 
         const beer = await this.beerRepo.findByPk(id);
@@ -105,13 +134,15 @@ export class BeersService {
         return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}) {
+    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
-                filter = { include: { all: true } };
+                filter = { include: { all: true, model:Products } };
             }
 
-            const query = paginate(filter, page, limitPage);
+            const query:any = paginate(filter, page, limitPage);
+            query.order = [sort];
+
             const beerList = await this.beerRepo.findAndCountAll(query);
 
             if (beerList.rows.length <= 0) {
@@ -129,14 +160,19 @@ export class BeersService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async getListByFilter(grades: number[] = [], brandIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, page: number, limitPage: number) {
+    async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, 
+        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, sort:[string, string] = ['price', 'ASC'], page: number, limitPage: number) {
+
+        const { minVolume, maxVolume } = volume;
+        const { minFortress, maxFortress } = fortress;
+
         const queryFilter: any = {
             include: { all: true },
             where: {},
         };
 
-        if (brandIds || minPrice || maxPrice) {
-            const products = await this.productService.getListByFilter([], brandIds, minPrice, maxPrice);
+        const products = await this.productService.getListByFilter(brandIds, typesPackagingIds, minPrice, maxPrice);
+        if(products) {
             const productIds = products.map(product => {
                 return product.id;
             });
@@ -147,9 +183,64 @@ export class BeersService {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
             queryFilter.where.id = beerIds;
         }
+        
+        if(minVolume && maxVolume  && minVolume > 0 && maxVolume > 0) {
+            queryFilter.where.volume = {
+                [Op.gte]: minVolume, 
+                [Op.lte]: maxVolume
+            };
+        }
 
-        const beers = await this.getList(page, limitPage, queryFilter);
+        if(minFortress && maxFortress && minFortress > 0 && maxFortress > 0) {
+            queryFilter.where.fortress = {
+                [Op.gte]: minFortress, 
+                [Op.lte]: maxFortress
+            };
+        }
+        
+        const {forBottling, filtered} = stateBeer;
+        if(forBottling != 'undefined' && forBottling != undefined) {
+            queryFilter.where.forBottling = forBottling;
+        }
+
+        if(filtered != 'undefined' && filtered != undefined) {
+            queryFilter.where.filtered = filtered;
+        }
+   
+        const beers = await this.getList(page, limitPage, queryFilter, sort);
         return beers;
     }
 
+    async getMinAndMaxVolume() {
+        let where = {};
+        const query: any[] = getMinMaxQuery({colMin:'volume', colMax: 'volume', minOutput: 'minVolume', maxOutput: 'maxVolume'});
+        return await this.beerRepo.findAll({
+            attributes: query,
+            where
+        });
+    }
+
+    async getMinAndMaxFortress() {
+        let where = {};
+        const query: any[] = getMinMaxQuery({colMin:'fortress', colMax: 'fortress', minOutput: 'minFortress', maxOutput: 'maxFortress'});
+        return await this.beerRepo.findAll({
+            attributes: query,
+            where
+        });
+    }
+
+    async addShow(productId: number) {
+       const product = await this.productService.getById(productId);
+       if(!product) {
+            throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
+       }
+
+       return this.beerRepo.update({show: product.beer.show + 1}, {where: {id: product.beer.id}});
+    }
+
+    async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
+        const productsIds = await this.productService.searchByTitleAndDesc(q);
+        const query = {include: {all: true}, where: {productId: productsIds}};
+        return await this.getList(page, limitPage, query, sort);
+    }
 }

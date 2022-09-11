@@ -10,7 +10,7 @@ export class SnacksController {
 
     @Post('/create')
     @UseInterceptors(FileInterceptor('image'))
-    createSnack(@Body() createSnackDto: CreateSnackDto,  @UploadedFile() image) {
+    createSnack(@Body() createSnackDto: CreateSnackDto, @UploadedFile() image) {
         return this.snacksService.create(createSnackDto, image);
     }
 
@@ -32,9 +32,27 @@ export class SnacksController {
     }
 
     @Get('/getListByFilter')
-    getListByFilter(@Query('brandIds') brandIds: number[], 
-                    @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, 
-                    @Query('page') page: string, @Query('limitPage') limitPage: string) {
-        return this.snacksService.getListByFilter(brandIds, minPrice, maxPrice, Number(page), Number(limitPage));
+    getListByFilter(@Query('brandIds') brandIds: number[], @Query('typesPackagingIds') typesPackagingIds: number[],
+        @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, @Query('sort') sort: [string, string],
+        @Query('page') page: string, @Query('limitPage') limitPage: string) {
+        return this.snacksService.getListByFilter(
+            brandIds, 
+            typesPackagingIds, 
+            minPrice, 
+            maxPrice,
+            sort,
+            Number(page), 
+            Number(limitPage)
+        );
+    }
+
+    @Get('/search')
+    search(@Query('q') q: string, @Query('page') page: string, @Query('limitPage') limitPage: string, @Query('sort') sort: [string, string]) {
+        return this.snacksService.searchByName(q, Number(page), Number(limitPage), sort);
+    }
+
+    @Get('/addShow/:id')
+    addShow(@Param('id') id: string) {
+        this.snacksService.addShow(Number(id));
     }
 }
