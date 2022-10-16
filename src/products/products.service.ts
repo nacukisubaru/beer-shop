@@ -84,7 +84,7 @@ export class ProductsService {
             queryFilter.where.typePackagingId = {[Op.or]: typesPackagingIds};
         }
 
-        if(queryFilter.where === {}) {
+        if(Object.keys(queryFilter.where).length === 0) {
             throw new HttpException('Не передан не один параметр для фильтрации', HttpStatus.BAD_REQUEST);
         }
 

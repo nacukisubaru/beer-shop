@@ -35,6 +35,9 @@ import { ProductTypesModule } from './product-types/product-types.module';
 import { ProductTypes } from './product-types/product-type.model';
 import { TypePackagingModule } from './type-packaging/type-packaging.module';
 import { TypePackaging } from './type-packaging/type-packaging.model';
+import { HttpModule } from '@nestjs/axios';
+import { VerificationCodeModule } from './verification-code/verification-code.module';
+import { VerificationCodes } from './verification-code/verification-code.model';
 
 @Module({
     imports: [
@@ -57,7 +60,8 @@ import { TypePackaging } from './type-packaging/type-packaging.model';
                 Basket,
                 Users, 
                 Delivery,
-                TypePackaging, ProductTypes, PaymentMethod, Brand, Snack, Token],
+                TypePackaging, 
+                ProductTypes, PaymentMethod, Brand, Snack, Token, VerificationCodes],
             autoLoadModels: true
         }),
         ServeStaticModule.forRoot({
@@ -77,7 +81,9 @@ import { TypePackaging } from './type-packaging/type-packaging.model';
         MailModule,
         FilesModule,
         ProductTypesModule,
-        TypePackagingModule
+        TypePackagingModule,
+        HttpModule,
+        VerificationCodeModule
     ],
     controllers: [],
     providers: [],
