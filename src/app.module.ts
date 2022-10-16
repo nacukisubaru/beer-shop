@@ -38,6 +38,7 @@ import { TypePackaging } from './type-packaging/type-packaging.model';
 import { HttpModule } from '@nestjs/axios';
 import { VerificationCodeModule } from './verification-code/verification-code.module';
 import { VerificationCodes } from './verification-code/verification-code.model';
+import { TaskManagerModule } from './tasks-manager/tasks-manager.module';
 
 @Module({
     imports: [
@@ -83,7 +84,8 @@ import { VerificationCodes } from './verification-code/verification-code.model';
         ProductTypesModule,
         TypePackagingModule,
         HttpModule,
-        VerificationCodeModule
+        VerificationCodeModule,
+        TaskManagerModule
     ],
     controllers: [],
     providers: [],
