@@ -22,7 +22,8 @@ export class VerificationCodeService {
         if(phone && typeof phone === "string") {
             const isCanSendCode = await this.isCanSendCode(phone);
             if(!isCanSendCode) {
-                throw new HttpException('Пока вы не можете отправить запрос!', HttpStatus.NOT_ACCEPTABLE);
+                const remainingTime = await this.getRemainingTime(phone);
+                throw new HttpException('Пока вы не можете запросить код время до следующего запроса ' + remainingTime, HttpStatus.NOT_ACCEPTABLE);
             }
             const response = this.httpService.get(
                 `${'https://sms.ru/code/call?phone=' + phone + '&ip='+ip+'&api_id=' + this.apiId}`, 
