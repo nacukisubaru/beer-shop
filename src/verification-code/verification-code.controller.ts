@@ -20,4 +20,9 @@ export class VerificationCodeController {
     getRemainingTime(@Query('phone') phone: string) {
         return this.verificationCodeService.getRemainingTime(phone);
     }
+
+    @Get('/verifyCode')
+    verifyCode(@Query('phone') phone: string, @Query('code') code: string) {
+        return this.verificationCodeService.verifyCode(phone, code);
+    }
 }
