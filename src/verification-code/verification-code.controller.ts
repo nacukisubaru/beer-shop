@@ -15,4 +15,9 @@ export class VerificationCodeController {
     getTimestampSentCode(@Query('phone') phone: string) {
         return this.verificationCodeService.getTimestampSentCode(phone);
     }
+
+    @Get('/getRemainingTime')
+    getRemainingTime(@Query('phone') phone: string) {
+        return this.verificationCodeService.getRemainingTime(phone);
+    }
 }
