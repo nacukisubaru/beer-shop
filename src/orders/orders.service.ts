@@ -23,7 +23,7 @@ export class OrdersService {
 
     async getOrdersWithProducts(expresion: object = {}) {
         let query: object = { include: { all: true } };
-        if (expresion !== {}) {
+        if (Object.keys(expresion).length == 0) {
             query = { include: { all: true }, where: expresion };
         }
 
