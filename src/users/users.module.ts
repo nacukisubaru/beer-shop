@@ -6,6 +6,7 @@ import { Users } from './users.model';
 import { TokenModule } from 'src/token/token.module';
 import { MailService } from 'src/mail/mail.service';
 import { MailModule } from 'src/mail/mail.module';
+import { VerificationCodeModule } from 'src/verification-code/verification-code.module';
 
 @Module({
     controllers: [UsersController],
@@ -13,7 +14,8 @@ import { MailModule } from 'src/mail/mail.module';
     imports: [
         SequelizeModule.forFeature([Users]),
         TokenModule,
-        MailModule
+        MailModule,
+        VerificationCodeModule
     ]
 })
 export class UsersModule { }
