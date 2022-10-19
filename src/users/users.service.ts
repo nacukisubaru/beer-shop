@@ -48,9 +48,10 @@ export class UsersService {
     async verifyUserByCode(phone: string, code: string) {
         const user = await this.getUserByPhone(phone);
         if(!user) {
-            throw new HttpException(`${'Пользователя с номером ' + phone + 'не существует'}`, HttpStatus.NOT_FOUND);
+            throw new HttpException(`${'Пользователя с номером ' + phone + ' не существует'}`, HttpStatus.NOT_FOUND);
         }
-        const isVerify = this.verificationService.verifyCode(phone, code);
+
+        const isVerify = await this.verificationService.verifyCode(phone, code);
         if (!isVerify) {
             throw new UnauthorizedException({message: 'Неверный код!'});
         }
@@ -70,6 +71,7 @@ export class UsersService {
 
     async loginByCode(authUserByCodeDto: AuthUserByCodeDto) {
        const user = await this.verifyUserByCode(authUserByCodeDto.phone, authUserByCodeDto.code);
+       this.verificationService.removeVerifyCode(authUserByCodeDto.phone);
        return await this.createTokensAndSave(user);
     }
 
@@ -134,6 +136,14 @@ export class UsersService {
 
     async getById(id: number) {
        return await this.userRepo.findOne({where: {id}});
+    }
+
+    async checkUserExistByPhone(phone: string) {
+        if(await this.getUserByPhone(phone)) {
+            return true;
+        }
+        
+        throw new HttpException({message:`${'Пользователя с номером ' + phone + ' не существует'}`}, HttpStatus.NOT_FOUND);
     }
 
     create(createUserDto: CreateUserDto) {
