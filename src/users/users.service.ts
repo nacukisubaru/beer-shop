@@ -19,30 +19,28 @@ export class UsersService {
                 private verificationService: VerificationCodeService
                 ) { }
 
-    async registrate(createUserDto: CreateUserDto, userIP: string) {
-        // const userExist = await this.getUserByEmail(createUserDto.email)
-        // if (userExist) {
-        //     throw new HttpException(`Пользователь c email ${userExist.email} уже существует !`, HttpStatus.BAD_REQUEST);
-        // }
-        const userExist = await this.getUserByPhone(createUserDto.phone);
-        if (userExist) {
-            throw new HttpException(`Пользователь c номером телефона ${userExist.phone} уже существует !`, HttpStatus.BAD_REQUEST);
-        }
-        
+    async registrate(createUserDto: CreateUserDto) {
+        this.checkUserNotExistByEmailAndPhone(createUserDto.phone, createUserDto.email);
+
         const hashPassword = await bcrypt.hash(createUserDto.password, 5);
         const user = await this.userRepo.create(
             { 
                 ...createUserDto, 
                 password: hashPassword,
-                //activationLink: hashPassword,
+                activationLink: hashPassword,
                 isActivated: false,
                 name: '',
                 surname: ''
             }
         );
-        this.verificationService.sendCodeByCall(createUserDto.phone, userIP);
-        //this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
-        return await this.createTokensAndSave(user);
+    
+        if(user) {
+            this.createTokensAndSave(user);
+            this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
+            return true;
+        }
+
+        return false;
     }
 
     async verifyUserByCode(phone: string, code: string) {
@@ -123,7 +121,29 @@ export class UsersService {
             }
         }
 
-        throw new UnauthorizedException({message: 'Некорректный email или пароль'})
+        throw new UnauthorizedException({message: 'Некорректный номер телефона или пароль'})
+    }
+
+    async checkUserExistByPhone(phone: string) {
+        if(await this.getUserByPhone(phone)) {
+            return true;
+        }
+        
+        throw new HttpException({message:`${'Пользователя с номером ' + phone + ' не существует'}`}, HttpStatus.NOT_FOUND);
+    }
+
+    async checkUserNotExistByEmailAndPhone(phone: string, email: string) {
+        const userExistByEmail = await this.getUserByEmail(email)
+        if (userExistByEmail) {
+            throw new HttpException(`Пользователь c email ${userExistByEmail.email} уже существует !`, HttpStatus.BAD_REQUEST);
+        }
+
+        const userExistByPhone = await this.getUserByPhone(phone);
+        if (userExistByPhone) {
+            throw new HttpException(`Пользователь c номером телефона ${userExistByPhone.phone} уже существует!`, HttpStatus.BAD_REQUEST);
+        }
+
+        return true;
     }
 
     async getUserByEmail(email: string) {
@@ -136,14 +156,6 @@ export class UsersService {
 
     async getById(id: number) {
        return await this.userRepo.findOne({where: {id}});
-    }
-
-    async checkUserExistByPhone(phone: string) {
-        if(await this.getUserByPhone(phone)) {
-            return true;
-        }
-        
-        throw new HttpException({message:`${'Пользователя с номером ' + phone + ' не существует'}`}, HttpStatus.NOT_FOUND);
     }
 
     create(createUserDto: CreateUserDto) {

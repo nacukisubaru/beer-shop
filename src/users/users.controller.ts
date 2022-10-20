@@ -12,10 +12,10 @@ export class UsersController {
     constructor(private readonly usersService: UsersService) { }
 
     @Post('/registration')
-    async registration(@Body() createUserDto: CreateUserDto, @Res({ passthrough: true }) response, @Ip() ip: string) {
-        const userData = await this.usersService.registrate(createUserDto, ip);
-        setCookiesRefreshToken(response, userData);
-        return userData;
+    async registration(@Body() createUserDto: CreateUserDto, @Res({ passthrough: true }) response) {
+        return await this.usersService.registrate(createUserDto);
+        //setCookiesRefreshToken(response, userData);
+        //return userData;
     }
 
     @Post('/login')
@@ -55,6 +55,12 @@ export class UsersController {
     @Get('/checkUserExistByPhone/')
     async checkUserExistByPhone(@Query('phone') phone: string) {
        return await this.usersService.checkUserExistByPhone(phone);
+    }
+
+    @Get('/checkUserNotExistByEmailAndPhone/')
+    async checkUserNotExistByEmailAndPhone(@Query('phone') phone: string, @Query('email') email: string) {
+        const result = await this.usersService.checkUserNotExistByEmailAndPhone(phone, email);
+        return {result};
     }
 
     @Get('/activate/:id')
