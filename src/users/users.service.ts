@@ -69,7 +69,6 @@ export class UsersService {
 
     async loginByCode(authUserByCodeDto: AuthUserByCodeDto) {
        const user = await this.verifyUserByCode(authUserByCodeDto.phone, authUserByCodeDto.code);
-       this.verificationService.removeVerifyCode(authUserByCodeDto.phone);
        return await this.createTokensAndSave(user);
     }
 
@@ -114,6 +113,9 @@ export class UsersService {
 
     private async validateUser(authUserDto: AuthUserDto) {
         const user = await this.getUserByPhone(authUserDto.phone);
+        if(!user.isActivated) {
+            throw new UnauthorizedException({message: 'Номер телефона не был подтвержден смс кодом, запросите смс код'});
+        }
         if(user) {
             const passwordEquals = await bcrypt.compare(authUserDto.password, user.password);
             if(passwordEquals) {
