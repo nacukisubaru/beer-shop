@@ -13,6 +13,7 @@ import { TaskManagerModule } from 'src/tasks-manager/tasks-manager.module';
     TaskManagerModule
   ],
   controllers: [VerificationCodeController],
-  providers: [VerificationCodeService]
+  providers: [VerificationCodeService],
+  exports:[VerificationCodeService]
 })
 export class VerificationCodeModule {}

@@ -10,12 +10,15 @@ import * as moment from "moment";
 @Injectable()
 export class VerificationCodeService {
     apiId: string;
+    timeRemoveCode: number;
+
     constructor(
         @InjectModel(VerificationCodes) private verificationCodes: typeof VerificationCodes,
         private readonly httpService: HttpService,
         private taskManagerService: TaskManagerService
     ) {
         this.apiId = process.env.SMSRU_API_ID;
+        this.timeRemoveCode = 2;
     }
 
     async sendCodeByCall(phone: string, ip: string) {
@@ -25,11 +28,16 @@ export class VerificationCodeService {
         if(!ip) {
             throw new HttpException('Не передан параметр ip', HttpStatus.BAD_REQUEST);
         }
+
         if (phone && typeof phone === "string") {
             const isCanSendCode = await this.isCanSendCode(phone);
             if (!isCanSendCode) {
-                const remainingTime = await this.getRemainingTime(phone);
-                throw new HttpException('Пока вы не можете запросить код время до следующего запроса ' + remainingTime, HttpStatus.NOT_ACCEPTABLE);
+                const {minutes, seconds} = await this.getRemainingTime(phone);
+                return {
+                    status: 'ERROR_LIMIT_TIME', 
+                    statusText: 'Пока вы не можете запросить код время до следующего запроса ' + minutes + ':' + seconds,
+                    remainingTime: {minutes, seconds}
+                };
             }
             const response = this.httpService.get(
                 `${'https://sms.ru/code/call?phone=' + phone + '&ip=' + ip + '&api_id=' + this.apiId}`,
@@ -58,8 +66,11 @@ export class VerificationCodeService {
             context.verificationCodes.destroy({ where: { phone } });
         }
 
+        setTimeout(()=>{
+            removeCode();
+        }, 120000);
+
         this.verificationCodes.create({ phone, code });
-        this.taskManagerService.createTask(removeCode, 'remove code for ' + phone, '0 */5 * * * *', true);
     }
 
     async isCanSendCode(phone: string) {
@@ -100,13 +111,14 @@ export class VerificationCodeService {
         const timestamp = await this.getTimestampSentCode(phone);
         if (timestamp) {
             const timestampNow = moment();
-            const timestampFuture = moment(timestamp).add(5, 'minutes');
-            const seconds = moment.utc(moment(timestampFuture, "DD/MM/YYYY HH:mm:ss").diff(moment(timestampNow, "DD/MM/YYYY HH:mm:ss"))).format("ss");
+            const timestampFuture = moment(timestamp).add(this.timeRemoveCode, 'minutes');
+            const seconds = parseInt(moment.utc(moment(timestampFuture, "DD/MM/YYYY HH:mm:ss").diff(moment(timestampNow, "DD/MM/YYYY HH:mm:ss"))).format("ss"));
             let minutes = moment(timestampFuture).diff(timestampNow, 'minutes');
-            if (minutes === 5) {
+            if (minutes === this.timeRemoveCode) {
                 minutes = minutes - 1;
             }
-            return '0' + minutes + ':' + seconds;
+
+            return {minutes, seconds};
         }
     }
 
@@ -123,6 +135,10 @@ export class VerificationCodeService {
         }
 
         return false;
+    }
+
+    async removeVerifyCode(phone: string) {
+        this.verificationCodes.destroy({where:{phone}});
     }
 
     @Timeout(1000)

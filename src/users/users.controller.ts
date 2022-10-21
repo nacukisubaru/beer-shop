@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException, Ip, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthUserDto } from './dto/auth-user.dto';
 import { response } from 'express';
 import { setCookiesRefreshToken } from 'src/helpers/cookiesHelper';
+import { AuthUserByCodeDto } from './dto/auth-user-by-code.dto';
 
 @Controller('users')
 export class UsersController {
@@ -12,14 +13,21 @@ export class UsersController {
 
     @Post('/registration')
     async registration(@Body() createUserDto: CreateUserDto, @Res({ passthrough: true }) response) {
-        const userData = await this.usersService.registrate(createUserDto);
-        setCookiesRefreshToken(response, userData);
-        return userData;
+        return await this.usersService.registrate(createUserDto);
+        //setCookiesRefreshToken(response, userData);
+        //return userData;
     }
 
     @Post('/login')
     async login(@Body() authUserDto: AuthUserDto, @Res({ passthrough: true }) response) {
         const userData = await this.usersService.login(authUserDto);
+        setCookiesRefreshToken(response, userData);
+        return userData;
+    }
+
+    @Post('/loginByCode')
+    async loginByCode(@Body() authUserDto: AuthUserByCodeDto, @Res({ passthrough: true }) response) {
+        const userData = await this.usersService.loginByCode(authUserDto);
         setCookiesRefreshToken(response, userData);
         return userData;
     }
@@ -42,6 +50,17 @@ export class UsersController {
        } catch(e) {
             throw new UnauthorizedException();
        }
+    }
+
+    @Get('/checkUserExistByPhone/')
+    async checkUserExistByPhone(@Query('phone') phone: string) {
+       return await this.usersService.checkUserExistByPhone(phone);
+    }
+
+    @Get('/checkUserNotExistByEmailAndPhone/')
+    async checkUserNotExistByEmailAndPhone(@Query('phone') phone: string, @Query('email') email: string) {
+        const result = await this.usersService.checkUserNotExistByEmailAndPhone(phone, email);
+        return {result};
     }
 
     @Get('/activate/:id')

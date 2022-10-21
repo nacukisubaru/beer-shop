@@ -10,7 +10,7 @@ export class TaskManagerService {
     }
 
     createTask(callback, name: string, configTime:string, isRemoveJob = false) {
-        const job = new CronJob(configTime, () => {    
+        const job = new CronJob(configTime, () => { 
             console.log('task complete in time '+ moment().format());
             callback();
             if(isRemoveJob) {
