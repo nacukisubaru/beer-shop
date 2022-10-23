@@ -1,16 +1,18 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { ProductsService } from 'src/products/products.service';
 import { BasketProducts } from './basket-products.model';
 import { Basket } from './basket.model';
 import { CreateBasketDto } from './dto/create-basket.dto';
 import { RemoveProductBasketDto } from './dto/remove-product-basket.dto';
-import { UpdateBasketDto } from './dto/update-basket.dto';
+import { IBasketProduct, UpdateBasketDto } from './dto/update-basket.dto';
 
 @Injectable()
 export class BasketService {
 
     constructor(@InjectModel(Basket) private basketRepo: typeof Basket,
-                @InjectModel(BasketProducts) private basketProductRepo: typeof BasketProducts) { }
+                @InjectModel(BasketProducts) private basketProductRepo: typeof BasketProducts,
+                private productService: ProductsService) { }
 
     async getList() {
         return await this.basketRepo.findAll({ include: { all: true } });
@@ -86,38 +88,53 @@ export class BasketService {
         }
 
         const userBasket = await this.getFreeBasketByUser(userId);
-        const basket = await this.checkBasketIsNotConnectedToUser(basketId);
-        await this.poolingBaskets(basket, userBasket);
+        await this.poolingBaskets(basketId, userBasket);
         return await this.getFreeBasketByUser(userId);
     }
 
-    private async poolingBaskets(basketOne:Basket, basketTwo: Basket) {
-        const products = basketOne.products;
-        const productsIds = products.filter((product) => {
-            if(product.inStock && product.isActive) {
-                return product.id;
-            }
-        });
-
-        if(!productsIds.length) {
-            throw new HttpException('В корзине id' + basketOne.id + 'нет товаров в наличии', HttpStatus.NOT_FOUND);
+    private async updateProductsInBaskets(products: IBasketProduct[]) {
+        for(const product in products) {
+            const prod: IBasketProduct = products[product];
+            await this.basketProductRepo.update({quantity: prod.quantity}, {where: {productId: prod.productId}});
         }
-
-        await basketTwo.$add('products', productsIds);
-        return true;
     }
 
-    async checkBasketIsNotConnectedToUser(basketId: number) {
-        const basket = await this.getById(basketId);
-        if(!basket) {
-            throw new HttpException('Корзина с id ' + basketId + ' не найдена', HttpStatus.NOT_FOUND);
+    private async poolingBaskets(basketId: number, basketTwo: Basket) {
+        const basketProducts = await this.getProductsByBasketId(basketId);
+        if(basketProducts.length) {
+            const basketProductsIds = basketProducts.map((product) => {
+                return product.productId;
+            });
+            
+            const productsInStock = await this.productService.getProductsInStock(basketProductsIds);
+            if(productsInStock.length) {
+                const productsInStockIds = productsInStock.map((product)=>{
+                    return product.getDataValue("id");
+                });
+
+                const basketProductsInStock = basketProducts.filter((product) => {
+                    if(productsInStockIds.includes(product.productId)) {
+                        return product;
+                    }
+                });
+
+                const productForUpd = basketProductsInStock.map((product)=>{
+                    return  {productId: product.productId, quantity: product.quantity};
+                });
+                
+                if(productForUpd.length) {
+                    await basketTwo.$add('products', productsInStockIds);
+                    await this.updateProductsInBaskets(productForUpd);
+                    return true;
+                }
+            }
         }
 
-        if(basket.userId) {
-            throw new HttpException('Корзина с id '+ basketId +' привязана к пользователю', HttpStatus.BAD_REQUEST);
-        }
+        return false;
+    }
 
-        return basket;
+    async getProductsByBasketId(basketId: number) {
+        return await this.basketProductRepo.findAll({where:{basketId}, include:{all: true}});
     }
 
     async getByIds(ids: number[]): Promise<Basket[]> {
