@@ -35,7 +35,8 @@ export class BasketController {
     @Get('/poolingBaskets/')
     poolingBaskets(@Query('basketId') basketId: string, @Req() request) {
         const userId = request.user.id;
-        return this.basketService.poolingBaskets(Number(basketId), userId);
+        const result = this.basketService.poolingBaskets(Number(basketId), userId);
+        return {result};
     }
 
     @Get()

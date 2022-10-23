@@ -97,6 +97,7 @@ export class BasketService {
         });
 
         userBasket.$add('products', productsIds);
+        return true;
     }
 
     async checkBasketIsNotConnectedToUser(basketId: number) {
