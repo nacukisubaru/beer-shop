@@ -17,7 +17,7 @@ export class BasketService {
     }
 
     async addProduct(createBasketDto: CreateBasketDto) {
-        let basket;
+        let basket: Basket;
         const productId = createBasketDto.productId;
         delete createBasketDto.productId;
         
@@ -78,6 +78,38 @@ export class BasketService {
         }
 
         throw new HttpException('Корзина или товар не найдены!', HttpStatus.BAD_REQUEST);
+    }
+
+    async poolingBaskets(basketId: number, userId: number) {
+        if(!userId || !basketId) {
+            throw new HttpException('Не переданы параметры basketId или userId', HttpStatus.BAD_REQUEST);
+        }
+
+        const userBasket = await this.getFreeBasketByUser(userId);
+        if(!userBasket) {
+            throw new HttpException('Корзина по id пользователя '+userId+' не найдена', HttpStatus.BAD_REQUEST);
+        }
+        
+        const basket = await this.checkBasketIsNotConnectedToUser(basketId);
+        const products = basket.products;
+        const productsIds = products.map((product) => {
+            return product.id;
+        });
+
+        userBasket.$add('products', productsIds);
+    }
+
+    async checkBasketIsNotConnectedToUser(basketId: number) {
+        const basket = await this.getById(basketId);
+        if(!basket) {
+            throw new HttpException('Корзина с id ' + basketId + ' не найдена', HttpStatus.NOT_FOUND);
+        }
+
+        if(basket.userId) {
+            throw new HttpException('Корзина с id '+ basketId +' привязана к пользователю', HttpStatus.BAD_REQUEST);
+        }
+
+        return basket;
     }
 
     async getByIds(ids: number[]): Promise<Basket[]> {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ValidationPipe, UseGuards, Req, Query } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/token/jwt-auth.guard';
 import { BasketService } from './basket.service';
 import { CreateBasketDto } from './dto/create-basket.dto';
@@ -29,6 +29,13 @@ export class BasketController {
     @Get('/freeBasket/:id')
     getFreeBasketByUser(@Param('id') userId: string) {
         return this.basketService.getFreeBasketByUser(Number(userId));
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('/poolingBaskets/')
+    poolingBaskets(@Query('basketId') basketId: string, @Req() request) {
+        const userId = request.user.id;
+        return this.basketService.poolingBaskets(Number(basketId), userId);
     }
 
     @Get()
