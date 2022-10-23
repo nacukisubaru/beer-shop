@@ -129,11 +129,10 @@ export class ProductsService {
     }
 
     async getProductsInStock(productsIds: number[] | number) {
-        const query: any = {where:{id: productsIds, inStock: true}, include:{all:true}};
+        const query: any = {where:{id: productsIds, inStock: true, isActive: true}, include:{all:true}};
         if(Array.isArray(productsIds)) {
             query.where.id = {[Op.or]: productsIds};
         }
-        console.log({productsIds});
 
         return await this.productRepo.findAll(query);
     }
