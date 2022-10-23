@@ -26,18 +26,12 @@ export class BasketController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get('/freeBasket/:id')
-    getFreeBasketByUser(@Param('id') userId: string) {
-        return this.basketService.getFreeBasketByUser(Number(userId));
+    @Get('/freeBasket/')
+    getFreeBasketByUser(@Query('basketId') basketId: string, @Req() request) {
+        const userId = request.user.id;
+        return this.basketService.getBasketByUserAndPoolingBaskets(Number(basketId), Number(userId));
     }
 
-    @UseGuards(JwtAuthGuard)
-    @Get('/poolingBaskets/')
-    poolingBaskets(@Query('basketId') basketId: string, @Req() request) {
-        const userId = request.user.id;
-        const result = this.basketService.poolingBaskets(Number(basketId), userId);
-        return {result};
-    }
 
     @Get()
     getList() {

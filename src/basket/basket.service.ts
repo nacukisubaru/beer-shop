@@ -80,23 +80,30 @@ export class BasketService {
         throw new HttpException('Корзина или товар не найдены!', HttpStatus.BAD_REQUEST);
     }
 
-    async poolingBaskets(basketId: number, userId: number) {
+    async getBasketByUserAndPoolingBaskets(basketId: number, userId: number) {
         if(!userId || !basketId) {
             throw new HttpException('Не переданы параметры basketId или userId', HttpStatus.BAD_REQUEST);
         }
 
         const userBasket = await this.getFreeBasketByUser(userId);
-        if(!userBasket) {
-            throw new HttpException('Корзина по id пользователя '+userId+' не найдена', HttpStatus.BAD_REQUEST);
-        }
-        
         const basket = await this.checkBasketIsNotConnectedToUser(basketId);
-        const products = basket.products;
-        const productsIds = products.map((product) => {
-            return product.id;
+        await this.poolingBaskets(basket, userBasket);
+        return await this.getFreeBasketByUser(userId);
+    }
+
+    private async poolingBaskets(basketOne:Basket, basketTwo: Basket) {
+        const products = basketOne.products;
+        const productsIds = products.filter((product) => {
+            if(product.inStock && product.isActive) {
+                return product.id;
+            }
         });
 
-        userBasket.$add('products', productsIds);
+        if(!productsIds.length) {
+            throw new HttpException('В корзине id' + basketOne.id + 'нет товаров в наличии', HttpStatus.NOT_FOUND);
+        }
+
+        await basketTwo.$add('products', productsIds);
         return true;
     }
 
@@ -122,6 +129,11 @@ export class BasketService {
     }
 
     async getFreeBasketByUser(userId: number) {
-        return await this.basketRepo.findOne({include:{all:true}, where: {userId, orderId: null}});
+        const userBasket = await this.basketRepo.findOne({include:{all:true}, where: {userId, orderId: null}});
+        if(!userBasket) {
+            throw new HttpException('Корзина по id пользователя '+userId+' не найдена', HttpStatus.BAD_REQUEST);
+        }
+
+        return userBasket;
     }
 }
