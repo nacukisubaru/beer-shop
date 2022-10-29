@@ -6,12 +6,14 @@ import { Basket } from 'src/basket/basket.model';
 import { Users } from 'src/users/users.model';
 import { Order } from './orders.model';
 import { BasketModule } from 'src/basket/basket.module';
+import { TokenModule } from 'src/token/token.module';
 
 @Module({
   controllers: [OrdersController],
   providers: [OrdersService],
   imports: [
     SequelizeModule.forFeature([Basket, Users, Order]),
+    TokenModule,
     BasketModule
   ]
 })

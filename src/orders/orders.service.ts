@@ -13,22 +13,21 @@ export class OrdersService {
     constructor(@InjectModel(Order) private orderRepo: typeof Order,
                 private basketService: BasketService) {}
 
-    async create(createOrderDto: CreateOrderDto) {
-        const basket:any = await this.basketService.getBasketByHash(createOrderDto.basketHash);
+    async create(basketHash: string, userId: number) {
+        if(!basketHash) {
+            throw new HttpException('Не передан хеш код корзины!', HttpStatus.BAD_REQUEST);
+        }
+        const basket:any = await this.basketService.getBasketByHash(basketHash);
         const productsNotInStock = await this.basketService.getProductsNotInStock(basket.id);
         if(productsNotInStock) {
             const productsIds = productsNotInStock.map((product)=>{
                 return product.id;
             });
 
-            await this.basketService.removeProduct(productsIds, createOrderDto.basketHash);
-            throw new HttpException('В корзине есть товары которых нет в наличии', HttpStatus.BAD_REQUEST);
+            await this.basketService.removeProduct(productsIds, basketHash);
         }
-        delete createOrderDto.basketHash;
-        const orderFields:any = createOrderDto;
-        orderFields.basketId = basket.id;
         
-        const order = await this.orderRepo.create(orderFields);
+        const order = await this.orderRepo.create({userId, isPayed: false, deliveryId: 1, paymentMethodId: 1});
         basket.orderId = order.id;
         basket.save();
         return order;
