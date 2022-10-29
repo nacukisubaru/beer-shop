@@ -127,4 +127,13 @@ export class ProductsService {
            return product.id;
         });
     }
+
+    async getProductsByStock(productsIds: number[] | number, inStock: boolean = true) {
+        const query: any = {where:{id: productsIds, inStock: inStock, isActive: true}, include:{all:true}};
+        if(Array.isArray(productsIds)) {
+            query.where.id = {[Op.or]: productsIds};
+        }
+
+        return await this.productRepo.findAll(query);
+    }
 }

@@ -14,8 +14,21 @@ export class OrdersService {
                 private basketService: BasketService) {}
 
     async create(createOrderDto: CreateOrderDto) {
-        const order = await this.orderRepo.create(createOrderDto);
-        const basket:any = await this.basketService.getById(createOrderDto.basketId);
+        const basket:any = await this.basketService.getBasketByHash(createOrderDto.basketHash);
+        const productsNotInStock = await this.basketService.getProductsNotInStock(basket.id);
+        if(productsNotInStock) {
+            const productsIds = productsNotInStock.map((product)=>{
+                return product.id;
+            });
+
+            await this.basketService.removeProduct(productsIds, createOrderDto.basketHash);
+            throw new HttpException('В корзине есть товары которых нет в наличии', HttpStatus.BAD_REQUEST);
+        }
+        delete createOrderDto.basketHash;
+        const orderFields:any = createOrderDto;
+        orderFields.basketId = basket.id;
+        
+        const order = await this.orderRepo.create(orderFields);
         basket.orderId = order.id;
         basket.save();
         return order;

@@ -8,13 +8,15 @@ import { Products } from 'src/products/products.model';
 import { BasketProducts } from './basket-products.model';
 import { JwtModule } from '@nestjs/jwt';
 import { TokenModule } from 'src/token/token.module';
+import { ProductsModule } from 'src/products/products.module';
 
 @Module({
     controllers: [BasketController],
     providers: [BasketService],
     imports: [
         SequelizeModule.forFeature([Basket, Users, Products, BasketProducts]),
-        TokenModule
+        TokenModule,
+        ProductsModule
     ],
     exports: [
         BasketService
