@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, Validation
 import { JwtAuthGuard } from 'src/token/jwt-auth.guard';
 import { BasketService } from './basket.service';
 import { CreateBasketDto } from './dto/create-basket.dto';
+import { GetBasketDto } from './dto/get-basket.dto';
 import { RemoveProductBasketDto } from './dto/remove-product-basket.dto';
 import { UpdateBasketDto } from './dto/update-basket.dto';
 
@@ -12,7 +13,14 @@ export class BasketController {
     @UsePipes(ValidationPipe)
     @Post('/addProduct')
     addProduct(@Body() createBasketDto: CreateBasketDto) {
-        return this.basketService.addProduct(createBasketDto);
+        return this.basketService.addProduct(createBasketDto, 0);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('/addProductByUser')
+    addProductByUser(@Body() createBasketDto: CreateBasketDto, @Req() request) {
+        const userId = request.user.id;
+        return this.basketService.addProduct(createBasketDto, userId);
     }
 
     @Post('/updProduct')
@@ -22,24 +30,23 @@ export class BasketController {
 
     @Post('/removeProduct')
     removeProduct(@Body() removeProductDto: RemoveProductBasketDto) {
-        return this.basketService.removeProduct(removeProductDto);
+        return this.basketService.removeProduct([removeProductDto.productId], removeProductDto.hash);
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get('/freeBasket/')
-    getFreeBasketByUser(@Query('basketId') basketId: string, @Req() request) {
+    @Post('/freeBasket/')
+    getFreeBasketByUser(@Body() getBasketDto: GetBasketDto, @Req() request) {
         const userId = request.user.id;
-        return this.basketService.getBasketByUserAndPoolingBaskets(Number(basketId), Number(userId));
+        return this.basketService.getBasketByUserAndPoolingBaskets(getBasketDto.hash, Number(userId));
     }
 
-
-    @Get()
-    getList() {
-        return this.basketService.getList();
+    @Post('/getBasket')
+    getBasket(@Body() getBasketDto: GetBasketDto) {
+        return this.basketService.getBasketByHash(getBasketDto.hash);
     }
 
-    @Get('/getBasket/:id')
-    getBasket(@Param('id') id: string) {
-        return this.basketService.getById(Number(id));
-    }
+    // @Get()
+    // getList() {
+    //     return this.basketService.getList();
+    // }
 }

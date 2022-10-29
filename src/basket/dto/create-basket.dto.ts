@@ -1,10 +1,10 @@
 import { IsNumber } from "class-validator";
 
 export class CreateBasketDto {
-    readonly id;
+    readonly hash;
 
   //  @IsNumber({}, {message: 'Должно быть числом'})
-    readonly userId: number;
+    //readonly userId: number;
 
     @IsNumber({}, {message: 'Должно быть числом'})
     readonly quantity: number;

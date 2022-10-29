@@ -1,4 +1,4 @@
 export class RemoveProductBasketDto {
-    readonly id: number;
+    readonly hash: string;
     readonly productId: number;
 }

@@ -17,6 +17,9 @@ export class Basket extends Model<Basket> {
     @Column({ type: DataType.INTEGER })
     userId: number;
 
+    @Column({type: DataType.STRING, allowNull: false})
+    hash: string;
+
     @ForeignKey(() => Order)
     orderId: Order
 
@@ -25,4 +28,5 @@ export class Basket extends Model<Basket> {
 
     @BelongsToMany(() => Products, () => BasketProducts)
     products: Products[]
+    length: boolean;
 }

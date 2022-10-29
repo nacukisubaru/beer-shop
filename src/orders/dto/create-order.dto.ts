@@ -1,5 +1,5 @@
 export class CreateOrderDto {
-    basketId: number;
+    basketHash: string;
     userId: number;
     deliveryId: number;
     paymentMethodId: number;

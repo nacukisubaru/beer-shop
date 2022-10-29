@@ -3,5 +3,5 @@ export class IBasketProduct {
     readonly quantity: number;
 }
 export class UpdateBasketDto extends IBasketProduct {
-    readonly id: number;
+    readonly hash: string;
 }

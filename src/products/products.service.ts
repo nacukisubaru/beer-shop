@@ -128,8 +128,8 @@ export class ProductsService {
         });
     }
 
-    async getProductsInStock(productsIds: number[] | number) {
-        const query: any = {where:{id: productsIds, inStock: true, isActive: true}, include:{all:true}};
+    async getProductsByStock(productsIds: number[] | number, inStock: boolean = true) {
+        const query: any = {where:{id: productsIds, inStock: inStock, isActive: true}, include:{all:true}};
         if(Array.isArray(productsIds)) {
             query.where.id = {[Op.or]: productsIds};
         }

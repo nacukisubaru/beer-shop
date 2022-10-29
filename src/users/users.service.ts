@@ -113,10 +113,11 @@ export class UsersService {
 
     private async validateUser(authUserDto: AuthUserDto) {
         const user = await this.getUserByPhone(authUserDto.phone);
-        if(!user.isActivated) {
-            throw new UnauthorizedException({message: 'Номер телефона не был подтвержден смс кодом, запросите смс код'});
-        }
         if(user) {
+            if(!user.isActivated) {
+                throw new UnauthorizedException({message: 'Номер телефона не был подтвержден смс кодом, запросите смс код'});
+            }
+        
             const passwordEquals = await bcrypt.compare(authUserDto.password, user.password);
             if(passwordEquals) {
                 return user;
