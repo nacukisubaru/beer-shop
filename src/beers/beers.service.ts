@@ -199,14 +199,14 @@ export class BeersService {
         }
         
         const {forBottling, filtered} = stateBeer;
-        if(forBottling != 'undefined' && forBottling != undefined) {
+        if(forBottling == 'true') {
             queryFilter.where.forBottling = forBottling;
         }
 
-        if(filtered != 'undefined' && filtered != undefined) {
+        if(filtered == 'true') {
             queryFilter.where.filtered = filtered;
         }
-   
+        console.log(queryFilter);
         const beers = await this.getList(page, limitPage, queryFilter, sort);
         return beers;
     }
