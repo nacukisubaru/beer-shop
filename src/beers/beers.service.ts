@@ -206,7 +206,7 @@ export class BeersService {
         if(filtered == 'true') {
             queryFilter.where.filtered = filtered;
         }
-        console.log(queryFilter);
+        
         const beers = await this.getList(page, limitPage, queryFilter, sort);
         return beers;
     }
