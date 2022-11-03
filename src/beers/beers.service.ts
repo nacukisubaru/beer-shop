@@ -40,7 +40,7 @@ export class BeersService {
             price: dto.price,
             quantity: dto.quantity,
             brandId: dto.brandId,
-            typePackagingId: dto.typePackagingId,
+            typePackagingId: dto.typePackagingId
         };
 
         const beerData = {
@@ -66,7 +66,6 @@ export class BeersService {
             beer.productId = product.id;
             beer.price = product.price;
             beer.name = product.title;
-            beer.show = 0;
             product.beerId = beer.id;
             product.save();
             beer.save();
@@ -228,15 +227,6 @@ export class BeersService {
             attributes: query,
             where
         });
-    }
-
-    async addShow(productId: number) {
-       const product = await this.productService.getById(productId);
-       if(!product) {
-            throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
-       }
-
-       return this.beerRepo.update({show: product.beer.show + 1}, {where: {id: product.beer.id}});
     }
 
     async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {

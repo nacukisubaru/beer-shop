@@ -136,4 +136,13 @@ export class ProductsService {
 
         return await this.productRepo.findAll(query);
     }
+
+    async addShow(id: number) {
+        const product = await this.getById(id);
+        if(!product) {
+             throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
+        }
+ 
+        return this.productRepo.update({show: product.show + 1}, {where: {id}});
+     }
 }

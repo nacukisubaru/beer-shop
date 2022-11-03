@@ -29,4 +29,8 @@ export class ProductsController {
         return this.productService.getMinAndMaxPrice(type);
     }
 
+    @Get('/addShow/:id')
+    addShow(@Param('id') id: string) {
+       return this.productService.addShow(Number(id));
+    }
 }

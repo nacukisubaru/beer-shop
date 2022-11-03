@@ -73,11 +73,6 @@ export class BeersController {
         return this.beerService.update(id, dto);
     }
 
-    @Get('/addShow/:id')
-    addShow(@Param('id') id: string) {
-       return this.beerService.addShow(Number(id));
-    }
-
     @Delete('/remove/:id')
     remove(@Param('id') id: string) {
         return this.beerService.remove(id);

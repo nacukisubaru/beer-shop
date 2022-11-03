@@ -50,9 +50,4 @@ export class SnacksController {
     search(@Query('q') q: string, @Query('page') page: string, @Query('limitPage') limitPage: string, @Query('sort') sort: [string, string]) {
         return this.snacksService.searchByName(q, Number(page), Number(limitPage), sort);
     }
-
-    @Get('/addShow/:id')
-    addShow(@Param('id') id: string) {
-        this.snacksService.addShow(Number(id));
-    }
 }

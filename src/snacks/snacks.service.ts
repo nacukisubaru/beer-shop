@@ -29,7 +29,6 @@ export class SnacksService {
         snack.productId = product.id;
         snack.price = product.price;
         snack.name = product.title;
-        snack.show = 0;
         product.snackId = snack.id;
         product.save();
         snack.save();
@@ -105,15 +104,6 @@ export class SnacksService {
 
         const snacks = await this.getList(page, limitPage, queryFilter, sort);
         return snacks;
-    }
-
-    async addShow(productId: number) {
-        const product = await this.productService.getById(productId);
-        if(!product) {
-             throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
-        }
-        
-        return this.snackRepo.update({show: product.snack.show + 1}, {where: {id: product.snack.id}});
     }
 
     async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
