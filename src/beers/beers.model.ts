@@ -21,12 +21,6 @@ export class Beers extends Model {
   @Column({type: DataType.FLOAT, allowNull: false})
   ibu: number;
 
-  @Column({type: DataType.STRING, allowNull: false})
-  name: string;
-
-  @Column({ type: DataType.INTEGER })
-  price: number;
-
   @ForeignKey(() => Products)
   @Column({type: DataType.INTEGER})
   productId: number;
@@ -42,5 +36,4 @@ export class Beers extends Model {
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   filtered: boolean;
-  
 }

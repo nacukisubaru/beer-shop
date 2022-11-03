@@ -64,8 +64,6 @@ export class BeersService {
 
             beer.$set('grades', dto.gradeIds);
             beer.productId = product.id;
-            beer.price = product.price;
-            beer.name = product.title;
             product.beerId = beer.id;
             product.save();
             beer.save();
