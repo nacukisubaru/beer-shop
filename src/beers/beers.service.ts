@@ -137,23 +137,23 @@ export class BeersService {
     async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
-                filter = { include: { all: true, model:Products } };
+                filter = { include: {
+                     all: true, 
+                 } };
             }
 
             const query:any = paginate(filter, page, limitPage);
-            query.order = [sort];
-
+            query.order = [[
+                "product",
+                ...sort
+            ]]; //сортировка по полю из связной таблицы
+        
             const beerList = await this.beerRepo.findAndCountAll(query);
-
+            
             if (beerList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
 
-            beerList.rows = beerList.rows.filter((beer) => {
-                if (beer.product.getDataValue('isActive')) {
-                    return beer;
-                }
-            });
             return { ...beerList, nextPage: page + 1 };
         }
 
@@ -165,12 +165,13 @@ export class BeersService {
 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
-
+        
+        //фильтрация по полю из связной таблицы
         const queryFilter: any = {
-            include: { all: true },
-            where: {},
+            include: {model: Products, as: 'product'},
+            where: {'$product.isActive$': true},
         };
-
+        
         const products = await this.productService.getListByFilter(brandIds, typesPackagingIds, minPrice, maxPrice);
         if(products) {
             const productIds = products.map(product => {

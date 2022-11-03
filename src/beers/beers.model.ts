@@ -1,5 +1,4 @@
-import { Column, DataType, Model, Table, BelongsTo,  BelongsToMany, ForeignKey, addAssociation, HasOne} from 'sequelize-typescript';
-import { Association } from 'sequelize/types';
+import { Column, DataType, Model, Table, BelongsTo,  BelongsToMany, ForeignKey, addAssociation, HasOne, ModelType, Sequelize, UnionAssociationOptions} from 'sequelize-typescript';
 import { BeerGrades } from 'src/grades/beers-grades.model';
 import { Grades } from 'src/grades/grades.model';
 import { Products } from 'src/products/products.model';
@@ -31,8 +30,8 @@ export class Beers extends Model {
   @ForeignKey(() => Products)
   @Column({type: DataType.INTEGER})
   productId: number;
-
-  @BelongsTo(() => Products)
+ 
+  @BelongsTo(() => Products, { as: 'product'})
   product: Products
 
   @BelongsToMany(() => Grades, () => BeerGrades)
