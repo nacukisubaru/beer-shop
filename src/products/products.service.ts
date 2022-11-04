@@ -38,31 +38,6 @@ export class ProductsService {
         return product;
     }
 
-    async update(id: number, dto: UpdateProductDto) {
-        return await this.productRepo.update({...dto}, {where: {id}})
-    }
-    
-    async remove(id): Promise<Number> {
-        return await this.productRepo.destroy({where:{id}});
-    }
-
-    async switchActive(id: number, isActive: boolean): Promise<Object> {
-        return await this.productRepo.update({isActive}, {where:{id}});
-    }
-
-    async getById(id): Promise<Products> {
-        return await this.productRepo.findByPk(id, { include: { all: true } });
-    }
-
-    async getAll(): Promise<Products[]> {
-        const product: any = await this.productRepo.findAll({include: {all:true}});
-        return product;
-    }
-  
-    async getListByBrand(brandId: number) {
-       return await this.productRepo.findAll({include: {all:true}, where: {brandId}});
-    }
-
     async getListByFilter(brandIds:number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0) {
         const queryFilter: any = {
             include: {all:true}, 
@@ -83,10 +58,6 @@ export class ProductsService {
         if(typesPackagingIds.length > 0) {
             queryFilter.where.typePackagingId = {[Op.or]: typesPackagingIds};
         }
-
-        // if(Object.keys(queryFilter.where).length === 0) {
-        //     throw new HttpException('Не передан не один параметр для фильтрации', HttpStatus.BAD_REQUEST);
-        // }
 
         return await this.productRepo.findAll(queryFilter);
     }
@@ -135,5 +106,63 @@ export class ProductsService {
         }
 
         return await this.productRepo.findAll(query);
+    }
+
+    async addShow(id: number) {
+        const product = await this.getById(id);
+        if(!product) {
+             throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
+        }
+ 
+        return this.productRepo.update({show: product.show + 1}, {where: {id}});
+    }
+
+    buildFilterByProductFields(
+        filterObj:any,
+        brandIds: number[] = [], 
+        typesPackagingIds: number[] = [], 
+        minPrice: number = 0, maxPrice: number = 0) {
+
+        if(brandIds.length > 0) {
+            filterObj.brandId = {[Op.or]: brandIds};
+        }
+
+        if(minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
+            filterObj.price = {
+                [Op.gte]: minPrice, 
+                [Op.lte]: maxPrice
+            };
+        }
+
+        if(typesPackagingIds.length > 0) {
+            filterObj.typePackagingId = {[Op.or]: typesPackagingIds};
+        }
+
+        return filterObj;
+    }
+
+    async update(id: number, dto: UpdateProductDto) {
+        return await this.productRepo.update({...dto}, {where: {id}})
+    }
+    
+    async remove(id): Promise<Number> {
+        return await this.productRepo.destroy({where:{id}});
+    }
+
+    async switchActive(id: number, isActive: boolean): Promise<Object> {
+        return await this.productRepo.update({isActive}, {where:{id}});
+    }
+
+    async getById(id): Promise<Products> {
+        return await this.productRepo.findByPk(id, { include: { all: true } });
+    }
+
+    async getAll(): Promise<Products[]> {
+        const product: any = await this.productRepo.findAll({include: {all:true}});
+        return product;
+    }
+  
+    async getListByBrand(brandId: number) {
+       return await this.productRepo.findAll({include: {all:true}, where: {brandId}});
     }
 }

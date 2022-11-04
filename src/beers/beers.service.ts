@@ -40,7 +40,7 @@ export class BeersService {
             price: dto.price,
             quantity: dto.quantity,
             brandId: dto.brandId,
-            typePackagingId: dto.typePackagingId,
+            typePackagingId: dto.typePackagingId
         };
 
         const beerData = {
@@ -64,9 +64,6 @@ export class BeersService {
 
             beer.$set('grades', dto.gradeIds);
             beer.productId = product.id;
-            beer.price = product.price;
-            beer.name = product.title;
-            beer.show = 0;
             product.beerId = beer.id;
             product.save();
             beer.save();
@@ -137,23 +134,25 @@ export class BeersService {
     async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
-                filter = { include: { all: true, model:Products } };
+                filter = { 
+                    include: {
+                        all: true, 
+                    } 
+                };
             }
-
+            
             const query:any = paginate(filter, page, limitPage);
-            query.order = [sort];
-
+            query.order = [[
+                "product",
+                ...sort
+            ]]; //сортировка по полю из связной таблицы
+        
             const beerList = await this.beerRepo.findAndCountAll(query);
-
+            
             if (beerList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
 
-            beerList.rows = beerList.rows.filter((beer) => {
-                if (beer.product.getDataValue('isActive')) {
-                    return beer;
-                }
-            });
             return { ...beerList, nextPage: page + 1 };
         }
 
@@ -165,19 +164,25 @@ export class BeersService {
 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
-
-        const queryFilter: any = {
-            include: { all: true },
-            where: {},
+        
+        //фильтрация по полю из связной таблицы
+        let queryFilter: any = {
+            include: {
+                model: Products, as: 'product',
+                where: {
+                    isActive: true
+                }
+            },
+            where: {}
         };
 
-        const products = await this.productService.getListByFilter(brandIds, typesPackagingIds, minPrice, maxPrice);
-        if(products) {
-            const productIds = products.map(product => {
-                return product.id;
-            });
-            queryFilter.where.productId = productIds;
-        }
+        queryFilter.include.where = this.productService.buildFilterByProductFields(
+            queryFilter.include.where, 
+            brandIds, 
+            typesPackagingIds, 
+            minPrice, 
+            maxPrice
+        );
 
         if (grades.length > 0) {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
@@ -199,14 +204,14 @@ export class BeersService {
         }
         
         const {forBottling, filtered} = stateBeer;
-        if(forBottling != 'undefined' && forBottling != undefined) {
+        if(forBottling == 'true' || forBottling == 'false') {
             queryFilter.where.forBottling = forBottling;
         }
 
-        if(filtered != 'undefined' && filtered != undefined) {
+        if(filtered == 'true' || filtered == 'false') {
             queryFilter.where.filtered = filtered;
         }
-   
+        
         const beers = await this.getList(page, limitPage, queryFilter, sort);
         return beers;
     }
@@ -229,18 +234,19 @@ export class BeersService {
         });
     }
 
-    async addShow(productId: number) {
-       const product = await this.productService.getById(productId);
-       if(!product) {
-            throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
-       }
-
-       return this.beerRepo.update({show: product.beer.show + 1}, {where: {id: product.beer.id}});
-    }
-
     async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
-        const productsIds = await this.productService.searchByTitleAndDesc(q);
-        const query = {include: {all: true}, where: {productId: productsIds}};
+        const query = {
+            include: {
+                model: Products, as: 'product',
+                where: {
+                    isActive: true,
+                    [Op.or] : [
+                        {title: {[Op.iLike]: `%${q}%`}}, 
+                        {description: {[Op.iLike]: `%${q}%`}}
+                    ]
+                }
+            }
+        };
         return await this.getList(page, limitPage, query, sort);
     }
 }

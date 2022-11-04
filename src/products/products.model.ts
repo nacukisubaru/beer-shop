@@ -68,4 +68,7 @@ export class Products extends Model<Products> {
     @ForeignKey(() => TypePackaging)
     @Column({type: DataType.INTEGER})
     typePackagingId: number;
+
+    @Column({ type: DataType.INTEGER, defaultValue: 0, allowNull: false })
+    show: number;
 }

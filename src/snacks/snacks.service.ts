@@ -6,6 +6,8 @@ import { ProductsService } from 'src/products/products.service';
 import { CreateSnackDto } from './dto/create-snack.dto';
 import { UpdateSnackDto } from './dto/update-snack.dto';
 import { Snack } from './snacks.model';
+import { Products } from 'src/products/products.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class SnacksService {
@@ -27,9 +29,6 @@ export class SnacksService {
         const snack = await this.snackRepo.create({ weight: createSnackDto.weight });
 
         snack.productId = product.id;
-        snack.price = product.price;
-        snack.name = product.title;
-        snack.show = 0;
         product.snackId = snack.id;
         product.save();
         snack.save();
@@ -39,21 +38,22 @@ export class SnacksService {
     async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
-                filter = { include: { all: true } };
+                filter = { include: {
+                     all: true, 
+                 } };
             }
-            const query: any = paginate(filter, page, limitPage);
-            query.order = [sort];
 
+            const query:any = paginate(filter, page, limitPage);
+            query.order = [[
+                "product",
+                ...sort
+            ]]; //сортировка по полю из связной таблицы
+        
             const snackList = await this.snackRepo.findAndCountAll(query);
+            
             if (snackList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
-
-            snackList.rows = snackList.rows.filter((snack) => {
-                if (snack.product.getDataValue('isActive')) {
-                    return snack;
-                }
-            });
 
             return { ...snackList, nextPage: page + 1 };
         }
@@ -82,7 +82,7 @@ export class SnacksService {
 
         const productId = snack.productId;
         await this.productService.update(productId, prodData);
-        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight, price: updateSnackDto.price, name: updateSnackDto.title }, { where: { id } })) {
+        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { id } })) {
             return true;
         }
 
@@ -91,34 +91,40 @@ export class SnacksService {
 
     async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, sort: [string, string] = ['price', 'ASC'], page: number, limitPage: number) {
         const queryFilter: any = {
-            include: { all: true },
-            where: {},
+            include: {
+                model: Products, as: 'product',
+                where: {
+                    isActive: true
+                }
+            },
+            where: {}
         };
 
-        const products = await this.productService.getListByFilter(brandIds, typesPackagingIds, minPrice, maxPrice);
-        if (products) {
-            const productIds = products.map(product => {
-                return product.id;
-            });
-            queryFilter.where.productId = productIds;
-        }
+        queryFilter.include.where = this.productService.buildFilterByProductFields(
+            queryFilter.include.where, 
+            brandIds, 
+            typesPackagingIds, 
+            minPrice, 
+            maxPrice
+        );
 
         const snacks = await this.getList(page, limitPage, queryFilter, sort);
         return snacks;
     }
 
-    async addShow(productId: number) {
-        const product = await this.productService.getById(productId);
-        if(!product) {
-             throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
-        }
-        
-        return this.snackRepo.update({show: product.snack.show + 1}, {where: {id: product.snack.id}});
-    }
-
     async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
-        const productsIds = await this.productService.searchByTitleAndDesc(q);
-        const query = {include: {all: true}, where: {productId: productsIds}};
+        const query = {
+            include: {
+                model: Products, as: 'product',
+                where: {
+                    isActive: true,
+                    [Op.or] : [
+                        {title: {[Op.iLike]: `%${q}%`}}, 
+                        {description: {[Op.iLike]: `%${q}%`}}
+                    ]
+                }
+            }
+        };
         return await this.getList(page, limitPage, query, sort);
     }
 }
