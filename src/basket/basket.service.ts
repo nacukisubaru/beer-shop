@@ -100,13 +100,9 @@ export class BasketService {
 
     private async addProductsForBasket(basket: Basket, userId: number) {
         if(basket && basket.products) {
-            //const products: any = await this.getProductsByBasketId(basket.id);
-            //if (products.length) {
-                const newBasket = await this.createBasketWithHash(basket.products[0], {userId});
-                await this.basketProductRepo.update({ basketId: newBasket.id }, { where: { basketId: basket.id } });
-                //  newBasket.$add('products', products);
-                return true;
-            //}
+            const newBasket = await this.createBasketWithHash(basket.products[0], {userId});
+            await this.basketProductRepo.update({ basketId: newBasket.id }, { where: { basketId: basket.id } });
+            return true;
         }
 
         return false;
