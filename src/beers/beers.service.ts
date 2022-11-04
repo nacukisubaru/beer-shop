@@ -165,16 +165,28 @@ export class BeersService {
         
         //фильтрация по полю из связной таблицы
         const queryFilter: any = {
-            include: {model: Products, as: 'product'},
-            where: {'$product.isActive$': true},
+            include: {
+                model: Products, as: 'product',
+                where: {
+                    isActive: true
+                }
+            },
+            where: {}
         };
-        
-        const products = await this.productService.getListByFilter(brandIds, typesPackagingIds, minPrice, maxPrice);
-        if(products) {
-            const productIds = products.map(product => {
-                return product.id;
-            });
-            queryFilter.where.productId = productIds;
+
+        if(brandIds.length > 0) {
+            queryFilter.include.where.brandId = {[Op.or]: brandIds};
+        }
+
+        if(minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
+            queryFilter.include.where.price = {
+                [Op.gte]: minPrice, 
+                [Op.lte]: maxPrice
+            };
+        }
+
+        if(typesPackagingIds.length > 0) {
+            queryFilter.include.where.typePackagingId = {[Op.or]: typesPackagingIds};
         }
 
         if (grades.length > 0) {
