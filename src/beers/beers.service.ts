@@ -166,7 +166,7 @@ export class BeersService {
         const { minFortress, maxFortress } = fortress;
         
         //фильтрация по полю из связной таблицы
-        const queryFilter: any = {
+        let queryFilter: any = {
             include: {
                 model: Products, as: 'product',
                 where: {
@@ -176,20 +176,13 @@ export class BeersService {
             where: {}
         };
 
-        if(brandIds.length > 0) {
-            queryFilter.include.where.brandId = {[Op.or]: brandIds};
-        }
-
-        if(minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
-            queryFilter.include.where.price = {
-                [Op.gte]: minPrice, 
-                [Op.lte]: maxPrice
-            };
-        }
-
-        if(typesPackagingIds.length > 0) {
-            queryFilter.include.where.typePackagingId = {[Op.or]: typesPackagingIds};
-        }
+        queryFilter.include.where = this.productService.buildFilterByProductFields(
+            queryFilter.include.where, 
+            brandIds, 
+            typesPackagingIds, 
+            minPrice, 
+            maxPrice
+        );
 
         if (grades.length > 0) {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);

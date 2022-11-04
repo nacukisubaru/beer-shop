@@ -6,6 +6,8 @@ import { ProductsService } from 'src/products/products.service';
 import { CreateSnackDto } from './dto/create-snack.dto';
 import { UpdateSnackDto } from './dto/update-snack.dto';
 import { Snack } from './snacks.model';
+import { Products } from 'src/products/products.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class SnacksService {
@@ -89,25 +91,40 @@ export class SnacksService {
 
     async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, sort: [string, string] = ['price', 'ASC'], page: number, limitPage: number) {
         const queryFilter: any = {
-            include: { all: true },
-            where: {},
+            include: {
+                model: Products, as: 'product',
+                where: {
+                    isActive: true
+                }
+            },
+            where: {}
         };
 
-        const products = await this.productService.getListByFilter(brandIds, typesPackagingIds, minPrice, maxPrice);
-        if (products) {
-            const productIds = products.map(product => {
-                return product.id;
-            });
-            queryFilter.where.productId = productIds;
-        }
+        queryFilter.include.where = this.productService.buildFilterByProductFields(
+            queryFilter.include.where, 
+            brandIds, 
+            typesPackagingIds, 
+            minPrice, 
+            maxPrice
+        );
 
         const snacks = await this.getList(page, limitPage, queryFilter, sort);
         return snacks;
     }
 
     async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
-        const productsIds = await this.productService.searchByTitleAndDesc(q);
-        const query = {include: {all: true}, where: {productId: productsIds}};
+        const query = {
+            include: {
+                model: Products, as: 'product',
+                where: {
+                    isActive: true,
+                    [Op.or] : [
+                        {title: {[Op.iLike]: `%${q}%`}}, 
+                        {description: {[Op.iLike]: `%${q}%`}}
+                    ]
+                }
+            }
+        };
         return await this.getList(page, limitPage, query, sort);
     }
 }

@@ -117,6 +117,30 @@ export class ProductsService {
         return this.productRepo.update({show: product.show + 1}, {where: {id}});
     }
 
+    buildFilterByProductFields(
+        filterObj:any,
+        brandIds: number[] = [], 
+        typesPackagingIds: number[] = [], 
+        minPrice: number = 0, maxPrice: number = 0) {
+
+        if(brandIds.length > 0) {
+            filterObj.brandId = {[Op.or]: brandIds};
+        }
+
+        if(minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
+            filterObj.price = {
+                [Op.gte]: minPrice, 
+                [Op.lte]: maxPrice
+            };
+        }
+
+        if(typesPackagingIds.length > 0) {
+            filterObj.typePackagingId = {[Op.or]: typesPackagingIds};
+        }
+
+        return filterObj;
+    }
+
     async update(id: number, dto: UpdateProductDto) {
         return await this.productRepo.update({...dto}, {where: {id}})
     }
