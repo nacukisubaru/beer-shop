@@ -134,11 +134,13 @@ export class BeersService {
     async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
-                filter = { include: {
-                     all: true, 
-                 } };
+                filter = { 
+                    include: {
+                        all: true, 
+                    } 
+                };
             }
-
+            
             const query:any = paginate(filter, page, limitPage);
             query.order = [[
                 "product",
@@ -209,11 +211,11 @@ export class BeersService {
         }
         
         const {forBottling, filtered} = stateBeer;
-        if(forBottling == 'true') {
+        if(forBottling == 'true' || forBottling == 'false') {
             queryFilter.where.forBottling = forBottling;
         }
 
-        if(filtered == 'true') {
+        if(filtered == 'true' || filtered == 'false') {
             queryFilter.where.filtered = filtered;
         }
         
@@ -240,8 +242,18 @@ export class BeersService {
     }
 
     async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
-        const productsIds = await this.productService.searchByTitleAndDesc(q);
-        const query = {include: {all: true}, where: {productId: productsIds}};
+        const query = {
+            include: {
+                model: Products, as: 'product',
+                where: {
+                    isActive: true,
+                    [Op.or] : [
+                        {title: {[Op.iLike]: `%${q}%`}}, 
+                        {description: {[Op.iLike]: `%${q}%`}}
+                    ]
+                }
+            }
+        };
         return await this.getList(page, limitPage, query, sort);
     }
 }

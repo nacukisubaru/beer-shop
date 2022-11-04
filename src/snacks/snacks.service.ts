@@ -47,13 +47,13 @@ export class SnacksService {
                 ...sort
             ]]; //сортировка по полю из связной таблицы
         
-            const beerList = await this.snackRepo.findAndCountAll(query);
+            const snackList = await this.snackRepo.findAndCountAll(query);
             
-            if (beerList.rows.length <= 0) {
+            if (snackList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
 
-            return { ...beerList, nextPage: page + 1 };
+            return { ...snackList, nextPage: page + 1 };
         }
 
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
