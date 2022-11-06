@@ -14,49 +14,49 @@ import { TypePackagingService } from 'src/type-packaging/type-packaging.service'
 @Injectable()
 export class ProductsService {
     constructor(@InjectModel(Products) private productRepo: typeof Products,
-                private brandService: BrandsService,
-                private fileService: FilesService,
-                private typePackagingService: TypePackagingService) {}
+        private brandService: BrandsService,
+        private fileService: FilesService,
+        private typePackagingService: TypePackagingService) { }
 
-    async create(dto: CreateProductDto, image:any) {
+    async create(dto: CreateProductDto, image: any) {
         const brand = await this.brandService.getById(dto.brandId);
-        if(!brand) {
+        if (!brand) {
             throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
         }
-        
+
         const typePackaging = await this.typePackagingService.getById(dto.typePackagingId);
-        if(!typePackaging) {
+        if (!typePackaging) {
             throw new HttpException('Тип упаковки не был найден', HttpStatus.BAD_REQUEST);
         }
 
         const fileName = await this.fileService.createFile(image, 'products');
-        const product = await this.productRepo.create({...dto, image: fileName});
-        
+        const product = await this.productRepo.create({ ...dto, image: fileName });
+
         product.brandName = brand.name;
         product.typePackagingName = typePackaging.name;
         product.save();
         return product;
     }
 
-    async getListByFilter(brandIds:number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0) {
+    async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0) {
         const queryFilter: any = {
-            include: {all:true}, 
+            include: { all: true },
             where: {}
         };
 
-        if(brandIds.length > 0) {
-            queryFilter.where.brandId = {[Op.or]: brandIds};
+        if (brandIds.length > 0) {
+            queryFilter.where.brandId = { [Op.or]: brandIds };
         }
 
-        if(minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
+        if (minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
             queryFilter.where.price = {
-                [Op.gte]: minPrice, 
+                [Op.gte]: minPrice,
                 [Op.lte]: maxPrice
             };
         }
 
-        if(typesPackagingIds.length > 0) {
-            queryFilter.where.typePackagingId = {[Op.or]: typesPackagingIds};
+        if (typesPackagingIds.length > 0) {
+            queryFilter.where.typePackagingId = { [Op.or]: typesPackagingIds };
         }
 
         return await this.productRepo.findAll(queryFilter);
@@ -64,7 +64,7 @@ export class ProductsService {
 
     async getMinAndMaxPrice(productType: string = "beers") {
         let where = {};
-        if(productType === "beers") {
+        if (productType === "beers") {
             where = {
                 beerId: {
                     [Op.ne]: null
@@ -78,7 +78,7 @@ export class ProductsService {
             };
         }
 
-        const query: any[] = getMinMaxQuery({colMin:'price', colMax: 'price', minOutput: 'minPrice', maxOutput: 'maxPrice'}); 
+        const query: any[] = getMinMaxQuery({ colMin: 'price', colMax: 'price', minOutput: 'minPrice', maxOutput: 'maxPrice' });
         return await this.productRepo.findAll({
             attributes: query,
             where
@@ -88,21 +88,21 @@ export class ProductsService {
     async searchByTitleAndDesc(q: string) {
         const products = await this.productRepo.findAll({
             where: {
-                [Op.or] : [
-                    {title: {[Op.iLike]: `%${q}%`}}, 
-                    {description: {[Op.iLike]: `%${q}%`}}
+                [Op.or]: [
+                    { title: { [Op.iLike]: `%${q}%` } },
+                    { description: { [Op.iLike]: `%${q}%` } }
                 ]
             }
         });
         return products.map((product) => {
-           return product.id;
+            return product.id;
         });
     }
 
     async getProductsByStock(productsIds: number[] | number, inStock: boolean = true) {
-        const query: any = {where:{id: productsIds, inStock: inStock, isActive: true}, include:{all:true}};
-        if(Array.isArray(productsIds)) {
-            query.where.id = {[Op.or]: productsIds};
+        const query: any = { where: { id: productsIds, inStock: inStock, isActive: true }, include: { all: true } };
+        if (Array.isArray(productsIds)) {
+            query.where.id = { [Op.or]: productsIds };
         }
 
         return await this.productRepo.findAll(query);
@@ -110,47 +110,57 @@ export class ProductsService {
 
     async addShow(id: number) {
         const product = await this.getById(id);
-        if(!product) {
-             throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
+        if (!product) {
+            throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
         }
- 
-        return this.productRepo.update({show: product.show + 1}, {where: {id}});
+
+        return this.productRepo.update({ show: product.show + 1 }, { where: { id } });
     }
 
     buildFilterByProductFields(
-        filterObj:any,
-        brandIds: number[] = [], 
-        typesPackagingIds: number[] = [], 
+        filterObj: any,
+        brandIds: number[] = [],
+        typesPackagingIds: number[] = [],
         minPrice: number = 0, maxPrice: number = 0) {
 
-        if(brandIds.length > 0) {
-            filterObj.brandId = {[Op.or]: brandIds};
+        if (brandIds.length > 0) {
+            filterObj.brandId = { [Op.or]: brandIds };
         }
 
-        if(minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
+        if (minPrice && maxPrice && minPrice > 0 && maxPrice > 0) {
             filterObj.price = {
-                [Op.gte]: minPrice, 
+                [Op.gte]: minPrice,
                 [Op.lte]: maxPrice
             };
         }
 
-        if(typesPackagingIds.length > 0) {
-            filterObj.typePackagingId = {[Op.or]: typesPackagingIds};
+        if (typesPackagingIds.length > 0) {
+            filterObj.typePackagingId = { [Op.or]: typesPackagingIds };
         }
 
         return filterObj;
     }
 
-    async update(id: number, dto: UpdateProductDto) {
-        return await this.productRepo.update({...dto}, {where: {id}})
+    isProductTableFields(field: string) {
+        const productFields = Products.getAttributes();
+        for (let prodKey in productFields) {
+            if (prodKey.toString() === field) {
+                return true;
+            }
+        }
+        return false;
     }
-    
+
+    async update(id: number, dto: UpdateProductDto) {
+        return await this.productRepo.update({ ...dto }, { where: { id } })
+    }
+
     async remove(id): Promise<Number> {
-        return await this.productRepo.destroy({where:{id}});
+        return await this.productRepo.destroy({ where: { id } });
     }
 
     async switchActive(id: number, isActive: boolean): Promise<Object> {
-        return await this.productRepo.update({isActive}, {where:{id}});
+        return await this.productRepo.update({ isActive }, { where: { id } });
     }
 
     async getById(id): Promise<Products> {
@@ -158,11 +168,11 @@ export class ProductsService {
     }
 
     async getAll(): Promise<Products[]> {
-        const product: any = await this.productRepo.findAll({include: {all:true}});
+        const product: any = await this.productRepo.findAll({ include: { all: true } });
         return product;
     }
-  
+
     async getListByBrand(brandId: number) {
-       return await this.productRepo.findAll({include: {all:true}, where: {brandId}});
+        return await this.productRepo.findAll({ include: { all: true }, where: { brandId } });
     }
 }

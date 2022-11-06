@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Model, Op } from 'sequelize';
 import { GradesService } from 'src/grades/grades.service';
 import { paginate } from 'src/helpers/paginationHelper';
 import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
@@ -16,14 +16,19 @@ interface IVolume {
     maxVolume: number
 }
 
-interface IFortress { 
+interface IFortress {
     minFortress: number,
     maxFortress: number,
 }
 
 interface IStateBeer {
-    forBottling:any,
-    filtered:any
+    forBottling: any,
+    filtered: any
+}
+
+interface ISort {
+    sortField: string,
+    order: string
 }
 
 @Injectable()
@@ -131,24 +136,35 @@ export class BeersService {
         return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
+    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: ISort = {sortField: '', order: ''}) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
-                filter = { 
+                filter = {
                     include: {
-                        all: true, 
-                    } 
+                        model: Products, as: 'product',
+                        where: {
+
+                        }
+                    }
                 };
             }
+          
+            const {sortField, order} = sort;
+            const query: any = paginate(filter, page, limitPage);
+                    
+            if (sortField && order) {
+                const sortArray = [
+                    sortField,
+                    order
+                ];
+                if(this.productService.isProductTableFields(sortField)) {
+                    sortArray.unshift("product");
+                }
+                query.order = [sortArray]; //сортировка по полю из связной таблицы
+            }
             
-            const query:any = paginate(filter, page, limitPage);
-            query.order = [[
-                "product",
-                ...sort
-            ]]; //сортировка по полю из связной таблицы
-        
             const beerList = await this.beerRepo.findAndCountAll(query);
-            
+
             if (beerList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
@@ -159,12 +175,12 @@ export class BeersService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, 
-        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, sort:[string, string] = ['price', 'ASC'], page: number, limitPage: number) {
+    async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0,
+        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, sort: ISort = {sortField: '', order: ''}, page: number, limitPage: number) {
 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
-        
+
         //фильтрация по полю из связной таблицы
         let queryFilter: any = {
             include: {
@@ -177,10 +193,10 @@ export class BeersService {
         };
 
         queryFilter.include.where = this.productService.buildFilterByProductFields(
-            queryFilter.include.where, 
-            brandIds, 
-            typesPackagingIds, 
-            minPrice, 
+            queryFilter.include.where,
+            brandIds,
+            typesPackagingIds,
+            minPrice,
             maxPrice
         );
 
@@ -188,37 +204,37 @@ export class BeersService {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
             queryFilter.where.id = beerIds;
         }
-        
-        if(minVolume && maxVolume  && minVolume > 0 && maxVolume > 0) {
+
+        if (minVolume && maxVolume && minVolume > 0 && maxVolume > 0) {
             queryFilter.where.volume = {
-                [Op.gte]: minVolume, 
+                [Op.gte]: minVolume,
                 [Op.lte]: maxVolume
             };
         }
 
-        if(minFortress && maxFortress && minFortress > 0 && maxFortress > 0) {
+        if (minFortress && maxFortress && minFortress > 0 && maxFortress > 0) {
             queryFilter.where.fortress = {
-                [Op.gte]: minFortress, 
+                [Op.gte]: minFortress,
                 [Op.lte]: maxFortress
             };
         }
-        
-        const {forBottling, filtered} = stateBeer;
-        if(forBottling == 'true' || forBottling == 'false') {
+
+        const { forBottling, filtered } = stateBeer;
+        if (forBottling == 'true' || forBottling == 'false') {
             queryFilter.where.forBottling = forBottling;
         }
 
-        if(filtered == 'true' || filtered == 'false') {
+        if (filtered == 'true' || filtered == 'false') {
             queryFilter.where.filtered = filtered;
         }
-        
+
         const beers = await this.getList(page, limitPage, queryFilter, sort);
         return beers;
     }
 
     async getMinAndMaxVolume() {
         let where = {};
-        const query: any[] = getMinMaxQuery({colMin:'volume', colMax: 'volume', minOutput: 'minVolume', maxOutput: 'maxVolume'});
+        const query: any[] = getMinMaxQuery({ colMin: 'volume', colMax: 'volume', minOutput: 'minVolume', maxOutput: 'maxVolume' });
         return await this.beerRepo.findAll({
             attributes: query,
             where
@@ -227,22 +243,22 @@ export class BeersService {
 
     async getMinAndMaxFortress() {
         let where = {};
-        const query: any[] = getMinMaxQuery({colMin:'fortress', colMax: 'fortress', minOutput: 'minFortress', maxOutput: 'maxFortress'});
+        const query: any[] = getMinMaxQuery({ colMin: 'fortress', colMax: 'fortress', minOutput: 'minFortress', maxOutput: 'maxFortress' });
         return await this.beerRepo.findAll({
             attributes: query,
             where
         });
     }
 
-    async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
+    async searchByName(q: string, page: number, limitPage: number = 0, sort: ISort = {sortField: '', order: ''}) {
         const query = {
             include: {
                 model: Products, as: 'product',
                 where: {
                     isActive: true,
-                    [Op.or] : [
-                        {title: {[Op.iLike]: `%${q}%`}}, 
-                        {description: {[Op.iLike]: `%${q}%`}}
+                    [Op.or]: [
+                        { title: { [Op.iLike]: `%${q}%` } },
+                        { description: { [Op.iLike]: `%${q}%` } }
                     ]
                 }
             }

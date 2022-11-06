@@ -11,8 +11,8 @@ export class BeersController {
     constructor(private beerService: BeersService) { }
 
     @Get()
-    getList(@Query('page') page: string, @Query('limitPage') limitPage: string) {
-        return this.beerService.getList(Number(page), Number(limitPage));
+    getList(@Query('page') page: string, @Query('limitPage') limitPage: string, @Query('sortField') sortField: string, @Query('order') order: string) {
+        return this.beerService.getList(Number(page), Number(limitPage), {}, {sortField, order});
     }
 
     @Get('/getById/:id')
@@ -27,7 +27,7 @@ export class BeersController {
         @Query('maxVolume') maxVolume: number, @Query('minFortress') minFortress: number, 
         @Query('maxFortress') maxFortress: number, @Query('forBottling') forBottling: boolean, @Query('filtered') filtered: boolean,
         @Query('page') page: string, @Query('limitPage') limitPage: string,
-        @Query('sort') sort: [string, string]) {
+        @Query('sortField') sortField: string = '', @Query('order') order: string = '') {
         return this.beerService.getListByFilter(
             grades, 
             brandIds, 
@@ -37,7 +37,7 @@ export class BeersController {
             { minVolume, maxVolume }, 
             { minFortress, maxFortress },
             { forBottling, filtered},
-            sort,
+            {sortField, order},
             Number(page), 
             Number(limitPage)
         );
@@ -54,8 +54,8 @@ export class BeersController {
     }
 
     @Get('/search')
-    search(@Query('q') q: string, @Query('page') page: string, @Query('limitPage') limitPage: string,  @Query('sort') sort: [string, string]) {
-        return this.beerService.searchByName(q, Number(page), Number(limitPage), sort);
+    search(@Query('q') q: string, @Query('page') page: string, @Query('limitPage') limitPage: string,  @Query('sortField') sortField: string = '', @Query('order') order: string = '') {
+        return this.beerService.searchByName(q, Number(page), Number(limitPage), {sortField, order});
     }
 
     // @UsePipes(ValidationPipe)
