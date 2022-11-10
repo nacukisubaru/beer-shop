@@ -151,7 +151,12 @@ export class BeersService {
           
             const {sortField, order} = sort;
             const query: any = paginate(filter, page, limitPage);
-                    
+            const countRows = await Beers.count();
+            let lastPage = Math.ceil(countRows / limitPage);
+            if(lastPage > 0) {
+                lastPage = lastPage - 1;
+            }
+            
             if (sortField && order) {
                 const sortArray = [
                     sortField,
@@ -162,14 +167,14 @@ export class BeersService {
                 }
                 query.order = [sortArray]; //сортировка по полю из связной таблицы
             }
-            
+         
             const beerList = await this.beerRepo.findAndCountAll(query);
 
             if (beerList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
 
-            return { ...beerList, nextPage: page + 1 };
+            return { ...beerList, nextPage: page + 1, lastPage, countRows };
         }
 
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
