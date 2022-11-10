@@ -180,8 +180,9 @@ export class BeersService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0,
-        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, sort: ISort = {sortField: '', order: ''}, page: number, limitPage: number) {
+    async getListByFilter(title: string, description: string,grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0,
+        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, 
+        sort: ISort = {sortField: '', order: ''}, page: number, limitPage: number) {
 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
@@ -222,6 +223,18 @@ export class BeersService {
                 [Op.gte]: minFortress,
                 [Op.lte]: maxFortress
             };
+        }
+
+        if(title) {
+            queryFilter.where = {
+                title: { [Op.iLike]: `%${name}%` }
+            }
+        }
+
+        if(description) {
+            queryFilter.where = {
+                description: { [Op.iLike]: `%${description}%` } 
+            }
         }
 
         const { forBottling, filtered } = stateBeer;

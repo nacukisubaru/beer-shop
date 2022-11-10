@@ -25,10 +25,13 @@ export class BeersController {
         @Query('typesPackagingIds') typesPackagingIds: number[], @Query('minPrice') minPrice: number, 
         @Query('maxPrice') maxPrice: number, @Query('minVolume') minVolume: number, 
         @Query('maxVolume') maxVolume: number, @Query('minFortress') minFortress: number, 
-        @Query('maxFortress') maxFortress: number, @Query('forBottling') forBottling: boolean, @Query('filtered') filtered: boolean,
-        @Query('page') page: string, @Query('limitPage') limitPage: string,
+        @Query('maxFortress') maxFortress: number, @Query('forBottling') forBottling: boolean, 
+        @Query('filtered') filtered: boolean, @Query('title') title: string, @Query('description') description: string,
+        @Query('page') page: string, @Query('limitPage') limitPage: string, 
         @Query('sortField') sortField: string = '', @Query('order') order: string = '') {
         return this.beerService.getListByFilter(
+            title,
+            description,
             grades, 
             brandIds, 
             typesPackagingIds,
