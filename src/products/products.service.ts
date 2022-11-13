@@ -121,7 +121,7 @@ export class ProductsService {
         filterObj: any,
         brandIds: number[] = [],
         typesPackagingIds: number[] = [],
-        minPrice: number = 0, maxPrice: number = 0) {
+        minPrice: number = 0, maxPrice: number = 0, title: string = "", description: string = "") {
 
         if (brandIds.length > 0) {
             filterObj.brandId = { [Op.or]: brandIds };
@@ -136,6 +136,14 @@ export class ProductsService {
 
         if (typesPackagingIds.length > 0) {
             filterObj.typePackagingId = { [Op.or]: typesPackagingIds };
+        }
+
+        if(title) {
+            filterObj.title = { [Op.iLike]: `%${title}%` };
+        }
+
+        if(description) {
+            filterObj.description = { [Op.iLike]: `%${description}%` } 
         }
 
         return filterObj;

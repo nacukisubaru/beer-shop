@@ -203,7 +203,9 @@ export class BeersService {
             brandIds,
             typesPackagingIds,
             minPrice,
-            maxPrice
+            maxPrice,
+            title,
+            description
         );
 
         if (grades.length > 0) {
@@ -223,18 +225,6 @@ export class BeersService {
                 [Op.gte]: minFortress,
                 [Op.lte]: maxFortress
             };
-        }
-
-        if(title) {
-            queryFilter.where = {
-                title: { [Op.iLike]: `%${name}%` }
-            }
-        }
-
-        if(description) {
-            queryFilter.where = {
-                description: { [Op.iLike]: `%${description}%` } 
-            }
         }
 
         const { forBottling, filtered } = stateBeer;
