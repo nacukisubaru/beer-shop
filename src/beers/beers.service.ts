@@ -37,7 +37,8 @@ interface IBeerFilter {
     maxPrice: number, 
     volume: IVolume, 
     fortress: IFortress, 
-    stateBeer: IStateBeer, 
+    stateBeer: IStateBeer,
+    isActive: boolean,
     sort: ISort, 
     page: number, limitPage: number
 }
@@ -203,18 +204,19 @@ export class BeersService {
             volume, 
             fortress, 
             stateBeer, 
-            sort = {sortField: '', order: ''}, 
+            sort = {sortField: '', order: ''},
+            isActive = true, 
             page, limitPage
         } = filter 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
-
+        
         //фильтрация по полю из связной таблицы
         let queryFilter: any = {
             include: {
                 model: Products, as: 'product',
                 where: {
-                    isActive: true
+                    isActive
                 }
             },
             where: {}

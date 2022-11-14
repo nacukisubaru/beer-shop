@@ -26,11 +26,13 @@ export class BeersController {
         @Query('maxPrice') maxPrice: number, @Query('minVolume') minVolume: number, 
         @Query('maxVolume') maxVolume: number, @Query('minFortress') minFortress: number, 
         @Query('maxFortress') maxFortress: number, @Query('forBottling') forBottling: boolean, 
-        @Query('filtered') filtered: boolean, @Query('title') title: string, @Query('description') description: string,
-        @Query('page') page: string, @Query('limitPage') limitPage: string, 
+        @Query('filtered') filtered: boolean, @Query('title') title: string, @Query('isActive') isActive: string,
+        @Query('description') description: string, @Query('page') page: string, @Query('limitPage') limitPage: string, 
         @Query('sortField') sortField: string = '', @Query('order') order: string = '') {
+            
         return this.beerService.getListByFilter({
             id: Number(id),
+            isActive: !isActive ? true : isActive === 'false' ? false : true,
             title,
             description,
             grades, 
