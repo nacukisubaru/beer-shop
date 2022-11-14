@@ -32,18 +32,19 @@ export class SnacksController {
     }
 
     @Get('/getListByFilter')
-    getListByFilter(@Query('brandIds') brandIds: number[], @Query('typesPackagingIds') typesPackagingIds: number[],
+    getListByFilter(@Query('id') id: number, @Query('brandIds') brandIds: number[], @Query('typesPackagingIds') typesPackagingIds: number[],
         @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, @Query('sort') sort: [string, string],
         @Query('page') page: string, @Query('limitPage') limitPage: string) {
-        return this.snacksService.getListByFilter(
+        return this.snacksService.getListByFilter({
+            id,
             brandIds, 
             typesPackagingIds, 
             minPrice, 
             maxPrice,
             sort,
-            Number(page), 
-            Number(limitPage)
-        );
+            page: Number(page), 
+            limitPage: Number(limitPage)
+        });
     }
 
     @Get('/search')

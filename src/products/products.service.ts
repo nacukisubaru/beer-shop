@@ -10,7 +10,15 @@ import { Op, where } from 'sequelize';
 import sequelize from 'sequelize';
 import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
 import { TypePackagingService } from 'src/type-packaging/type-packaging.service';
-
+interface IProductFilter {
+    id?: number,
+    brandIds?: number[],
+    typesPackagingIds?: number[],
+    minPrice?: number, 
+    maxPrice?: number, 
+    title?: string, 
+    description?: string
+}
 @Injectable()
 export class ProductsService {
     constructor(@InjectModel(Products) private productRepo: typeof Products,
@@ -117,11 +125,20 @@ export class ProductsService {
         return this.productRepo.update({ show: product.show + 1 }, { where: { id } });
     }
 
-    buildFilterByProductFields(
-        filterObj: any,
-        brandIds: number[] = [],
-        typesPackagingIds: number[] = [],
-        minPrice: number = 0, maxPrice: number = 0, title: string = "", description: string = "") {
+    buildFilterByProductFields(filterObj: any, filter:IProductFilter) {
+        const {
+            id = 0,
+            brandIds = [],
+            typesPackagingIds = [],
+            minPrice = 0, 
+            maxPrice = 0, 
+            title = "", 
+            description = ""
+        } = filter;
+        
+        if(id) {
+            filterObj.id = id;
+        }
 
         if (brandIds.length > 0) {
             filterObj.brandId = { [Op.or]: brandIds };

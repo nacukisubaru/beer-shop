@@ -8,7 +8,15 @@ import { UpdateSnackDto } from './dto/update-snack.dto';
 import { Snack } from './snacks.model';
 import { Products } from 'src/products/products.model';
 import { Op } from 'sequelize';
-
+interface ISnackFilter {
+    id: number, 
+    brandIds: number[], 
+    typesPackagingIds: number[], 
+    minPrice: number, 
+    maxPrice: number, 
+    sort: [string, string], 
+    page: number, limitPage: number
+}
 @Injectable()
 export class SnacksService {
     constructor(@InjectModel(Snack) private snackRepo: typeof Snack,
@@ -89,7 +97,7 @@ export class SnacksService {
         return false;
     }
 
-    async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, sort: [string, string] = ['price', 'ASC'], page: number, limitPage: number) {
+    async getListByFilter(filter: ISnackFilter) {
         const queryFilter: any = {
             include: {
                 model: Products, as: 'product',
@@ -99,14 +107,23 @@ export class SnacksService {
             },
             where: {}
         };
-
-        queryFilter.include.where = this.productService.buildFilterByProductFields(
-            queryFilter.include.where, 
+        const {
+            id = 0, 
+            brandIds = [], 
+            typesPackagingIds = [], 
+            minPrice = 0, 
+            maxPrice = 0, 
+            sort = ['price', 'ASC'], 
+            page, limitPage 
+        } = filter
+       
+        queryFilter.include.where = this.productService.buildFilterByProductFields(queryFilter.include.where, {
+            id,
             brandIds, 
             typesPackagingIds, 
             minPrice, 
-            maxPrice
-        );
+            maxPrice,
+        });
 
         const snacks = await this.getList(page, limitPage, queryFilter, sort);
         return snacks;

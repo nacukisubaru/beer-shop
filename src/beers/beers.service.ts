@@ -10,27 +10,37 @@ import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
 import { UpdateBeerDto } from './dto/update-beer.dto';
-
 interface IVolume {
     minVolume: number,
     maxVolume: number
 }
-
 interface IFortress {
     minFortress: number,
     maxFortress: number,
 }
-
 interface IStateBeer {
     forBottling: any,
     filtered: any
 }
-
 interface ISort {
     sortField: string,
     order: string
 }
-
+interface IBeerFilter {
+    id: number, 
+    title: string, 
+    description: string, 
+    grades: number[], 
+    brandIds: number[], 
+    typesPackagingIds: number[], 
+    minPrice: number, 
+    maxPrice: number, 
+    volume: IVolume, 
+    fortress: IFortress, 
+    stateBeer: IStateBeer, 
+    sort: ISort, 
+    page: number, limitPage: number
+}
 @Injectable()
 export class BeersService {
 
@@ -180,10 +190,22 @@ export class BeersService {
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async getListByFilter(title: string, description: string,grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0,
-        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, 
-        sort: ISort = {sortField: '', order: ''}, page: number, limitPage: number) {
-
+    async getListByFilter(filter: IBeerFilter) {
+        const {
+            id = 0, 
+            title, 
+            description, 
+            grades = [], 
+            brandIds = [], 
+            typesPackagingIds = [], 
+            minPrice = 0, 
+            maxPrice = 0, 
+            volume, 
+            fortress, 
+            stateBeer, 
+            sort = {sortField: '', order: ''}, 
+            page, limitPage
+        } = filter 
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
 
@@ -198,15 +220,15 @@ export class BeersService {
             where: {}
         };
 
-        queryFilter.include.where = this.productService.buildFilterByProductFields(
-            queryFilter.include.where,
+        queryFilter.include.where = this.productService.buildFilterByProductFields(queryFilter.include.where, {
+            id,
             brandIds,
             typesPackagingIds,
             minPrice,
             maxPrice,
             title,
-            description
-        );
+            description,
+        });
 
         if (grades.length > 0) {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
