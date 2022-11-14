@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Model, Op } from 'sequelize';
 import { GradesService } from 'src/grades/grades.service';
-import { paginate } from 'src/helpers/paginationHelper';
+import { paginate, defaultLimitPage } from 'src/helpers/paginationHelper';
 import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
 import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
 import { Products } from 'src/products/products.model';
@@ -147,7 +147,7 @@ export class BeersService {
         return await this.beerRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: ISort = {sortField: '', order: ''}) {
+    async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: ISort = {sortField: '', order: ''}) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
                 filter = {
@@ -162,12 +162,7 @@ export class BeersService {
           
             const {sortField, order} = sort;
             const query: any = paginate(filter, page, limitPage);
-            const countRows = await Beers.count();
-            let lastPage = Math.ceil(countRows / limitPage);
-            if(lastPage > 0) {
-                lastPage = lastPage - 1;
-            }
-            
+          
             if (sortField && order) {
                 const sortArray = [
                     sortField,
@@ -178,14 +173,20 @@ export class BeersService {
                 }
                 query.order = [sortArray]; //сортировка по полю из связной таблицы
             }
-         
+
             const beerList = await this.beerRepo.findAndCountAll(query);
 
             if (beerList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
 
-            return { ...beerList, nextPage: page + 1, lastPage, countRows };
+            const lastPage = Math.ceil(beerList.count / limitPage) - 1;
+            let nextPage = 0;
+            if(lastPage > 0) {
+                nextPage = page + 1;
+            }
+
+            return { ...beerList, nextPage, lastPage};
         }
 
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
