@@ -32,7 +32,7 @@ export class BeersController {
             
         return this.beerService.getListByFilter({
             id: Number(id),
-            isActive: !isActive ? true : isActive === 'false' ? false : true,
+            isActive,
             title,
             description,
             grades, 

@@ -17,7 +17,8 @@ interface IProductFilter {
     minPrice?: number, 
     maxPrice?: number, 
     title?: string, 
-    description?: string
+    description?: string,
+    isActive?: string
 }
 @Injectable()
 export class ProductsService {
@@ -133,11 +134,16 @@ export class ProductsService {
             minPrice = 0, 
             maxPrice = 0, 
             title = "", 
-            description = ""
+            description = "",
+            isActive
         } = filter;
         
         if(id) {
             filterObj.id = id;
+        }
+        
+        if(isActive && (isActive === 'true' || isActive === 'false')) {
+            filterObj.isActive = isActive === 'false' ? false : true;
         }
 
         if (brandIds.length > 0) {

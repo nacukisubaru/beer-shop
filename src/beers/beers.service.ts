@@ -38,7 +38,7 @@ interface IBeerFilter {
     volume: IVolume, 
     fortress: IFortress, 
     stateBeer: IStateBeer,
-    isActive: boolean,
+    isActive: string,
     sort: ISort, 
     page: number, limitPage: number
 }
@@ -206,7 +206,7 @@ export class BeersService {
             fortress, 
             stateBeer, 
             sort = {sortField: '', order: ''},
-            isActive = true, 
+            isActive, 
             page, limitPage
         } = filter 
         const { minVolume, maxVolume } = volume;
@@ -216,9 +216,7 @@ export class BeersService {
         let queryFilter: any = {
             include: {
                 model: Products, as: 'product',
-                where: {
-                    isActive
-                }
+                where: {}
             },
             where: {}
         };
@@ -231,8 +229,9 @@ export class BeersService {
             maxPrice,
             title,
             description,
+            isActive
         });
-
+        
         if (grades.length > 0) {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
             queryFilter.where.id = beerIds;
