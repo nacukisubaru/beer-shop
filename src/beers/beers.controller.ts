@@ -65,7 +65,7 @@ export class BeersController {
         return this.beerService.searchByName(q, Number(page), Number(limitPage), {sortField, order});
     }
 
-    // @UsePipes(ValidationPipe)
+    @UsePipes(ValidationPipe)
     @Post('/create')
     @UseInterceptors(FileInterceptor('image'))
     createBeer(@Body() dto: CreateBeerDto, @UploadedFile() image) {
