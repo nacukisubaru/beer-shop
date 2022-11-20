@@ -53,17 +53,17 @@ export class BeersService {
         const productData = {
             title: dto.title,
             description: dto.description,
-            price: dto.price,
-            quantity: dto.quantity,
-            brandId: dto.brandId,
-            typePackagingId: dto.typePackagingId
+            price: Number(dto.price),
+            quantity: Number(dto.quantity),
+            brandId: Number(dto.brandId),
+            typePackagingId: Number(dto.typePackagingId)
         };
 
         const beerData = {
             compound: dto.compound,
-            volume: dto.volume,
-            fortress: dto.fortress,
-            ibu: dto.ibu,
+            volume: Number(dto.volume),
+            fortress: Number(dto.fortress),
+            ibu: Number(dto.ibu),
             forBottling: dto.forBottling,
             filtered: dto.filtered
         };
