@@ -68,14 +68,15 @@ export class BeersController {
     @UsePipes(ValidationPipe)
     @Post('/create')
     @UseInterceptors(FileInterceptor('image'))
-    createBeer(@Body() dto: CreateBeerDto, @UploadedFile() image) {
+    create(@Body() dto: CreateBeerDto, @UploadedFile() image) {
         return this.beerService.create(dto, image);
     }
 
     @UsePipes(ValidationPipe)
     @Post('/update')
-    update(@Body() dto: UpdateBeerDto) {
-        const id = dto.id;
+    @UseInterceptors(FileInterceptor('image'))
+    update(@Body() dto: UpdateBeerDto, @UploadedFile() image) {
+        const id = Number(dto.id);
         delete dto.id;
         return this.beerService.update(id, dto);
     }

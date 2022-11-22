@@ -27,19 +27,19 @@ interface ISort {
     order: string
 }
 interface IBeerFilter {
-    id: number, 
-    title: string, 
-    description: string, 
-    grades: number[], 
-    brandIds: number[], 
-    typesPackagingIds: number[], 
-    minPrice: number, 
-    maxPrice: number, 
-    volume: IVolume, 
-    fortress: IFortress, 
+    id: number,
+    title: string,
+    description: string,
+    grades: number[],
+    brandIds: number[],
+    typesPackagingIds: number[],
+    minPrice: number,
+    maxPrice: number,
+    volume: IVolume,
+    fortress: IFortress,
     stateBeer: IStateBeer,
     isActive: string,
-    sort: ISort, 
+    sort: ISort,
     page: number, limitPage: number
 }
 @Injectable()
@@ -110,7 +110,7 @@ export class BeersService {
             filtered: dto.filtered
         };
 
-        const beer = await this.beerRepo.findByPk(id);
+        const beer = await this.getById(id);
         if (!beer) {
             throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
         }
@@ -144,10 +144,17 @@ export class BeersService {
     }
 
     async getById(id: number): Promise<Beers> {
-        return await this.beerRepo.findByPk(id, { include: { all: true } });
+        const res = await this.beerRepo.findOne({
+            include: {
+                all: true,
+                nested: true
+            },
+            where: { productId: id }
+        });
+        return res;
     }
 
-    async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: ISort = {sortField: '', order: ''}) {
+    async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: ISort = { sortField: '', order: '' }) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
                 filter = {
@@ -159,16 +166,16 @@ export class BeersService {
                     }
                 };
             }
-          
-            const {sortField, order} = sort;
+
+            const { sortField, order } = sort;
             const query: any = paginate(filter, page, limitPage);
-          
+
             if (sortField && order) {
                 const sortArray = [
                     sortField,
                     order
                 ];
-                if(this.productService.isProductTableFields(sortField)) {
+                if (this.productService.isProductTableFields(sortField)) {
                     sortArray.unshift("product");
                 }
                 query.order = [sortArray]; //сортировка по полю из связной таблицы
@@ -182,11 +189,11 @@ export class BeersService {
 
             const lastPage = Math.ceil(beerList.count / limitPage) - 1;
             let nextPage = 0;
-            if(lastPage > 0) {
+            if (lastPage > 0) {
                 nextPage = page + 1;
             }
 
-            return { ...beerList, nextPage, lastPage};
+            return { ...beerList, nextPage, lastPage };
         }
 
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
@@ -194,24 +201,24 @@ export class BeersService {
 
     async getListByFilter(filter: IBeerFilter) {
         const {
-            id = 0, 
-            title, 
-            description, 
-            grades = [], 
-            brandIds = [], 
-            typesPackagingIds = [], 
-            minPrice = 0, 
-            maxPrice = 0, 
-            volume, 
-            fortress, 
-            stateBeer, 
-            sort = {sortField: '', order: ''},
-            isActive, 
+            id = 0,
+            title,
+            description,
+            grades = [],
+            brandIds = [],
+            typesPackagingIds = [],
+            minPrice = 0,
+            maxPrice = 0,
+            volume,
+            fortress,
+            stateBeer,
+            sort = { sortField: '', order: '' },
+            isActive,
             page, limitPage
-        } = filter 
+        } = filter
         const { minVolume, maxVolume } = volume;
         const { minFortress, maxFortress } = fortress;
-        
+
         //фильтрация по полю из связной таблицы
         let queryFilter: any = {
             include: {
@@ -231,7 +238,7 @@ export class BeersService {
             description,
             isActive
         });
-        
+
         if (grades.length > 0) {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
             queryFilter.where.id = beerIds;
@@ -282,7 +289,7 @@ export class BeersService {
         });
     }
 
-    async searchByName(q: string, page: number, limitPage: number = 0, sort: ISort = {sortField: '', order: ''}) {
+    async searchByName(q: string, page: number, limitPage: number = 0, sort: ISort = { sortField: '', order: '' }) {
         const query = {
             include: {
                 model: Products, as: 'product',
