@@ -44,4 +44,6 @@ export class CreateBeerDto {
     @IsString({message: 'Обязательное поле'})
     isActive: string;
     
+    @IsString({message: 'Обязательное поле'})
+    inStock: string;
 }

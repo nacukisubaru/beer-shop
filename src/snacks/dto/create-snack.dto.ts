@@ -20,7 +20,10 @@ export class CreateSnackDto {
     brandId: number;
 
     typePackagingId:number;
-    
+
     @IsString({message: 'Должно быть строкой'})
     isActive: string;
+
+    @IsString({message: 'Должно быть строкой'})
+    inStock: string; 
 }

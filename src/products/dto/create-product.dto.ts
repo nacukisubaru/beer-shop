@@ -6,4 +6,5 @@ export class CreateProductDto {
     brandId: number;
     typePackagingId: number;
     isActive: boolean;
+    inStock: boolean;
 }

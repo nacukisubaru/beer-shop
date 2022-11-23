@@ -31,7 +31,8 @@ export class SnacksService {
             quantity: createSnackDto.quantity,
             brandId: createSnackDto.brandId,
             typePackagingId: createSnackDto.typePackagingId,
-            isActive: createSnackDto.isActive === 'true' ? true : false
+            isActive: createSnackDto.isActive === 'true' ? true : false,
+            inStock: createSnackDto.inStock === 'true' ? true : false,
         };
 
         const product = await this.productService.create(productData, image);
@@ -83,6 +84,7 @@ export class SnacksService {
             brandId: updateSnackDto.brandId,
             typePackagingId: updateSnackDto.typePackagingId,
             isActive: updateSnackDto.isActive === 'true' ? true : false,
+            inStock: updateSnackDto.inStock === 'true' ? true : false,
         };
 
         const snack = await this.snackRepo.findByPk(id);

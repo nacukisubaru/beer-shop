@@ -58,6 +58,7 @@ export class BeersService {
             brandId: Number(dto.brandId),
             typePackagingId: Number(dto.typePackagingId),
             isActive: dto.isActive === 'true' ? true : false,
+            inStock: dto.inStock === 'true' ? true : false
         };
 
         const beerData = {
@@ -100,6 +101,7 @@ export class BeersService {
             typePackagingId: Number(dto.typePackagingId),
             brandId: Number(dto.brandId),
             isActive: dto.isActive === 'true' ? true : false,
+            inStock: dto.inStock === 'true' ? true : false,
         };
 
         const beerData = {
@@ -124,7 +126,7 @@ export class BeersService {
         if (dto.gradeIds) {
             beer.$set('grades', dto.gradeIds);
         }
-        
+
         const productId = beer.productId;
         await this.productService.update(productId, prodData, image);
         if (this.beerRepo.update({ ...beerData }, { where: { productId: id } })) {
