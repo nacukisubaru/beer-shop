@@ -94,20 +94,19 @@ export class BeersService {
         const prodData = {
             title: dto.title,
             description: dto.description,
-            price: dto.price,
-            quantity: dto.quantity,
-            typePackagingId: dto.typePackagingId
+            price: Number(dto.price),
+            quantity: Number(dto.quantity),
+            typePackagingId: Number(dto.typePackagingId),
+            brandId: Number(dto.brandId),
         };
 
         const beerData = {
             compound: dto.compound,
-            volume: dto.volume,
-            fortress: dto.fortress,
-            ibu: dto.ibu,
-            price: dto.price,
-            name: dto.title,
-            forBottling: dto.forBottling,
-            filtered: dto.filtered
+            volume: Number(dto.volume),
+            fortress: Number(dto.fortress),
+            ibu: Number(dto.ibu),
+            forBottling: dto.forBottling === 'true' ? true : false,
+            filtered: dto.filtered === 'true' ? true : false 
         };
 
         const beer = await this.getById(id);
@@ -126,7 +125,7 @@ export class BeersService {
 
         const productId = beer.productId;
         await this.productService.update(productId, prodData);
-        if (this.beerRepo.update({ ...beerData }, { where: { id } })) {
+        if (this.beerRepo.update({ ...beerData }, { where: { productId: id } })) {
             return true;
         }
 

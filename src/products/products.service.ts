@@ -183,7 +183,17 @@ export class ProductsService {
     }
 
     async update(id: number, dto: UpdateProductDto) {
-        return await this.productRepo.update({ ...dto }, { where: { id } })
+        const brand = await this.brandService.getById(dto.brandId);
+        if (!brand) {
+            throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
+        }
+
+        const typePackaging = await this.typePackagingService.getById(dto.typePackagingId);
+        if (!typePackaging) {
+            throw new HttpException('Тип упаковки не был найден', HttpStatus.BAD_REQUEST);
+        }
+        
+        return await this.productRepo.update({ ...dto, brandName: brand.name, typePackagingName: typePackaging.name}, { where: { id } })
     }
 
     async remove(id): Promise<Number> {

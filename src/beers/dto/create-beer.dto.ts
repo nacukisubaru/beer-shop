@@ -36,8 +36,8 @@ export class CreateBeerDto {
     gradeIds: number[];
 
     @IsString({message: 'Обязательное поле'})
-    forBottling:boolean;
+    forBottling: string;
     
     @IsString({message: 'Обязательное поле'})
-    filtered: boolean;
+    filtered: string;
 }
