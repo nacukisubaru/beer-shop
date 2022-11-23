@@ -23,7 +23,7 @@ export class SnacksService {
         private productService: ProductsService) { }
 
 
-    async create(createSnackDto: CreateSnackDto, image: any) {
+    async create(createSnackDto: CreateSnackDto, image: BinaryData) {
         const productData = {
             title: createSnackDto.title,
             description: createSnackDto.description,
@@ -31,7 +31,7 @@ export class SnacksService {
             quantity: createSnackDto.quantity,
             brandId: createSnackDto.brandId,
             typePackagingId: createSnackDto.typePackagingId,
-            isActive: createSnackDto.isActive === 'true' ? true : false,
+            isActive: createSnackDto.isActive === 'true' ? true : false
         };
 
         const product = await this.productService.create(productData, image);

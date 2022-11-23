@@ -27,7 +27,7 @@ export class ProductsService {
         private fileService: FilesService,
         private typePackagingService: TypePackagingService) { }
 
-    async create(dto: CreateProductDto, image: any) {
+    async create(dto: CreateProductDto, image: BinaryData) {
         const brand = await this.brandService.getById(dto.brandId);
         if (!brand) {
             throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
@@ -38,8 +38,15 @@ export class ProductsService {
             throw new HttpException('Тип упаковки не был найден', HttpStatus.BAD_REQUEST);
         }
 
-        const fileName = await this.fileService.createFile(image, 'products');
-        const product = await this.productRepo.create({ ...dto, image: fileName });
+        const prepareProduct:any = dto;
+        if(image) {
+            const fileName = await this.fileService.createFile(image, 'products');
+            if(fileName) {
+                prepareProduct.image = fileName; 
+            }
+        }
+
+        const product = await this.productRepo.create(prepareProduct);
 
         product.brandName = brand.name;
         product.typePackagingName = typePackaging.name;
@@ -193,8 +200,15 @@ export class ProductsService {
             throw new HttpException('Тип упаковки не был найден', HttpStatus.BAD_REQUEST);
         }
 
-        const fileName = await this.fileService.createFile(image, 'products');
-        return await this.productRepo.update({ ...dto, brandName: brand.name, typePackagingName: typePackaging.name, image: fileName}, { where: { id } })
+        const prepareProduct:any = { ...dto, brandName: brand.name, typePackagingName: typePackaging.name };
+        if(image) {
+            const fileName = await this.fileService.createFile(image, 'products');
+            if(fileName) {
+                prepareProduct.image = fileName; 
+            }
+        }
+    
+        return await this.productRepo.update(prepareProduct, { where: { id } })
     }
 
     async remove(id): Promise<Number> {
