@@ -30,7 +30,8 @@ export class SnacksService {
             price: createSnackDto.price,
             quantity: createSnackDto.quantity,
             brandId: createSnackDto.brandId,
-            typePackagingId: createSnackDto.typePackagingId
+            typePackagingId: createSnackDto.typePackagingId,
+            isActive: createSnackDto.isActive === 'true' ? true : false,
         };
 
         const product = await this.productService.create(productData, image);
@@ -80,7 +81,8 @@ export class SnacksService {
             price: updateSnackDto.price,
             quantity: updateSnackDto.quantity,
             brandId: updateSnackDto.brandId,
-            typePackagingId: updateSnackDto.typePackagingId
+            typePackagingId: updateSnackDto.typePackagingId,
+            isActive: updateSnackDto.isActive === 'true' ? true : false,
         };
 
         const snack = await this.snackRepo.findByPk(id);

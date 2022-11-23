@@ -40,4 +40,8 @@ export class CreateBeerDto {
     
     @IsString({message: 'Обязательное поле'})
     filtered: string;
+
+    @IsString({message: 'Обязательное поле'})
+    isActive: string;
+    
 }

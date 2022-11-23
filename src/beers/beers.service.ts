@@ -56,7 +56,8 @@ export class BeersService {
             price: Number(dto.price),
             quantity: Number(dto.quantity),
             brandId: Number(dto.brandId),
-            typePackagingId: Number(dto.typePackagingId)
+            typePackagingId: Number(dto.typePackagingId),
+            isActive: dto.isActive === 'true' ? true : false,
         };
 
         const beerData = {
@@ -64,8 +65,8 @@ export class BeersService {
             volume: Number(dto.volume),
             fortress: Number(dto.fortress),
             ibu: Number(dto.ibu),
-            forBottling: dto.forBottling,
-            filtered: dto.filtered
+            forBottling: dto.forBottling === 'true' ? true : false,
+            filtered: dto.filtered === 'true' ? true : false 
         };
 
         const grades = await this.gradeService.findByIds(dto.gradeIds);
@@ -98,6 +99,7 @@ export class BeersService {
             quantity: Number(dto.quantity),
             typePackagingId: Number(dto.typePackagingId),
             brandId: Number(dto.brandId),
+            isActive: dto.isActive === 'true' ? true : false,
         };
 
         const beerData = {
@@ -122,7 +124,7 @@ export class BeersService {
         if (dto.gradeIds) {
             beer.$set('grades', dto.gradeIds);
         }
-
+        
         const productId = beer.productId;
         await this.productService.update(productId, prodData, image);
         if (this.beerRepo.update({ ...beerData }, { where: { productId: id } })) {
