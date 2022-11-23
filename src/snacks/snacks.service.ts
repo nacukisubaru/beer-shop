@@ -73,7 +73,7 @@ export class SnacksService {
         return await this.snackRepo.findByPk(id, { include: { all: true } });
     }
 
-    async update(id: number, updateSnackDto: UpdateSnackDto) {
+    async update(id: number, updateSnackDto: UpdateSnackDto, image: BinaryData) {
         const prodData = {
             title: updateSnackDto.title,
             description: updateSnackDto.description,
@@ -89,7 +89,7 @@ export class SnacksService {
         }
 
         const productId = snack.productId;
-        await this.productService.update(productId, prodData);
+        await this.productService.update(productId, prodData, image);
         if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { id } })) {
             return true;
         }

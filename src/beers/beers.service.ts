@@ -89,7 +89,7 @@ export class BeersService {
         }
     }
 
-    async update(id: number, dto: UpdateBeerDto) {
+    async update(id: number, dto: UpdateBeerDto, image: BinaryData) {
 
         const prodData = {
             title: dto.title,
@@ -124,7 +124,7 @@ export class BeersService {
         }
 
         const productId = beer.productId;
-        await this.productService.update(productId, prodData);
+        await this.productService.update(productId, prodData, image);
         if (this.beerRepo.update({ ...beerData }, { where: { productId: id } })) {
             return true;
         }

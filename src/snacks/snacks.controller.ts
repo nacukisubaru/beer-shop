@@ -15,10 +15,11 @@ export class SnacksController {
     }
 
     @Post('/update')
-    update(@Body() updateSnackDto: UpdateSnackDto) {
+    @UseInterceptors(FileInterceptor('image'))
+    update(@Body() updateSnackDto: UpdateSnackDto, @UploadedFile() image: BinaryData) {
         const id = updateSnackDto.id;
         delete updateSnackDto.id;
-        return this.snacksService.update(id, updateSnackDto);
+        return this.snacksService.update(id, updateSnackDto, image);
     }
 
     @Get()

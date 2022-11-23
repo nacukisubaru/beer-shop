@@ -75,10 +75,10 @@ export class BeersController {
     @UsePipes(ValidationPipe)
     @Post('/update')
     @UseInterceptors(FileInterceptor('image'))
-    update(@Body() dto: UpdateBeerDto, @UploadedFile() image) {
+    update(@Body() dto: UpdateBeerDto, @UploadedFile() image: BinaryData) {
         const id = Number(dto.id);
         delete dto.id;
-        return this.beerService.update(id, dto);
+        return this.beerService.update(id, dto, image);
     }
 
     @Delete('/remove/:id')
