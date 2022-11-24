@@ -40,6 +40,8 @@ interface IBeerFilter {
     stateBeer: IStateBeer,
     isActive: string,
     sort: ISort,
+    compound: string,
+    inStock: boolean,
     page: number, limitPage: number
 }
 @Injectable()
@@ -217,6 +219,8 @@ export class BeersService {
             stateBeer,
             sort = { sortField: '', order: '' },
             isActive,
+            inStock,
+            compound,
             page, limitPage
         } = filter
         const { minVolume, maxVolume } = volume;
@@ -239,7 +243,8 @@ export class BeersService {
             maxPrice,
             title,
             description,
-            isActive
+            isActive,
+            inStock,
         });
 
         if (grades.length > 0) {
@@ -268,6 +273,10 @@ export class BeersService {
 
         if (filtered == 'true' || filtered == 'false') {
             queryFilter.where.filtered = filtered;
+        }
+
+        if(compound) {
+            queryFilter.where.compound = { [Op.iLike]: `%${compound}%` } 
         }
 
         const beers = await this.getList(page, limitPage, queryFilter, sort);

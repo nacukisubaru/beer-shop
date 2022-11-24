@@ -18,7 +18,8 @@ interface IProductFilter {
     maxPrice?: number, 
     title?: string, 
     description?: string,
-    isActive?: string
+    isActive?: string,
+    inStock?: boolean,
 }
 @Injectable()
 export class ProductsService {
@@ -142,7 +143,8 @@ export class ProductsService {
             maxPrice = 0, 
             title = "", 
             description = "",
-            isActive
+            isActive,
+            inStock,
         } = filter;
         
         if(id) {
@@ -174,6 +176,10 @@ export class ProductsService {
 
         if(description) {
             filterObj.description = { [Op.iLike]: `%${description}%` } 
+        }
+
+        if(inStock) {
+            filterObj.inStock = inStock;
         }
 
         return filterObj;
