@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
-import { paginate } from 'src/helpers/paginationHelper';
+import { defaultLimitPage, paginate } from 'src/helpers/paginationHelper';
 import { ProductsService } from 'src/products/products.service';
 import { CreateSnackDto } from './dto/create-snack.dto';
 import { UpdateSnackDto } from './dto/update-snack.dto';
@@ -48,12 +48,16 @@ export class SnacksService {
         return snack;
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
-        if (isNumber(page)) {
+    async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
+        if (isNumber(page) && isNumber(limitPage)) {
             if (isEmptyObject(filter)) {
                 filter = { include: {
                      all: true, 
                  } };
+            }
+
+            if(!Array.isArray(sort)) {
+                throw new HttpException('Параметр sort не является массивом', HttpStatus.BAD_REQUEST);
             }
 
             const query:any = paginate(filter, page, limitPage);
@@ -104,7 +108,7 @@ export class SnacksService {
         return false;
     }
 
-    async getListByFilter(filter: ISnackFilter) {
+    async getListByFilter(filter: ISnackFilter, sort: [string, string] = ['price', 'ASC'], page: number, limitPage: number = 0) {
         const queryFilter: any = {
             include: {
                 model: Products, as: 'product',
@@ -114,25 +118,8 @@ export class SnacksService {
             },
             where: {}
         };
-        const {
-            id = 0, 
-            brandIds = [], 
-            typesPackagingIds = [], 
-            minPrice = 0, 
-            maxPrice = 0, 
-            sort = ['price', 'ASC'],
-            isActive,
-            page, limitPage 
-        } = filter
        
-        queryFilter.include.where = this.productService.buildFilterByProductFields(queryFilter.include.where, {
-            id,
-            brandIds, 
-            typesPackagingIds, 
-            minPrice, 
-            maxPrice,
-            isActive
-        });
+        queryFilter.include.where = this.productService.buildFilterByProductFields(queryFilter.include.where, filter);
 
         const snacks = await this.getList(page, limitPage, queryFilter, sort);
         return snacks;

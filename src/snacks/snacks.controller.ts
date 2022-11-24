@@ -33,23 +33,28 @@ export class SnacksController {
     }
 
     @Get('/getListByFilter')
-    getListByFilter(@Query('id') id: number, @Query('title') title: string, @Query('isActive') isActive: string,
-    @Query('description') description: string, @Query('brandIds') brandIds: number[], @Query('typesPackagingIds') typesPackagingIds: number[],
-        @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, @Query('sort') sort: [string, string],
-        @Query('page') page: string, @Query('limitPage') limitPage: string) {
-        return this.snacksService.getListByFilter({
+    getListByFilter(@Query('id') id: string, @Query('title') title: string, @Query('isActive') isActive: string,
+    @Query('description') description: string, @Query('brandIds') brandIds: string[], @Query('typesPackagingIds') typesPackagingIds: string[],
+    @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, @Query('sort') sort: [string, string],
+    @Query('page') page: string, @Query('limitPage') limitPage: string) {
+
+        let sortArray: [string, string] = ['price', 'ASC'];
+        const prepareFilter: any = {
             id,
             isActive,
             title,
             description,
-            brandIds, 
+            brandIds,
             typesPackagingIds, 
             minPrice, 
-            maxPrice,
-            sort,
-            page: Number(page), 
-            limitPage: Number(limitPage)
-        });
+            maxPrice
+        };
+
+        if(sort && Array.isArray(sort)) {
+            sortArray = sort;
+        }
+
+        return this.snacksService.getListByFilter(prepareFilter, sortArray, Number(page), Number(limitPage));
     }
 
     @Get('/search')

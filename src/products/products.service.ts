@@ -155,7 +155,7 @@ export class ProductsService {
             filterObj.isActive = isActive === 'false' ? false : true;
         }
 
-        if (brandIds.length > 0) {
+        if (Array.isArray(brandIds) && brandIds.length > 0) {
             filterObj.brandId = { [Op.or]: brandIds };
         }
 
@@ -166,7 +166,7 @@ export class ProductsService {
             };
         }
 
-        if (typesPackagingIds.length > 0) {
+        if (Array.isArray(typesPackagingIds) && typesPackagingIds.length > 0) {
             filterObj.typePackagingId = { [Op.or]: typesPackagingIds };
         }
 
