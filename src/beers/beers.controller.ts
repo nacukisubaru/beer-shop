@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors, UsePipes } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { isNumeric } from 'src/helpers/typesHelper';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { BeersService } from './beers.service';
 import { CreateBeerDto } from './dto/create-beer.dto';
@@ -21,18 +22,18 @@ export class BeersController {
     }
 
     @Get('/getListByFilter')
-    getListByFilter(@Query('id') id: string, @Query('grades') grades: number[], @Query('brandIds') brandIds: number[],
-        @Query('typesPackagingIds') typesPackagingIds: number[], @Query('minPrice') minPrice: number, 
-        @Query('maxPrice') maxPrice: number, @Query('minVolume') minVolume: number, 
-        @Query('maxVolume') maxVolume: number, @Query('minFortress') minFortress: number, 
-        @Query('maxFortress') maxFortress: number, @Query('forBottling') forBottling: boolean, 
-        @Query('filtered') filtered: boolean, @Query('title') title: string, @Query('isActive') isActive: string,
-        @Query('description') description: string, @Query('inStock') inStock: boolean,
+    getListByFilter(@Query('id') id: string, @Query('grades') grades: string[], @Query('brandIds') brandIds: string[],
+        @Query('typesPackagingIds') typesPackagingIds: string[], @Query('minPrice') minPrice: string, 
+        @Query('maxPrice') maxPrice: string, @Query('minVolume') minVolume: string, 
+        @Query('maxVolume') maxVolume: string, @Query('minFortress') minFortress: string, 
+        @Query('maxFortress') maxFortress: string, @Query('forBottling') forBottling: string, 
+        @Query('filtered') filtered: string, @Query('title') title: string, @Query('isActive') isActive: string,
+        @Query('description') description: string, @Query('inStock') inStock: string,
         @Query('compound') compound: string,
         @Query('page') page: string, @Query('limitPage') limitPage: string, 
         @Query('sortField') sortField: string = '', @Query('order') order: string = '') {
-            
-        return this.beerService.getListByFilter({
+
+        var prepareFilter:any = {
             id: Number(id),
             isActive,
             title,
@@ -42,16 +43,30 @@ export class BeersController {
             typesPackagingIds,
             minPrice, 
             maxPrice,
-            volume: { minVolume, maxVolume }, 
-            fortress: { minFortress, maxFortress },
-            stateBeer: { forBottling, filtered},
             inStock,
             compound,
             sort: {sortField, order},
             page: Number(page), 
             limitPage: Number(limitPage)
+        };
+
+        if(minVolume && maxVolume && isNumeric(minVolume) && isNumeric(maxVolume)) {
+            prepareFilter.volume = { minVolume: parseInt(minVolume), maxVolume: parseInt(maxVolume) }
         }
-        );
+
+        if(minFortress && maxFortress && isNumeric(minFortress) && isNumeric(maxFortress)) {
+            prepareFilter.fortress = { minVolume: parseInt(minFortress), maxVolume: parseInt(maxFortress) }
+        }
+
+        if(forBottling) {
+            prepareFilter.forBottling = forBottling === 'true' ? true : false;
+        }
+
+        if(filtered) {
+            prepareFilter.filtered = filtered === 'true' ? true : false;
+        }
+        
+        return this.beerService.getListByFilter(prepareFilter);
     }
 
     @Get('/getMinAndMaxVolume')

@@ -9,11 +9,14 @@ import { Snack } from './snacks.model';
 import { Products } from 'src/products/products.model';
 import { Op } from 'sequelize';
 interface ISnackFilter {
-    id: number, 
+    id: number,
+    title: string,
+    description: string,
     brandIds: number[], 
     typesPackagingIds: number[], 
     minPrice: number, 
     maxPrice: number, 
+    isActive: string,
     sort: [string, string], 
     page: number, limitPage: number
 }
@@ -117,7 +120,8 @@ export class SnacksService {
             typesPackagingIds = [], 
             minPrice = 0, 
             maxPrice = 0, 
-            sort = ['price', 'ASC'], 
+            sort = ['price', 'ASC'],
+            isActive,
             page, limitPage 
         } = filter
        
@@ -127,6 +131,7 @@ export class SnacksService {
             typesPackagingIds, 
             minPrice, 
             maxPrice,
+            isActive
         });
 
         const snacks = await this.getList(page, limitPage, queryFilter, sort);

@@ -33,11 +33,15 @@ export class SnacksController {
     }
 
     @Get('/getListByFilter')
-    getListByFilter(@Query('id') id: number, @Query('brandIds') brandIds: number[], @Query('typesPackagingIds') typesPackagingIds: number[],
+    getListByFilter(@Query('id') id: number, @Query('title') title: string, @Query('isActive') isActive: string,
+    @Query('description') description: string, @Query('brandIds') brandIds: number[], @Query('typesPackagingIds') typesPackagingIds: number[],
         @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, @Query('sort') sort: [string, string],
         @Query('page') page: string, @Query('limitPage') limitPage: string) {
         return this.snacksService.getListByFilter({
             id,
+            isActive,
+            title,
+            description,
             brandIds, 
             typesPackagingIds, 
             minPrice, 

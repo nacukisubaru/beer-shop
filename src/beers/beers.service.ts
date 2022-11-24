@@ -18,31 +18,28 @@ interface IFortress {
     minFortress: number,
     maxFortress: number,
 }
-interface IStateBeer {
-    forBottling: any,
-    filtered: any
-}
 interface ISort {
     sortField: string,
     order: string
 }
 interface IBeerFilter {
-    id: number,
-    title: string,
-    description: string,
-    grades: number[],
-    brandIds: number[],
-    typesPackagingIds: number[],
-    minPrice: number,
-    maxPrice: number,
-    volume: IVolume,
-    fortress: IFortress,
-    stateBeer: IStateBeer,
-    isActive: string,
-    sort: ISort,
-    compound: string,
-    inStock: boolean,
-    page: number, limitPage: number
+    id?: number,
+    title?: string,
+    description?: string,
+    grades?: number[],
+    brandIds?: number[],
+    typesPackagingIds?: number[],
+    minPrice?: number,
+    maxPrice?: number,
+    volume?: IVolume,
+    fortress?: IFortress,
+    forBottling?: any,
+    filtered?: any
+    isActive?: string,
+    sort?: ISort,
+    compound?: string,
+    inStock?: boolean,
+    page?: number, limitPage?: number
 }
 @Injectable()
 export class BeersService {
@@ -216,15 +213,14 @@ export class BeersService {
             maxPrice = 0,
             volume,
             fortress,
-            stateBeer,
+            forBottling,
+            filtered,
             sort = { sortField: '', order: '' },
             isActive,
             inStock,
             compound,
             page, limitPage
         } = filter
-        const { minVolume, maxVolume } = volume;
-        const { minFortress, maxFortress } = fortress;
 
         //фильтрация по полю из связной таблицы
         let queryFilter: any = {
@@ -252,33 +248,32 @@ export class BeersService {
             queryFilter.where.id = beerIds;
         }
 
-        if (minVolume && maxVolume && minVolume > 0 && maxVolume > 0) {
+        if (volume.minVolume && volume.maxVolume) {
             queryFilter.where.volume = {
-                [Op.gte]: minVolume,
-                [Op.lte]: maxVolume
+                [Op.gte]: volume.minVolume,
+                [Op.lte]: volume.maxVolume
             };
         }
 
-        if (minFortress && maxFortress && minFortress > 0 && maxFortress > 0) {
+        if (fortress.minFortress && fortress.maxFortress) {
             queryFilter.where.fortress = {
-                [Op.gte]: minFortress,
-                [Op.lte]: maxFortress
+                [Op.gte]: fortress.minFortress,
+                [Op.lte]: fortress.maxFortress
             };
         }
 
-        const { forBottling, filtered } = stateBeer;
-        if (forBottling == 'true' || forBottling == 'false') {
+        if (forBottling) {
             queryFilter.where.forBottling = forBottling;
         }
 
-        if (filtered == 'true' || filtered == 'false') {
+        if (filtered) {
             queryFilter.where.filtered = filtered;
         }
 
         if(compound) {
             queryFilter.where.compound = { [Op.iLike]: `%${compound}%` } 
         }
-
+        
         const beers = await this.getList(page, limitPage, queryFilter, sort);
         return beers;
     }
