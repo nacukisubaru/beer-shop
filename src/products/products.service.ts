@@ -10,6 +10,9 @@ import { Op, where } from 'sequelize';
 import sequelize from 'sequelize';
 import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
 import { TypePackagingService } from 'src/type-packaging/type-packaging.service';
+import { defaultLimitPage, paginate } from 'src/helpers/paginationHelper';
+import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
+import { isObject } from 'class-validator';
 interface IProductFilter {
     id?: number,
     brandIds?: number[],
@@ -28,7 +31,7 @@ export class ProductsService {
         private fileService: FilesService,
         private typePackagingService: TypePackagingService) { }
 
-    async create(dto: CreateProductDto, image: BinaryData) {
+    public async create(dto: CreateProductDto, image: BinaryData) {
         const brand = await this.brandService.getById(dto.brandId);
         if (!brand) {
             throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
@@ -55,7 +58,7 @@ export class ProductsService {
         return product;
     }
 
-    async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0) {
+    public async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0) {
         const queryFilter: any = {
             include: { all: true },
             where: {}
@@ -79,7 +82,7 @@ export class ProductsService {
         return await this.productRepo.findAll(queryFilter);
     }
 
-    async getMinAndMaxPrice(productType: string = "beers") {
+    public async getMinAndMaxPrice(productType: string = "beers") {
         let where = {};
         if (productType === "beers") {
             where = {
@@ -102,7 +105,7 @@ export class ProductsService {
         });
     }
 
-    async searchByTitleAndDesc(q: string) {
+    public async searchByTitleAndDesc(q: string) {
         const products = await this.productRepo.findAll({
             where: {
                 [Op.or]: [
@@ -116,7 +119,7 @@ export class ProductsService {
         });
     }
 
-    async getProductsByStock(productsIds: number[] | number, inStock: boolean = true) {
+    public async getProductsByStock(productsIds: number[] | number, inStock: boolean = true) {
         const query: any = { where: { id: productsIds, inStock: inStock, isActive: true }, include: { all: true } };
         if (Array.isArray(productsIds)) {
             query.where.id = { [Op.or]: productsIds };
@@ -125,7 +128,7 @@ export class ProductsService {
         return await this.productRepo.findAll(query);
     }
 
-    async addShow(id: number) {
+    public async addShow(id: number) {
         const product = await this.getById(id);
         if (!product) {
             throw new HttpException('Товар не найден', HttpStatus.BAD_REQUEST);
@@ -134,7 +137,7 @@ export class ProductsService {
         return this.productRepo.update({ show: product.show + 1 }, { where: { id } });
     }
 
-    buildFilterByProductFields(filterObj: any, filter:IProductFilter) {
+    public buildFilterByProductFields(filterObj: any, filter:IProductFilter) {
         const {
             id = 0,
             brandIds = [],
@@ -185,7 +188,7 @@ export class ProductsService {
         return filterObj;
     }
 
-    isProductTableFields(field: string) {
+    public isProductTableFields(field: string) {
         const productFields = Products.getAttributes();
         for (let prodKey in productFields) {
             if (prodKey.toString() === field) {
@@ -195,7 +198,7 @@ export class ProductsService {
         return false;
     }
 
-    async update(id: number, dto: UpdateProductDto, image: BinaryData) {
+    public async update(id: number, dto: UpdateProductDto, image: BinaryData) {
         const brand = await this.brandService.getById(dto.brandId);
         if (!brand) {
             throw new HttpException('Бренд не был найден', HttpStatus.BAD_REQUEST);
@@ -217,24 +220,86 @@ export class ProductsService {
         return await this.productRepo.update(prepareProduct, { where: { id } })
     }
 
-    async remove(id): Promise<Number> {
+    async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, callback = (query: any) =>{}, sort?: ISort) {
+        if (!isNumber(page)) {
+            throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
+        }
+
+        if(!isNumber(limitPage)) {
+            throw new HttpException('Параметр limitPage не был передан', HttpStatus.BAD_REQUEST);
+        }
+
+        if (isEmptyObject(filter)) {
+            filter = {
+                include: {
+                    model: Products, as: 'product',
+                    where: {}
+                }
+            };
+        }
+
+        const query: any = paginate(filter, page, limitPage);
+        if (sort.sortField && sort.order) {
+            const sortArray = [
+                sort.sortField,
+                sort.order
+            ];
+            if (this.isProductTableFields(sort.sortField)) {
+                sortArray.unshift("product");
+            }
+            query.order = [sortArray]; //сортировка по полю из связной таблицы
+        }
+        
+        const data: any = await callback(query);
+        if (!data.rows || data.rows.length <= 0) {
+            throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
+        }
+
+        const lastPage = Math.ceil(data.count / limitPage) - 1;
+        let nextPage = 0;
+        if (lastPage > 0) {
+            nextPage = page + 1;
+        }
+
+        return { ...data, nextPage, lastPage };
+    
+    }
+
+    async searchByName(q: string, page: number, limitPage: number = 0, callback = (query: any) =>{}, sort: ISort) {
+        const query = {
+            include: {
+                model: Products, as: 'product',
+                where: {
+                    isActive: true,
+                    [Op.or]: [
+                        { title: { [Op.iLike]: `%${q}%` } },
+                        { description: { [Op.iLike]: `%${q}%` } }
+                    ]
+                }
+            }
+        };
+
+        return await this.getList(page, limitPage, query, callback, sort);
+    }
+
+    public async remove(id): Promise<Number> {
         return await this.productRepo.destroy({ where: { id } });
     }
 
-    async switchActive(id: number, isActive: boolean): Promise<Object> {
+    public async switchActive(id: number, isActive: boolean): Promise<Object> {
         return await this.productRepo.update({ isActive }, { where: { id } });
     }
 
-    async getById(id): Promise<Products> {
+    public async getById(id): Promise<Products> {
         return await this.productRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getAll(): Promise<Products[]> {
+    public async getAll(): Promise<Products[]> {
         const product: any = await this.productRepo.findAll({ include: { all: true } });
         return product;
     }
 
-    async getListByBrand(brandId: number) {
+    public async getListByBrand(brandId: number) {
         return await this.productRepo.findAll({ include: { all: true }, where: { brandId } });
     }
 }

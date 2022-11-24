@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInt
 import { FileInterceptor } from '@nestjs/platform-express';
 import { isNumeric } from 'src/helpers/typesHelper';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
+import { ProductsService } from 'src/products/products.service';
 import { BeersService } from './beers.service';
 import { CreateBeerDto } from './dto/create-beer.dto';
 import { UpdateBeerDto } from './dto/update-beer.dto';
@@ -9,7 +10,7 @@ import { UpdateBeerDto } from './dto/update-beer.dto';
 @Controller('beers')
 export class BeersController {
 
-    constructor(private beerService: BeersService) { }
+    constructor(private beerService: BeersService, private productService: ProductsService) { }
 
     @Get()
     getList(@Query('page') page: string, @Query('limitPage') limitPage: string, @Query('sortField') sortField: string, @Query('order') order: string) {
@@ -80,8 +81,10 @@ export class BeersController {
     }
 
     @Get('/search')
-    search(@Query('q') q: string, @Query('page') page: string, @Query('limitPage') limitPage: string,  @Query('sortField') sortField: string = '', @Query('order') order: string = '') {
-        return this.beerService.searchByName(q, Number(page), Number(limitPage), {sortField, order});
+    search(@Query('q') q: string, @Query('page') page: string, @Query('limitPage') limitPage: string, 
+        @Query('sortField') sortField: string = '', @Query('order') order: string = '') {
+        const findQuery = (query) => {return this.beerService.findAndCountAll(query)};
+        return this.productService.searchByName(q, Number(page), Number(limitPage), findQuery, {sortField, order});
     }
 
     @UsePipes(ValidationPipe)

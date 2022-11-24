@@ -17,9 +17,8 @@ interface ISnackFilter {
     minPrice: number, 
     maxPrice: number, 
     isActive: string,
-    sort: [string, string], 
-    page: number, limitPage: number
 }
+
 @Injectable()
 export class SnacksService {
     constructor(@InjectModel(Snack) private snackRepo: typeof Snack,
@@ -48,7 +47,7 @@ export class SnacksService {
         return snack;
     }
 
-    async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
+    async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: ISort = {sortField: 'price', order: 'ASC'}) {
         if (isNumber(page) && isNumber(limitPage)) {
             if (isEmptyObject(filter)) {
                 filter = { include: {
@@ -56,16 +55,14 @@ export class SnacksService {
                  } };
             }
 
-            if(!Array.isArray(sort)) {
-                throw new HttpException('Параметр sort не является массивом', HttpStatus.BAD_REQUEST);
-            }
 
             const query:any = paginate(filter, page, limitPage);
-            query.order = [[
-                "product",
-                ...sort
-            ]]; //сортировка по полю из связной таблицы
-        
+            // if(sort.sortField && sort.order) {
+            //     query.order = [[
+            //         "product",
+            //         ...sort
+            //     ]]; //сортировка по полю из связной таблицы
+            // }
             const snackList = await this.snackRepo.findAndCountAll(query);
             
             if (snackList.rows.length <= 0) {
@@ -108,7 +105,7 @@ export class SnacksService {
         return false;
     }
 
-    async getListByFilter(filter: ISnackFilter, sort: [string, string] = ['price', 'ASC'], page: number, limitPage: number = 0) {
+    async getListByFilter(filter: ISnackFilter, sort: ISort, page: number, limitPage: number) {
         const queryFilter: any = {
             include: {
                 model: Products, as: 'product',
@@ -118,26 +115,12 @@ export class SnacksService {
             },
             where: {}
         };
-       
+        const findQuery = (query) => {return this.findAndCountAll(query)};
         queryFilter.include.where = this.productService.buildFilterByProductFields(queryFilter.include.where, filter);
-
-        const snacks = await this.getList(page, limitPage, queryFilter, sort);
-        return snacks;
+        return this.productService.getList(page, limitPage, queryFilter, findQuery, sort);
     }
 
-    async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
-        const query = {
-            include: {
-                model: Products, as: 'product',
-                where: {
-                    isActive: true,
-                    [Op.or] : [
-                        {title: {[Op.iLike]: `%${q}%`}}, 
-                        {description: {[Op.iLike]: `%${q}%`}}
-                    ]
-                }
-            }
-        };
-        return await this.getList(page, limitPage, query, sort);
+    findAndCountAll(query) {
+        return this.snackRepo.findAndCountAll(query);
     }
 }

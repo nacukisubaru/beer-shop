@@ -243,19 +243,19 @@ export class BeersService {
             inStock,
         });
 
-        if (grades.length > 0) {
+        if (Array.isArray(grades) && grades.length > 0) {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
             queryFilter.where.id = beerIds;
         }
 
-        if (volume.minVolume && volume.maxVolume) {
+        if (volume && volume.minVolume && volume.maxVolume) {
             queryFilter.where.volume = {
                 [Op.gte]: volume.minVolume,
                 [Op.lte]: volume.maxVolume
             };
         }
 
-        if (fortress.minFortress && fortress.maxFortress) {
+        if (fortress && fortress.minFortress && fortress.maxFortress) {
             queryFilter.where.fortress = {
                 [Op.gte]: fortress.minFortress,
                 [Op.lte]: fortress.maxFortress
@@ -274,8 +274,8 @@ export class BeersService {
             queryFilter.where.compound = { [Op.iLike]: `%${compound}%` } 
         }
         
-        const beers = await this.getList(page, limitPage, queryFilter, sort);
-        return beers;
+        const findQuery = (query) => {return this.beerRepo.findAndCountAll(query)};
+        return this.productService.getList(page, limitPage, queryFilter, findQuery, sort);
     }
 
     async getMinAndMaxVolume() {
@@ -296,19 +296,7 @@ export class BeersService {
         });
     }
 
-    async searchByName(q: string, page: number, limitPage: number = 0, sort: ISort = { sortField: '', order: '' }) {
-        const query = {
-            include: {
-                model: Products, as: 'product',
-                where: {
-                    isActive: true,
-                    [Op.or]: [
-                        { title: { [Op.iLike]: `%${q}%` } },
-                        { description: { [Op.iLike]: `%${q}%` } }
-                    ]
-                }
-            }
-        };
-        return await this.getList(page, limitPage, query, sort);
+    findAndCountAll(query) {
+        return this.beerRepo.findAndCountAll(query);
     }
 }
