@@ -29,22 +29,57 @@ export class SnacksService {
         const productData = {
             title: createSnackDto.title,
             description: createSnackDto.description,
-            price: createSnackDto.price,
-            quantity: createSnackDto.quantity,
-            brandId: createSnackDto.brandId,
-            typePackagingId: createSnackDto.typePackagingId,
+            price: Number(createSnackDto.price),
+            quantity: Number(createSnackDto.quantity),
+            brandId: Number(createSnackDto.brandId),
+            typePackagingId: Number(createSnackDto.typePackagingId),
             isActive: createSnackDto.isActive === 'true' ? true : false,
             inStock: createSnackDto.inStock === 'true' ? true : false,
         };
 
-        const product = await this.productService.create(productData, image);
-        const snack = await this.snackRepo.create({ weight: createSnackDto.weight });
+        try {
+            const product = await this.productService.create(productData, image);
+            const snack = await this.snackRepo.create({ weight: createSnackDto.weight });
 
-        snack.productId = product.id;
-        product.snackId = snack.id;
-        product.save();
-        snack.save();
-        return snack;
+            snack.productId = product.id;
+            product.snackId = snack.id;
+            product.save();
+            snack.save();
+            return snack;
+        }  catch (e) {
+            return e;
+        }
+    }
+
+    async update(id: number, updateSnackDto: UpdateSnackDto, image: BinaryData) {
+        const prodData = {
+            title: updateSnackDto.title,
+            description: updateSnackDto.description,
+            price: Number(updateSnackDto.price),
+            quantity: Number(updateSnackDto.quantity),
+            brandId: Number(updateSnackDto.brandId),
+            typePackagingId: Number(updateSnackDto.typePackagingId),
+            isActive: updateSnackDto.isActive === 'true' ? true : false,
+            inStock: updateSnackDto.inStock === 'true' ? true : false,
+        };
+
+        if(!isNumber(id)) {
+            throw new HttpException('Параметр id не является строкой', HttpStatus.BAD_REQUEST);
+        }
+
+        const snack = await this.getByProductId(id);
+        if (!snack) {
+            throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
+        }
+        
+
+        const productId = snack.productId;
+        await this.productService.update(productId, prodData, image);
+        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { id } })) {
+            return true;
+        }
+
+        return false;
     }
 
     async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: ISort = {sortField: 'price', order: 'ASC'}) {
@@ -79,45 +114,29 @@ export class SnacksService {
         return await this.snackRepo.findByPk(id, { include: { all: true } });
     }
 
-    async update(id: number, updateSnackDto: UpdateSnackDto, image: BinaryData) {
-        const prodData = {
-            title: updateSnackDto.title,
-            description: updateSnackDto.description,
-            price: updateSnackDto.price,
-            quantity: updateSnackDto.quantity,
-            brandId: updateSnackDto.brandId,
-            typePackagingId: updateSnackDto.typePackagingId,
-            isActive: updateSnackDto.isActive === 'true' ? true : false,
-            inStock: updateSnackDto.inStock === 'true' ? true : false,
-        };
-
-        const snack = await this.snackRepo.findByPk(id);
-        if (!snack) {
-            throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
-        }
-
-        const productId = snack.productId;
-        await this.productService.update(productId, prodData, image);
-        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { id } })) {
-            return true;
-        }
-
-        return false;
-    }
-
     async getListByFilter(filter: ISnackFilter, sort: ISort, page: number, limitPage: number) {
         const queryFilter: any = {
             include: {
                 model: Products, as: 'product',
-                where: {
-                    isActive: true
-                }
+                where: {}
             },
             where: {}
         };
+        
         const findQuery = (query) => {return this.findAndCountAll(query)};
         queryFilter.include.where = this.productService.buildFilterByProductFields(queryFilter.include.where, filter);
         return this.productService.getList(page, limitPage, queryFilter, findQuery, sort);
+    }
+
+    async getByProductId(id: number): Promise<Snack> {
+        const res = await this.snackRepo.findOne({
+            include: {
+                all: true,
+                nested: true
+            },
+            where: { productId: id }
+        });
+        return res;
     }
 
     findAndCountAll(query) {

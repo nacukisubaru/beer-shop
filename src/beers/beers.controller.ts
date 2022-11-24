@@ -19,7 +19,7 @@ export class BeersController {
 
     @Get('/getById/:id')
     getById(@Param('id') id: string) {
-        return this.beerService.getById(Number(id));
+        return this.beerService.getByProductId(Number(id));
     }
 
     @Get('/getListByFilter')
@@ -101,10 +101,5 @@ export class BeersController {
         const id = Number(dto.id);
         delete dto.id;
         return this.beerService.update(id, dto, image);
-    }
-
-    @Delete('/remove/:id')
-    remove(@Param('id') id: string) {
-        return this.beerService.remove(id);
     }
 }

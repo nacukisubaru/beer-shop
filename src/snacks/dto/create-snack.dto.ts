@@ -1,29 +1,30 @@
 import { IsNumber, IsString } from "class-validator";
 
 export class CreateSnackDto {
-    @IsString({message: 'Должно быть строкой'})
+    @IsString({message: 'Обязательное поле'})
     title: string;
 
-    @IsString({message: 'Должно быть строкой'})
+    @IsString({message: 'Обязательное поле'})
     description: string;
 
-    @IsNumber({}, {message: 'Должно быть числом'})
+    @IsString({message: 'Обязательное поле'})
     price: number;
 
-    @IsNumber({}, {message: 'Должно быть числом'})
+    @IsString({message: 'Обязательное поле'})
     quantity: number;
 
-    @IsNumber({}, {message: 'Должно быть числом'})
+    @IsString({message: 'Обязательное поле'})
     weight: number;
     
-    @IsNumber({}, {message: 'Должно быть числом'})
+    @IsString({message: 'Обязательное поле'})
     brandId: number;
 
+    @IsString({message: 'Обязательное поле'})
     typePackagingId:number;
 
-    @IsString({message: 'Должно быть строкой'})
+    @IsString({message: 'Обязательное поле'})
     isActive: string;
 
-    @IsString({message: 'Должно быть строкой'})
+    @IsString({message: 'Обязательное поле'})
     inStock: string; 
 }

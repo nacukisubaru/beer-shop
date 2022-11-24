@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile, HttpException, HttpStatus } from '@nestjs/common';
 import { SnacksService } from './snacks.service';
 import { CreateSnackDto } from './dto/create-snack.dto';
 import { UpdateSnackDto } from './dto/update-snack.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from 'src/products/products.service';
+import { isNumber } from 'src/helpers/typesHelper';
 
 @Controller('snacks')
 export class SnacksController {
@@ -30,7 +31,11 @@ export class SnacksController {
 
     @Get('getById/:id')
     getById(@Param('id') id: string) {
-        return this.snacksService.getById(+id);
+        if(isNumber(id)) {
+            return this.snacksService.getByProductId(Number(id));
+        }
+        
+        throw new HttpException('Параметр id не является числом', HttpStatus.BAD_REQUEST);
     }
 
     @Get('/getListByFilter')

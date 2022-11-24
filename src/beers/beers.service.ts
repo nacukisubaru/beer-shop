@@ -74,9 +74,8 @@ export class BeersService {
             throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
         }
 
-        const product = await this.productService.create(productData, image);
-
         try {
+            const product = await this.productService.create(productData, image);
             const beer = await this.beerRepo.create(beerData);
 
             beer.$set('grades', dto.gradeIds);
@@ -112,7 +111,11 @@ export class BeersService {
             filtered: dto.filtered === 'true' ? true : false 
         };
 
-        const beer = await this.getById(id);
+        if(!isNumber(id)) {
+            throw new HttpException('Параметр id не является строкой', HttpStatus.BAD_REQUEST);
+        }
+
+        const beer = await this.getByProductId(id);
         if (!beer) {
             throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
         }
@@ -135,17 +138,7 @@ export class BeersService {
         return false;
     }
 
-    async remove(id) {
-        const beer = await this.getById(id)
-        if (!beer) {
-            throw new HttpException("Товара не существует!", HttpStatus.NOT_FOUND);
-        }
-
-        await this.productService.remove(beer.productId);
-        return await this.beerRepo.destroy({ where: { id } });
-    }
-
-    async getById(id: number): Promise<Beers> {
+    async getByProductId(id: number): Promise<Beers> {
         const res = await this.beerRepo.findOne({
             include: {
                 all: true,
