@@ -149,6 +149,14 @@ export class BeersService {
         return res;
     }
 
+    async getByids(id: number[]) {
+        const res = await this.beerRepo.findAll({
+            include: {all: true},
+            where: {id}
+        })
+        return res;
+    }
+
     async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: ISort = { sortField: '', order: '' }) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {

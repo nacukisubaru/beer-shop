@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { BeersController } from './beers.controller';
 import { BeersService } from './beers.service';
 import { SequelizeModule } from '@nestjs/sequelize';
@@ -16,6 +16,7 @@ import { GradesModule } from 'src/grades/grades.module';
         SequelizeModule.forFeature([Beers, Products, Grades, BeerGrades]),
         ProductsModule,
         GradesModule
-    ]
+    ],
+    exports: [BeersService]
 })
 export class BeersModule { }
