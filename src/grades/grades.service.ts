@@ -24,6 +24,10 @@ export class GradesService {
     ) { }
 
     async create(createGradeDto: CreateGradeDto) {
+        const grade = await this.getGradeByName(createGradeDto.name);
+        if(grade) {
+            throw new HttpException('Сорт с данным названием уже существует', HttpStatus.BAD_REQUEST);
+        }
         return await this.gradesRepo.create(createGradeDto);
     }
 
@@ -78,6 +82,10 @@ export class GradesService {
     }
 
     async update(id: number, updateGradeDto: UpdateGradeDto) {
+        const grade = await this.getGradeByName(updateGradeDto.name);
+        if(grade) {
+            throw new HttpException('Сорт с данным названием уже существует', HttpStatus.BAD_REQUEST);
+        }
         return await this.gradesRepo.update({ ...updateGradeDto }, { where: { id } });
     }
 
@@ -97,6 +105,10 @@ export class GradesService {
         return beerIds.map(item => {
             return item.getDataValue('beerId');
         });
+    }
+
+    async getGradeByName(name: string) {
+        return await this.gradesRepo.findOne({where: {name}});
     }
 
     async findAll() {
