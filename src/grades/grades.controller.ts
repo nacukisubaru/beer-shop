@@ -52,6 +52,11 @@ export class GradesController {
             filter.id = Number(id);
         }
 
-        return this.gradesService.findAll(Number(page), Number(limitPage), filter, { sortField, order });
+        return this.gradesService.getList(Number(page), Number(limitPage), filter, { sortField, order });
+    }
+
+    @Get()
+    findAll() {
+        return this.gradesService.findAll();
     }
 }

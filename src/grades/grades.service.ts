@@ -35,7 +35,7 @@ export class GradesService {
         return await this.gradesRepo.findAll({ include: { all: true }, where: { id: { [Op.or]: ids } } });
     }
 
-    async findAll(page: number, limitPage: number = defaultLimitPage, filter: IFilter, sort?: ISort) {
+    async getList(page: number, limitPage: number = defaultLimitPage, filter: IFilter, sort?: ISort) {
         if (!isNumber(page)) {
             throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
         }
@@ -97,5 +97,9 @@ export class GradesService {
         return beerIds.map(item => {
             return item.getDataValue('beerId');
         });
+    }
+
+    async findAll() {
+        return await this.gradesRepo.findAll();
     }
 }
