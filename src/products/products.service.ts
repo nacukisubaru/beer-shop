@@ -294,6 +294,10 @@ export class ProductsService {
         return await this.productRepo.findByPk(id, { include: { all: true } });
     }
 
+    public async getByBeerIds(beerId: number[]) {
+        return await this.productRepo.findAll({include: {all: true}, where: {beerId}});
+    }
+
     public async getAll(): Promise<Products[]> {
         const product: any = await this.productRepo.findAll({ include: { all: true } });
         return product;

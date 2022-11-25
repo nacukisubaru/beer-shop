@@ -7,7 +7,7 @@ import { Op } from 'sequelize';
 import { BeerGrades } from './beers-grades.model';
 import { defaultLimitPage, paginate } from 'src/helpers/paginationHelper';
 import { isNumber } from 'src/helpers/typesHelper';
-import { BeersService } from 'src/beers/beers.service';
+import { ProductsService } from 'src/products/products.service';
 
 interface IFilter {
     id: number,
@@ -20,7 +20,7 @@ export class GradesService {
     constructor(
         @InjectModel(Grades) private gradesRepo: typeof Grades,
         @InjectModel(BeerGrades) private beerGradesRepo: typeof BeerGrades,
-       // private beerService: BeersService        
+        private productService: ProductsService     
     ) { }
 
     async create(createGradeDto: CreateGradeDto) {
@@ -81,12 +81,13 @@ export class GradesService {
         return await this.gradesRepo.update({ ...updateGradeDto }, { where: { id } });
     }
 
-    async remove(id) {
+    async remove(id: number) {
         const beersIds = await this.getBeersIdsByGrades([id]);
-        //const beers = this.beerService.getByids(beersIds);
-        //console.log({beers});
+        const products = await this.productService.getByBeerIds(beersIds);
+        const productsIds = products.map((product) => product.getDataValue('id'));
         if(beersIds.length) {
-            throw new HttpException(`У данного сорта есть привязки к пиву id ${beersIds.toString()} нужно удалить`, HttpStatus.BAD_REQUEST)
+            throw new HttpException(`У данного сорта есть привязки к пиву нужно отвязать сорта от товаров с 
+            этими идентификаторами(id) ${productsIds.toString()} после удалить сорт`, HttpStatus.BAD_REQUEST)
         }
         return await this.gradesRepo.destroy({ where: { id } });
     }

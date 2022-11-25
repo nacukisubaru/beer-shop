@@ -30,7 +30,7 @@ export class GradesController {
     }
 
     @Delete('/remove/:id')
-    remove(@Param('id') id: string) {
+    remove(@Param('id') id: number) {
         return this.gradesService.remove(id);
     }
 
