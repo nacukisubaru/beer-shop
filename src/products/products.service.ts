@@ -282,6 +282,12 @@ export class ProductsService {
         return await this.getList(page, limitPage, query, callback, sort);
     }
 
+    async getByTitle(title: string) {
+        return await this.productRepo.findOne({
+            where: {title}
+        });
+    }
+
     public async remove(id): Promise<Number> {
         return await this.productRepo.destroy({ where: { id } });
     }

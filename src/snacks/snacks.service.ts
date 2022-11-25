@@ -37,6 +37,10 @@ export class SnacksService {
             inStock: createSnackDto.inStock === 'true' ? true : false,
         };
 
+        if(this.productService.getByTitle(createSnackDto.title)) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
+        }
+
         try {
             const product = await this.productService.create(productData, image);
             const snack = await this.snackRepo.create({ weight: createSnackDto.weight });
@@ -62,6 +66,10 @@ export class SnacksService {
             isActive: updateSnackDto.isActive === 'true' ? true : false,
             inStock: updateSnackDto.inStock === 'true' ? true : false,
         };
+
+        if(this.productService.getByTitle(updateSnackDto.title)) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
+        }
 
         if(!isNumber(id)) {
             throw new HttpException('Параметр id не является строкой', HttpStatus.BAD_REQUEST);

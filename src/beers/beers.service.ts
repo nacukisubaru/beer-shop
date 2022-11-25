@@ -69,6 +69,10 @@ export class BeersService {
             filtered: dto.filtered === 'true' ? true : false 
         };
 
+        if(this.productService.getByTitle(dto.title)) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
+        }
+
         const grades = await this.gradeService.findByIds(dto.gradeIds);
         if (grades.length !== dto.gradeIds.length) {
             throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
@@ -110,6 +114,10 @@ export class BeersService {
             forBottling: dto.forBottling === 'true' ? true : false,
             filtered: dto.filtered === 'true' ? true : false 
         };
+
+        if(this.productService.getByTitle(dto.title)) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
+        }
 
         if(!isNumber(id)) {
             throw new HttpException('Параметр id не является строкой', HttpStatus.BAD_REQUEST);
