@@ -43,8 +43,8 @@ export class GradesService {
         if (!isNumber(limitPage)) {
             throw new HttpException('Параметр limitPage не был передан', HttpStatus.BAD_REQUEST);
         }
-
-        const prepareFilter: any = {include: {all: true}, where: {}};
+      
+        const prepareFilter: any = { where: {}};
 
         if(filter.name) {
             prepareFilter.where.name = { [Op.iLike]: `%${filter.name}%` };
@@ -62,7 +62,7 @@ export class GradesService {
             ];
             query.order = [sortArray];
         }
-        console.log({ query })
+    
         const data = await this.gradesRepo.findAndCountAll(query);
         if (!data.rows || data.rows.length <= 0) {
             throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
