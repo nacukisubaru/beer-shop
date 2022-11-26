@@ -59,7 +59,7 @@ export class BrandsService {
         if(filter.productTypeId) {
             prepareFilter.where.productTypeId = filter.productTypeId;
         }        
-
+        const count = await Brand.count();
         const query: any = paginate(prepareFilter, page, limitPage);
         if (sort && sort.sortField && sort.order) {
             const sortArray = [
@@ -73,7 +73,7 @@ export class BrandsService {
         if (!data.rows || data.rows.length <= 0) {
             throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
         }
-
+        data.count = count;
         const lastPage = Math.ceil(data.count / limitPage) - 1;
         let nextPage = 0;
         if (lastPage > 0) {
