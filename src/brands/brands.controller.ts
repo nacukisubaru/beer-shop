@@ -37,11 +37,11 @@ export class BrandsController {
             delete updateBrandDto.id;
             return this.brandsService.update(+id, updateBrandDto);
         }
-        
+
         throw new HttpException('Параметр id не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    @Delete('/remove')
+    @Delete('/remove/:id')
     remove(@Param('id') id: string) {
         return this.brandsService.remove(+id);
     }

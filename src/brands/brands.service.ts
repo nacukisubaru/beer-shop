@@ -67,7 +67,6 @@ export class BrandsService {
         }
     
         const data = await this.brandRepo.findAndCountAll(query);
-        console.log({data})
         if (!data.rows || data.rows.length <= 0) {
             throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
         }
@@ -90,6 +89,13 @@ export class BrandsService {
     }
 
     async remove(id: number) {
+        const brand = await this.getById(id);
+        const products = brand.products;
+        if(products.length) {
+            throw new HttpException(`У данного бренда есть привязки к товарам с этими идентификаторами(id) 
+            ${products.map((product) => product.getDataValue("id")).toString()} нужно отвязать после удалить бренд`, HttpStatus.BAD_REQUEST)
+        }
+        
         return await this.brandRepo.destroy({where:{id}});
     }
 }
