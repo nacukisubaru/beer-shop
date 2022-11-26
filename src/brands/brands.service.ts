@@ -56,6 +56,9 @@ export class BrandsService {
             prepareFilter.where.id = filter.id;
         }
 
+        if(filter.productTypeId) {
+            prepareFilter.where.productTypeId = filter.productTypeId;
+        }        
 
         const query: any = paginate(prepareFilter, page, limitPage);
         if (sort && sort.sortField && sort.order) {

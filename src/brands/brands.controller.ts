@@ -52,6 +52,7 @@ export class BrandsController {
         @Query('limitPage') limitPage: string,
         @Query('name') name: string,
         @Query('id') id: string,
+        @Query('productTypeId') productTypeId: string,
         @Query('sortField') sortField: string, @Query('order') order: string
     ) {
         const filter: any = {};
@@ -62,6 +63,10 @@ export class BrandsController {
 
         if(id && isNumber(id)) {
             filter.id = Number(id);
+        }
+
+        if(productTypeId && isNumber(productTypeId)) {
+            filter.productTypeId = Number(productTypeId);
         }
 
         return this.brandsService.getList(Number(page), Number(limitPage), filter, { sortField, order });
