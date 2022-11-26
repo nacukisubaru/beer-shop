@@ -88,6 +88,14 @@ export class BrandsService {
     }
 
     async update(id: number, updateBrandDto: UpdateBrandDto) {
+        const brand = await this.getById(id);
+        const productTypeId = brand.getDataValue("productTypeId")
+        const products = brand.products;
+        if(products.length && updateBrandDto.productTypeId != productTypeId) {
+            throw new HttpException(`У данного бренда есть привязки к товарам с этими идентификаторами(id) 
+            ${products.map((product) => product.getDataValue("id")).toString()} нужно отвязать после можно изменить тип товара у бренда`, HttpStatus.BAD_REQUEST)
+        }
+        
         return await this.brandRepo.update(updateBrandDto, {where: {id}});
     }
 

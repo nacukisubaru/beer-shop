@@ -18,8 +18,8 @@ export class ProductTypesService {
         return 'This action adds a new productType';
     }
 
-    findAll() {
-        return `This action returns all productTypes`;
+    async findAll() {
+        return await this.productTypesRepo.findAll();
     }
 
     findOne(id: number) {
