@@ -1,5 +1,6 @@
-import { Column, DataType, Model, Table, HasOne, BelongsToMany, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { Column, DataType, Model, Table, HasOne, BelongsToMany, BelongsTo, ForeignKey, HasMany } from 'sequelize-typescript';
 import { ProductTypes } from 'src/product-types/product-type.model';
+import { Products } from 'src/products/products.model';
 
 @Table({ tableName: 'type-packaging' })
 export class TypePackaging extends Model<TypePackaging> {
@@ -15,4 +16,7 @@ export class TypePackaging extends Model<TypePackaging> {
     @ForeignKey(() => ProductTypes)
     @Column({type: DataType.INTEGER})
     productTypeId: number;
+
+    @HasMany(() => Products)
+    products: Products[];
 }
