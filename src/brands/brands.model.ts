@@ -10,9 +10,6 @@ export class Brand extends Model<Brand> {
   @Column({type: DataType.STRING, allowNull: false})
   name: string;
 
-  @Column({type: DataType.STRING, allowNull: false})
-  code: string;
-
   @BelongsTo(() => ProductTypes)
   productType: ProductTypes;
 
