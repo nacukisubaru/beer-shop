@@ -1,5 +1,7 @@
-import { Column, DataType, HasMany, Model, Table} from 'sequelize-typescript';
+import { BelongsToMany, Column, DataType, HasMany, Model, Table} from 'sequelize-typescript';
 import { Basket } from 'src/basket/basket.model';
+import { Role } from 'src/roles/roles.model';
+import { UserRoles } from 'src/roles/user-roles.model';
 
 @Table({tableName: 'users'})
 export class Users extends Model<Users> {
@@ -29,5 +31,8 @@ export class Users extends Model<Users> {
   activationLink: string;
 
   @HasMany(() => Basket)
-  baskets: Basket[]
+  baskets: Basket[];
+
+  @BelongsToMany(() => Role, () => UserRoles)
+  roles: Role[];
 }

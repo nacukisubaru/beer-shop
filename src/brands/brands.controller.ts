@@ -1,5 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { isNumber } from 'src/helpers/typesHelper';
+import { Roles } from 'src/token/roles-auth.decorator';
+import { RolesGuard } from 'src/token/roles.guard';
 import { BrandsService } from './brands.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
@@ -10,6 +12,8 @@ export class BrandsController {
     constructor(private readonly brandsService: BrandsService) {
     }
 
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
     @Post('/create')
     create(@Body() createBrandDto: CreateBrandDto) {
         return this.brandsService.create(createBrandDto);
@@ -30,6 +34,8 @@ export class BrandsController {
         return this.brandsService.getById(+id);
     }
 
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
     @Post('/update')
     update(@Body() updateBrandDto: UpdateBrandDto) {
         const id = updateBrandDto.id;
@@ -41,6 +47,8 @@ export class BrandsController {
         throw new HttpException('Параметр id не был передан', HttpStatus.BAD_REQUEST);
     }
 
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
     @Delete('/remove/:id')
     remove(@Param('id') id: string) {
         return this.brandsService.remove(+id);

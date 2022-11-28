@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseInterceptors, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { isNumeric } from 'src/helpers/typesHelper';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { ProductsService } from 'src/products/products.service';
+import { Roles } from 'src/token/roles-auth.decorator';
+import { RolesGuard } from 'src/token/roles.guard';
 import { BeersService } from './beers.service';
 import { CreateBeerDto } from './dto/create-beer.dto';
 import { UpdateBeerDto } from './dto/update-beer.dto';
@@ -87,6 +89,8 @@ export class BeersController {
         return this.productService.searchByName(q, Number(page), Number(limitPage), findQuery, {sortField, order});
     }
 
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
     @UsePipes(ValidationPipe)
     @Post('/create')
     @UseInterceptors(FileInterceptor('image'))
@@ -94,6 +98,8 @@ export class BeersController {
         return this.beerService.create(dto, image);
     }
 
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
     @UsePipes(ValidationPipe)
     @Post('/update')
     @UseInterceptors(FileInterceptor('image'))

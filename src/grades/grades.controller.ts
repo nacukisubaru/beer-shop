@@ -1,21 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, Query, UseGuards } from '@nestjs/common';
 import { GradesService } from './grades.service';
 import { CreateGradeDto } from './dto/create-grade.dto';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 import { ValidationPipe } from '../pipes/validation.pipe';
 import { isNumber } from 'src/helpers/typesHelper';
+import { Roles } from 'src/token/roles-auth.decorator';
+import { RolesGuard } from 'src/token/roles.guard';
 
 @Controller('grades')
 export class GradesController {
     constructor(private readonly gradesService: GradesService) { }
 
-
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
     @UsePipes(ValidationPipe)
     @Post('/create')
     create(@Body() createGradeDto: CreateGradeDto) {
         return this.gradesService.create(createGradeDto);
     }
 
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
     @UsePipes(ValidationPipe)
     @Post('/update')
     update(@Body() updateGradeDto: UpdateGradeDto) {
@@ -29,6 +34,8 @@ export class GradesController {
         return this.gradesService.findById(id);
     }
 
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
     @Delete('/remove/:id')
     remove(@Param('id') id: number) {
         return this.gradesService.remove(id);

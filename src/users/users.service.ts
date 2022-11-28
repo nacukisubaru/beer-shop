@@ -102,7 +102,7 @@ export class UsersService {
     }
 
     private async createTokensAndSave(user: Users) {
-        const payload = {id: user.id, email: user.email, phone: user.phone};
+        const payload = {id: user.id, email: user.email, phone: user.phone, role: ""};
         const tokens = await this.tokenService.generateTokens(payload);
         await this.tokenService.saveToken({userId: user.id, refreshToken: tokens.refreshToken});
         return {
