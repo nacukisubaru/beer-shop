@@ -9,6 +9,7 @@ import { TokenService } from 'src/token/token.service';
 import { MailService } from 'src/mail/mail.service';
 import { VerificationCodeService } from 'src/verification-code/verification-code.service';
 import { AuthUserByCodeDto } from './dto/auth-user-by-code.dto';
+import { RolesService } from 'src/roles/roles.service';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,8 @@ export class UsersService {
     constructor(@InjectModel(Users) private userRepo: typeof Users,
                 private tokenService: TokenService,
                 private mailService: MailService,
-                private verificationService: VerificationCodeService
+                private verificationService: VerificationCodeService,
+                private roleService: RolesService
                 ) { }
 
     async registrate(createUserDto: CreateUserDto) {
@@ -36,6 +38,7 @@ export class UsersService {
     
         if(user) {
             this.createTokensAndSave(user);
+            this.roleService.bindRole({userId: user.id, role: 'USER'});
             this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
             return true;
         }
@@ -158,7 +161,7 @@ export class UsersService {
     }
 
     async getById(id: number) {
-       return await this.userRepo.findOne({where: {id}});
+       return await this.userRepo.findOne({where: {id}, include: { all: true }});
     }
 
     create(createUserDto: CreateUserDto) {

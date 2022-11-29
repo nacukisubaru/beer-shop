@@ -1,9 +1,11 @@
 'use strict';
 const seedBuilder = require('../buildSeed.js');
+const bcrypt = require('bcryptjs');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    const password = await bcrypt.hash('ten9285ten', 5);
     return await seedBuilder.createSeed(
       queryInterface,
       'users',
@@ -14,7 +16,7 @@ module.exports = {
           surname: 'Admin',
           email: 'incloudff@gmail.com',
           phone: '79953276845',
-          password: 'ten9285ten',
+          password: password,
           isActivated: true,
           activationLink: '',
           createdAt: new Date(),
