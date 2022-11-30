@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/token/jwt-auth.guard';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { RolesService } from './roles.service';
 
@@ -6,13 +7,10 @@ import { RolesService } from './roles.service';
 export class RolesController {
     constructor(private roleService: RolesService) {}
 
-    @Post()
-    create(@Body() dto: CreateRoleDto) {
-        return this.roleService.createRole(dto);
-    }
-
-    @Get('/:value')
-    getByValue(@Param('value') value: string) {
-        return this.roleService.getRoleByValue(value);
+    @UseGuards(JwtAuthGuard)
+    @Get('/hasRoleAdmin')
+    checkUserHasRoleAdmin(@Req() request) {
+        const userId = request.user.id;
+        return this.roleService.userHasRole(userId, ["ADMIN"]);
     }
 }
