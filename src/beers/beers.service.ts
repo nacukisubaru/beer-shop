@@ -69,7 +69,8 @@ export class BeersService {
             filtered: dto.filtered === 'true' ? true : false 
         };
 
-        if(this.productService.getByTitle(dto.title)) {
+        const productNameExist = await this.productService.getByTitle(dto.title);
+        if(productNameExist) {
             throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
         }
 
@@ -115,9 +116,6 @@ export class BeersService {
             filtered: dto.filtered === 'true' ? true : false 
         };
 
-        if(this.productService.getByTitle(dto.title)) {
-            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
-        }
 
         if(!isNumber(id)) {
             throw new HttpException('Параметр id не является строкой', HttpStatus.BAD_REQUEST);
@@ -126,6 +124,11 @@ export class BeersService {
         const beer = await this.getByProductId(id);
         if (!beer) {
             throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
+        }
+       
+        const productNameExist = await this.productService.getByTitle(dto.title);
+        if(productNameExist && dto.title !== beer.product.title) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
         }
 
         const grades = await this.gradeService.findByIds(dto.gradeIds);

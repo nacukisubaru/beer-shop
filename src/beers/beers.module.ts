@@ -9,6 +9,7 @@ import { BeerGrades } from 'src/grades/beers-grades.model';
 import { ProductsModule } from 'src/products/products.module';
 import { GradesModule } from 'src/grades/grades.module';
 import { TokenModule } from 'src/token/token.module';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
     controllers: [BeersController],
@@ -17,7 +18,8 @@ import { TokenModule } from 'src/token/token.module';
         SequelizeModule.forFeature([Beers, Products, Grades, BeerGrades]),
         ProductsModule,
         GradesModule,
-        TokenModule
+        TokenModule,
+        RolesModule
     ],
     exports: [BeersService]
 })

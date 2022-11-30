@@ -90,7 +90,7 @@ export class BeersController {
     }
 
     @Roles("ADMIN")
-    @UseGuards(RolesGuard)
+   @UseGuards(RolesGuard)
     @UsePipes(ValidationPipe)
     @Post('/create')
     @UseInterceptors(FileInterceptor('image'))
@@ -98,8 +98,8 @@ export class BeersController {
         return this.beerService.create(dto, image);
     }
 
-    @Roles("ADMIN")
-    @UseGuards(RolesGuard)
+   @Roles("ADMIN")
+   @UseGuards(RolesGuard)
     @UsePipes(ValidationPipe)
     @Post('/update')
     @UseInterceptors(FileInterceptor('image'))

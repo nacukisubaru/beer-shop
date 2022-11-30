@@ -37,8 +37,8 @@ export class UsersService {
         );
     
         if(user) {
+            await this.roleService.bindRole({userId: user.id, role: 'USER'});
             this.createTokensAndSave(user);
-            this.roleService.bindRole({userId: user.id, role: 'USER'});
             this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
             return true;
         }
@@ -105,13 +105,18 @@ export class UsersService {
     }
 
     private async createTokensAndSave(user: Users) {
-        const payload = {id: user.id, email: user.email, phone: user.phone, role: ""};
-        const tokens = await this.tokenService.generateTokens(payload);
-        await this.tokenService.saveToken({userId: user.id, refreshToken: tokens.refreshToken});
-        return {
-            ...tokens,
-            user
-        };
+        const roles = await this.roleService.getRolesByUserId(user.id);
+        if(roles.length) {
+            const payload = {id: user.id, email: user.email, phone: user.phone, roles: roles.map((role) => role.getDataValue("value"))};
+            const tokens = await this.tokenService.generateTokens(payload);
+            await this.tokenService.saveToken({userId: user.id, refreshToken: tokens.refreshToken});
+            return {
+                ...tokens,
+                user
+            };
+        }
+        
+        throw new HttpException(`Роли для пользователя id ${user.id} не найдены`, HttpStatus.BAD_REQUEST);
     }
 
     private async validateUser(authUserDto: AuthUserDto) {

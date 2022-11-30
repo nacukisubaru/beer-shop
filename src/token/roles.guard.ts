@@ -1,17 +1,20 @@
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { JwtService } from "@nestjs/jwt";
-import { Observable } from "rxjs";
+import { RolesService } from "src/roles/roles.service";
 import { ROLES_KEY } from "./roles-auth.decorator";
+import { TokenService } from "./token.service";
 
 @Injectable()
 export class RolesGuard implements CanActivate {
     private forbiddenMessage: string = 'Нет доступа';
 
-    constructor(private jwtService: JwtService,
-                private reflector: Reflector) {}
+    constructor(
+        private reflector: Reflector,
+        private tokenService: TokenService,
+        private rolesService: RolesService
+    ) {}
 
-    canActivate(context: ExecutionContext):  boolean | Promise<boolean> | Observable<boolean> {
+    async canActivate(context: ExecutionContext){
         
         try {
             //с помощью рефлектора получаем роли по ключу
@@ -25,20 +28,27 @@ export class RolesGuard implements CanActivate {
             if(!requiredRoles) {
                 return true;
             }
+        
             const req = context.switchToHttp().getRequest();
             const authHeader = req.headers.authorization;
+            if(!authHeader) {
+                return false;
+            }
             const bearer = authHeader.split(' ')[0];
             const token = authHeader.split(' ')[1];
-
             if(bearer !== 'Bearer' || !token) {
                 throw new HttpException(this.forbiddenMessage, HttpStatus.FORBIDDEN);
             }
+     
+            const user:any = await this.tokenService.validateAccessToken(token);
+        
+            const userHasRoleInToken = user.roles.some(role => requiredRoles.includes(role));
+            const userHasRoleInDb = await this.rolesService.userHasRole(user.id, requiredRoles);
+            if(!userHasRoleInToken || !userHasRoleInDb) {
+                 return false;
+            }
+            return true;
 
-            const user = this.jwtService.verify(token);
-            req.user = user;
-            //some проверяет удовлетворяет ли условию
-            //есть ли роль пользователя среди ролей которые мы получаем из рефлектора
-            return user.roles.some(role => requiredRoles.includes(role.value));
         } catch (e) {
             throw new HttpException(this.forbiddenMessage, HttpStatus.FORBIDDEN);
         }

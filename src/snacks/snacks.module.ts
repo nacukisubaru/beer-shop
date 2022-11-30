@@ -5,6 +5,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { Snack } from './snacks.model';
 import { ProductsModule } from 'src/products/products.module';
 import { TokenModule } from 'src/token/token.module';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
     controllers: [SnacksController],
@@ -12,7 +13,8 @@ import { TokenModule } from 'src/token/token.module';
     imports: [
         SequelizeModule.forFeature([Snack]),
         ProductsModule,
-        TokenModule
+        TokenModule,
+        RolesModule
     ]
 })
 export class SnacksModule { }

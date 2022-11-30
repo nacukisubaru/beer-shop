@@ -5,6 +5,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { TypePackaging } from './type-packaging.model';
 import { ProductTypesModule } from 'src/product-types/product-types.module';
 import { TokenModule } from 'src/token/token.module';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
   controllers: [TypePackagingController],
@@ -12,7 +13,8 @@ import { TokenModule } from 'src/token/token.module';
   imports: [
     SequelizeModule.forFeature([TypePackaging]),
     ProductTypesModule,
-    TokenModule
+    TokenModule,
+    RolesModule
   ],
   exports: [TypePackagingService]
 })

@@ -58,6 +58,15 @@ export class TokenService {
         }
     }
 
+    async validateAccessToken(token: string): Promise<JwtService> {
+        try {
+            const userData = await this.jwtService.verifyAsync(token, {secret: process.env.JWT_ACCESS_SECRET});
+            return userData;
+        } catch (e) {
+            return null;
+        }
+    }
+
     async findRefreshToken(refreshToken: string) {
        return await this.tokenRepo.findOne({where: {refreshToken}});
     }

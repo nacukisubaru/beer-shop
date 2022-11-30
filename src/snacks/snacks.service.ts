@@ -37,7 +37,8 @@ export class SnacksService {
             inStock: createSnackDto.inStock === 'true' ? true : false,
         };
 
-        if(this.productService.getByTitle(createSnackDto.title)) {
+        const productNameExist = await this.productService.getByTitle(createSnackDto.title);
+        if(productNameExist) {
             throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
         }
 
@@ -67,10 +68,6 @@ export class SnacksService {
             inStock: updateSnackDto.inStock === 'true' ? true : false,
         };
 
-        if(this.productService.getByTitle(updateSnackDto.title)) {
-            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
-        }
-
         if(!isNumber(id)) {
             throw new HttpException('Параметр id не является строкой', HttpStatus.BAD_REQUEST);
         }
@@ -80,6 +77,10 @@ export class SnacksService {
             throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
         }
         
+        const productNameExist = await this.productService.getByTitle(updateSnackDto.title);
+        if(productNameExist && updateSnackDto.title !== snack.product.title) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
+        }
 
         const productId = snack.productId;
         await this.productService.update(productId, prodData, image);
