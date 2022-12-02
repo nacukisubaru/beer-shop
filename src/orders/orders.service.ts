@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { BasketProducts } from 'src/basket/basket-products.model';
 import { Basket } from 'src/basket/basket.model';
 import { BasketService } from 'src/basket/basket.service';
+import { Products } from 'src/products/products.model';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './orders.model';
@@ -11,23 +12,25 @@ import { Order } from './orders.model';
 export class OrdersService {
 
     constructor(@InjectModel(Order) private orderRepo: typeof Order,
-                private basketService: BasketService) {}
+        private basketService: BasketService) { }
 
     async create(basketHash: string, userId: number) {
-        if(!basketHash) {
+        if (!basketHash) {
             throw new HttpException('Не передан хеш код корзины!', HttpStatus.BAD_REQUEST);
         }
-        const basket:any = await this.basketService.getBasketByHash(basketHash);
+        const basket: Basket = await this.basketService.getBasketByHash(basketHash);
         const productsNotInStock = await this.basketService.getProductsNotInStock(basket.id);
-        if(productsNotInStock) {
-            const productsIds = productsNotInStock.map((product)=>{
+
+        if (productsNotInStock) {
+            const productsIds = productsNotInStock.map((product) => {
                 return product.id;
             });
 
             await this.basketService.removeProduct(productsIds, basketHash);
         }
-        
-        const order = await this.orderRepo.create({userId, isPayed: false, deliveryId: 1, paymentMethodId: 1});
+
+        const amount = await this.basketService.getBasketAmount(basket.id);
+        const order = await this.orderRepo.create({ userId, isPayed: false, amount });
         basket.orderId = order.id;
         basket.save();
         return order;
@@ -58,26 +61,40 @@ export class OrdersService {
                         }
                         );
 
-                        if (basket && basket[0]) { 
+                        if (basket && basket[0]) {
                             const product = basket[0].dataValues.products;
-                            if(product) {
+                            if (product) {
                                 orders[key].setDataValue('products', product);
                             }
                         }
                     });
                 }
             }
+      
+            const mapOrders = orders.map((order) => {
+                const { id, userId, amount, customer, products } = order;
+                return { 
+                    id, 
+                    userId, 
+                    customerName: customer.name, 
+                    customerSurname: customer.surname, 
+                    customerPhone: customer.phone,
+                    customerEmail: customer.email,
+                    amount: amount,
+                    products
+                };
+            })
 
-            return orders;
+            return mapOrders;
         }
 
         throw new HttpException('Заказов не найдено!', HttpStatus.NOT_FOUND);
     }
 
     async getOrderWithProduct(id: number) {
-        const order = await this.orderRepo.findOne({include: { all: true }, where: {id}});
+        const order = await this.orderRepo.findOne({ include: { all: true }, where: { id } });
         const basket: any = await this.basketService.getById(order.basket.id);
-        if(basket) {
+        if (basket) {
             order.setDataValue('products', basket.products);
         }
         return order;

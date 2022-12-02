@@ -16,17 +16,8 @@ export class Order extends Model<Order> {
   @BelongsTo(() => Users)
   customer: Users;
 
-  @ForeignKey(() => Delivery)
-  deliveryId: number;
-
-  @BelongsTo(() => Delivery)
-  deliveryInfo: Delivery;
-
-  @ForeignKey(() => PaymentMethod)
-  paymentMethodId: number;
-
-  @BelongsTo(() => PaymentMethod)
-  paymentMethod: PaymentMethod
+  @Column({ type: DataType.FLOAT, allowNull: false})
+  amount: number;
 
   @Column({type: DataType.BOOLEAN})
   isPayed: boolean;
@@ -35,4 +26,16 @@ export class Order extends Model<Order> {
   basket: Basket
 
   products: [];
+
+  // @ForeignKey(() => Delivery)
+  // deliveryId: number;
+
+  // @BelongsTo(() => Delivery)
+  // deliveryInfo: Delivery;
+
+  // @ForeignKey(() => PaymentMethod)
+  // paymentMethodId: number;
+
+  // @BelongsTo(() => PaymentMethod)
+  // paymentMethod: PaymentMethod
 }
