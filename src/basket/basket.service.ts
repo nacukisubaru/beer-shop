@@ -238,8 +238,8 @@ export class BasketService {
 
     public async getBasketAmount(basketId: number) {
         const basketProducts = await this.basketProductRepo.findAll({ where: { basketId } });
-        if(!this.products.length) {
-            throw new HttpException('Не переданы товары', HttpStatus.BAD_REQUEST);
+        if(!this.products.length || !basketProducts.length) {
+            throw new HttpException('Товары не найдены', HttpStatus.NOT_FOUND);
         }
 
         const productsQuantites = new Map();
@@ -251,7 +251,7 @@ export class BasketService {
            const prodQuan = productsQuantites.get(product.getDataValue("id"));
            return {price: product.getDataValue("price"), quantity: prodQuan};
         });
-        
+
         return this.calcualteAmount(prices);
     }
 
