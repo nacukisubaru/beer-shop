@@ -1,16 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { BasketProducts } from 'src/basket/basket-products.model';
 import { Basket } from 'src/basket/basket.model';
 import { BasketService } from 'src/basket/basket.service';
-import { defaultLimitPage, paginate } from 'src/helpers/paginationHelper';
+import { paginate } from 'src/helpers/paginationHelper';
 import { isModelTableFields } from 'src/helpers/sequlizeHelper';
 import { isNumber } from 'src/helpers/typesHelper';
-import { Products } from 'src/products/products.model';
 import { Users } from 'src/users/users.model';
-import { UsersService } from 'src/users/users.service';
-import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './orders.model';
 
@@ -141,7 +137,7 @@ export class OrdersService {
                     return {
                         id: product.id, 
                         name: product.title, 
-                        image: product.image, 
+                        imageLink: product.image, 
                         price: product.price,
                         quantity: product.BasketProducts.quantity,
                         remainder: product.quantity
@@ -160,7 +156,7 @@ export class OrdersService {
                     products: productsMap
                 };
             });
-            
+
             const lastPage = Math.ceil(orders.count / limitPage) - 1;
             let nextPage = 0;
             if (lastPage > 0) {
