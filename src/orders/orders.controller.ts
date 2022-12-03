@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Req, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from 'src/token/jwt-auth.guard';
+import { defaultLimitPage } from 'src/helpers/paginationHelper';
 
 @Controller('orders')
 export class OrdersController {
@@ -16,23 +17,57 @@ export class OrdersController {
     }
 
     @Get()
-    getList() {
-        return this.ordersService.getOrdersWithProducts();
+    getList(
+        @Query('page') page: string, 
+        @Query('limitPage') limitPage: number,
+        @Query('orderId') orderId: number,
+        @Query('userId') userId: number,
+        @Query('customerName') customerName: string,
+        @Query('customerSurname') customerSurname: string,
+        @Query('customerPhone') customerPhone: string,
+        @Query('sortField') sortField: string, @Query('order') order: string
+    ) {
+        const filter: any = {};
+        if(!limitPage) {
+            limitPage = defaultLimitPage;
+        }
+
+        if(customerName) {
+            filter.customerName = customerName;
+        }
+
+        if(customerSurname) {
+            filter.customerSurname = customerSurname;
+        }
+
+        if(customerPhone) {
+            filter.customerPhone = customerPhone;
+        }
+
+        if(orderId) {
+            filter.id = orderId;
+        }
+
+        if(userId) {
+            filter.userId = userId;
+        }
+
+        return this.ordersService.getOrdersWithProducts(Number(page), Number(limitPage), filter, { sortField, order });
     }
 
     @Get('/users/:id')
     getListByUserId(@Param('id') userId: string) {
-        return this.ordersService.getOrdersWithProducts({userId});
+       // return this.ordersService.getOrdersWithProducts({userId});
     }
 
     @Get('/delivery/:id')
     getListByDeliveryId(@Param('id') deliveryId: string) {
-        return this.ordersService.getOrdersWithProducts({deliveryId});
+        //return this.ordersService.getOrdersWithProducts({deliveryId});
     }
 
     @Get('/paymentMetods/:id')
     getListByPaymentMethod(@Param('id') paymentMethodId: string) {
-        return this.ordersService.getOrdersWithProducts({paymentMethodId});
+        //return this.ordersService.getOrdersWithProducts({paymentMethodId});
     }
 
     @Get(':id')

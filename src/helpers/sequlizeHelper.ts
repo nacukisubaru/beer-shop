@@ -22,3 +22,13 @@ export const getMinMaxQuery = (arg: IGetMinMaxQuery) => {
         getMaxQuery(colMax, maxOutput)
     ];
 }
+
+export const isModelTableFields = (field: string, model: any) => {
+    const productFields = model.getAttributes();
+    for (let prodKey in productFields) {
+        if (prodKey.toString() === field) {
+            return true;
+        }
+    }
+    return false;
+}

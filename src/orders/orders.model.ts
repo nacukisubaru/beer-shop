@@ -13,7 +13,7 @@ export class Order extends Model<Order> {
   @ForeignKey(() => Users)
   userId: number;
 
-  @BelongsTo(() => Users)
+  @BelongsTo(() => Users, {as: 'customer'})
   customer: Users;
 
   @Column({ type: DataType.FLOAT, allowNull: false})
@@ -22,7 +22,7 @@ export class Order extends Model<Order> {
   @Column({type: DataType.BOOLEAN})
   isPayed: boolean;
 
-  @HasOne(() => Basket)
+  @HasOne(() => Basket, {as: 'basket'})
   basket: Basket
 
   products: [];
