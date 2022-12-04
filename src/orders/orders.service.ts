@@ -140,7 +140,7 @@ export class OrdersService {
                         imageLink: product.image, 
                         price: product.price,
                         quantity: product.BasketProducts.quantity,
-                        remainder: product.quantity
+                        // remainder: product.quantity
                     }
                 });
 
@@ -152,7 +152,7 @@ export class OrdersService {
                     customerPhone: customer.phone,
                     customerEmail: customer.email,
                     amount: amount,
-                    status: "payed",
+                    //status: "payed",
                     products: productsMap
                 };
             });
