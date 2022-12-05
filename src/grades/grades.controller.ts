@@ -62,7 +62,7 @@ export class GradesController {
         return this.gradesService.getList(Number(page), Number(limitPage), filter, { sortField, order });
     }
 
-    @Get()
+    @Get('/getList')
     findAll() {
         return this.gradesService.findAll();
     }

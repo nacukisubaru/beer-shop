@@ -4,6 +4,8 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from 'src/token/jwt-auth.guard';
 import { defaultLimitPage } from 'src/helpers/paginationHelper';
+import { Roles } from 'src/token/roles-auth.decorator';
+import { RolesGuard } from 'src/token/roles.guard';
 
 @Controller('orders')
 export class OrdersController {
@@ -16,6 +18,8 @@ export class OrdersController {
         return this.ordersService.create(createOrderDto.basketHash, userId);
     }
 
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
     @Get()
     getList(
         @Query('page') page: string, 
