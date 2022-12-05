@@ -273,19 +273,19 @@ export class BeersService {
                 [Op.lte]: fortress.maxFortress
             };
         }
-
+   
         if (forBottling) {
-            queryFilter.where.forBottling = forBottling;
+            queryFilter.where.forBottling = forBottling === 'true' ? true : false;
         }
 
         if (filtered) {
-            queryFilter.where.filtered = filtered;
+            queryFilter.where.filtered = filtered === 'true' ? true : false;
         }
 
         if(compound) {
             queryFilter.where.compound = { [Op.iLike]: `%${compound}%` } 
         }
-        
+
         const findQuery = (query) => {return this.beerRepo.findAndCountAll(query)};
         return this.productService.getList(page, limitPage, queryFilter, findQuery, sort);
     }

@@ -62,11 +62,11 @@ export class BeersController {
         }
 
         if(forBottling) {
-            prepareFilter.forBottling = forBottling === 'true' ? true : false;
+            prepareFilter.forBottling = forBottling;
         }
 
         if(filtered) {
-            prepareFilter.filtered = filtered === 'true' ? true : false;
+            prepareFilter.filtered = filtered;
         }
         
         return this.beerService.getListByFilter(prepareFilter);
