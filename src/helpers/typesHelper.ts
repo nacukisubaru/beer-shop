@@ -8,3 +8,5 @@ export const isEmptyObject = (obj:object) => {
     }
     return true;
 }
+
+export const isNumeric = n => !isNaN(n);

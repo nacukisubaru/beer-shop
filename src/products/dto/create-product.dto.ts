@@ -5,4 +5,6 @@ export class CreateProductDto {
     quantity: number;
     brandId: number;
     typePackagingId: number;
+    isActive: boolean;
+    inStock: boolean;
 }

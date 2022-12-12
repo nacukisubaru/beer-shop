@@ -3,6 +3,6 @@ export class CreateGradeDto {
     @IsString({message: 'Должно быть строкой'})
     name: string;
     
-    @IsString({message: 'Должно быть строкой'})
-    code: string;
+    // @IsString({message: 'Должно быть строкой'})
+    // code: string;
 }

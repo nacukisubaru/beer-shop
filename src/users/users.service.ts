@@ -9,6 +9,7 @@ import { TokenService } from 'src/token/token.service';
 import { MailService } from 'src/mail/mail.service';
 import { VerificationCodeService } from 'src/verification-code/verification-code.service';
 import { AuthUserByCodeDto } from './dto/auth-user-by-code.dto';
+import { RolesService } from 'src/roles/roles.service';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,8 @@ export class UsersService {
     constructor(@InjectModel(Users) private userRepo: typeof Users,
                 private tokenService: TokenService,
                 private mailService: MailService,
-                private verificationService: VerificationCodeService
+                private verificationService: VerificationCodeService,
+                private roleService: RolesService
                 ) { }
 
     async registrate(createUserDto: CreateUserDto) {
@@ -35,6 +37,7 @@ export class UsersService {
         );
     
         if(user) {
+            await this.roleService.bindRole({userId: user.id, role: 'USER'});
             this.createTokensAndSave(user);
             this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
             return true;
@@ -102,13 +105,18 @@ export class UsersService {
     }
 
     private async createTokensAndSave(user: Users) {
-        const payload = {id: user.id, email: user.email, phone: user.phone};
-        const tokens = await this.tokenService.generateTokens(payload);
-        await this.tokenService.saveToken({userId: user.id, refreshToken: tokens.refreshToken});
-        return {
-            ...tokens,
-            user
-        };
+        const roles = await this.roleService.getRolesByUserId(user.id);
+        if(roles.length) {
+            const payload = {id: user.id, email: user.email, phone: user.phone, roles: roles.map((role) => role.getDataValue("value"))};
+            const tokens = await this.tokenService.generateTokens(payload);
+            await this.tokenService.saveToken({userId: user.id, refreshToken: tokens.refreshToken});
+            return {
+                ...tokens,
+                user
+            };
+        }
+        
+        throw new HttpException(`Роли для пользователя id ${user.id} не найдены`, HttpStatus.BAD_REQUEST);
     }
 
     private async validateUser(authUserDto: AuthUserDto) {
@@ -158,7 +166,7 @@ export class UsersService {
     }
 
     async getById(id: number) {
-       return await this.userRepo.findOne({where: {id}});
+       return await this.userRepo.findOne({where: {id}, include: { all: true }});
     }
 
     create(createUserDto: CreateUserDto) {

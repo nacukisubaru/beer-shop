@@ -10,9 +10,6 @@ export class Basket extends Model<Basket> {
     @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true, primaryKey: true })
     id: number;
 
-    @Column({ type: DataType.FLOAT })
-    amount: number;
-
     @ForeignKey(() => Users)
     @Column({ type: DataType.INTEGER })
     userId: number;
@@ -21,7 +18,7 @@ export class Basket extends Model<Basket> {
     hash: string;
 
     @ForeignKey(() => Order)
-    orderId: Order
+    orderId: number;
 
     @BelongsTo(() => Users)
     customer: Users

@@ -39,6 +39,9 @@ import { HttpModule } from '@nestjs/axios';
 import { VerificationCodeModule } from './verification-code/verification-code.module';
 import { VerificationCodes } from './verification-code/verification-code.model';
 import { TaskManagerModule } from './tasks-manager/tasks-manager.module';
+import { RolesModule } from './roles/roles.module';
+import { UserRoles } from './roles/user-roles.model';
+import { Role } from './roles/roles.model';
 
 @Module({
     imports: [
@@ -61,7 +64,9 @@ import { TaskManagerModule } from './tasks-manager/tasks-manager.module';
                 Basket,
                 Users, 
                 Delivery,
-                TypePackaging, 
+                TypePackaging,
+                UserRoles,
+                Role,
                 ProductTypes, PaymentMethod, Brand, Snack, Token, VerificationCodes],
             autoLoadModels: true
         }),
@@ -85,7 +90,8 @@ import { TaskManagerModule } from './tasks-manager/tasks-manager.module';
         TypePackagingModule,
         HttpModule,
         VerificationCodeModule,
-        TaskManagerModule
+        TaskManagerModule,
+        RolesModule
     ],
     controllers: [],
     providers: [],

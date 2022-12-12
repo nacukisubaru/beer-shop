@@ -1,13 +1,23 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
-import { paginate } from 'src/helpers/paginationHelper';
+import { defaultLimitPage, paginate } from 'src/helpers/paginationHelper';
 import { ProductsService } from 'src/products/products.service';
 import { CreateSnackDto } from './dto/create-snack.dto';
 import { UpdateSnackDto } from './dto/update-snack.dto';
 import { Snack } from './snacks.model';
 import { Products } from 'src/products/products.model';
 import { Op } from 'sequelize';
+interface ISnackFilter {
+    id: number,
+    title: string,
+    description: string,
+    brandIds: number[], 
+    typesPackagingIds: number[], 
+    minPrice: number, 
+    maxPrice: number, 
+    isActive: string,
+}
 
 @Injectable()
 export class SnacksService {
@@ -15,40 +25,88 @@ export class SnacksService {
         private productService: ProductsService) { }
 
 
-    async create(createSnackDto: CreateSnackDto, image: any) {
+    async create(createSnackDto: CreateSnackDto, image: BinaryData) {
         const productData = {
             title: createSnackDto.title,
             description: createSnackDto.description,
-            price: createSnackDto.price,
-            quantity: createSnackDto.quantity,
-            brandId: createSnackDto.brandId,
-            typePackagingId: createSnackDto.typePackagingId
+            price: Number(createSnackDto.price),
+            quantity: Number(createSnackDto.quantity),
+            brandId: Number(createSnackDto.brandId),
+            typePackagingId: Number(createSnackDto.typePackagingId),
+            isActive: createSnackDto.isActive === 'true' ? true : false,
+            inStock: createSnackDto.inStock === 'true' ? true : false,
         };
 
-        const product = await this.productService.create(productData, image);
-        const snack = await this.snackRepo.create({ weight: createSnackDto.weight });
+        const productNameExist = await this.productService.getByTitle(createSnackDto.title);
+        if(productNameExist) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
+        }
 
-        snack.productId = product.id;
-        product.snackId = snack.id;
-        product.save();
-        snack.save();
-        return snack;
+        try {
+            const product = await this.productService.create(productData, image);
+            const snack = await this.snackRepo.create({ weight: createSnackDto.weight });
+
+            snack.productId = product.id;
+            product.snackId = snack.id;
+            product.save();
+            snack.save();
+            return snack;
+        }  catch (e) {
+            return e;
+        }
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
-        if (isNumber(page)) {
+    async update(id: number, updateSnackDto: UpdateSnackDto, image: BinaryData) {
+        const prodData = {
+            title: updateSnackDto.title,
+            description: updateSnackDto.description,
+            price: Number(updateSnackDto.price),
+            quantity: Number(updateSnackDto.quantity),
+            brandId: Number(updateSnackDto.brandId),
+            typePackagingId: Number(updateSnackDto.typePackagingId),
+            isActive: updateSnackDto.isActive === 'true' ? true : false,
+            inStock: updateSnackDto.inStock === 'true' ? true : false,
+        };
+
+        if(!isNumber(id)) {
+            throw new HttpException('Параметр id не является строкой', HttpStatus.BAD_REQUEST);
+        }
+
+        const snack = await this.getByProductId(id);
+        if (!snack) {
+            throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
+        }
+        
+        const productNameExist = await this.productService.getByTitle(updateSnackDto.title);
+        if(productNameExist && updateSnackDto.title !== snack.product.title) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
+        }
+
+        const productId = snack.productId;
+        await this.productService.update(productId, prodData, image);
+        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { id } })) {
+            return true;
+        }
+
+        return false;
+    }
+
+    async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: ISort = {sortField: 'price', order: 'ASC'}) {
+        if (isNumber(page) && isNumber(limitPage)) {
             if (isEmptyObject(filter)) {
                 filter = { include: {
                      all: true, 
                  } };
             }
 
+
             const query:any = paginate(filter, page, limitPage);
-            query.order = [[
-                "product",
-                ...sort
-            ]]; //сортировка по полю из связной таблицы
-        
+            // if(sort.sortField && sort.order) {
+            //     query.order = [[
+            //         "product",
+            //         ...sort
+            //     ]]; //сортировка по полю из связной таблицы
+            // }
             const snackList = await this.snackRepo.findAndCountAll(query);
             
             if (snackList.rows.length <= 0) {
@@ -65,66 +123,32 @@ export class SnacksService {
         return await this.snackRepo.findByPk(id, { include: { all: true } });
     }
 
-    async update(id: number, updateSnackDto: UpdateSnackDto) {
-        const prodData = {
-            title: updateSnackDto.title,
-            description: updateSnackDto.description,
-            price: updateSnackDto.price,
-            quantity: updateSnackDto.quantity,
-            brandId: updateSnackDto.brandId,
-            typePackagingId: updateSnackDto.typePackagingId
-        };
-
-        const snack = await this.snackRepo.findByPk(id);
-        if (!snack) {
-            throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
-        }
-
-        const productId = snack.productId;
-        await this.productService.update(productId, prodData);
-        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { id } })) {
-            return true;
-        }
-
-        return false;
-    }
-
-    async getListByFilter(brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, maxPrice: number = 0, sort: [string, string] = ['price', 'ASC'], page: number, limitPage: number) {
+    async getListByFilter(filter: ISnackFilter, sort: ISort, page: number, limitPage: number) {
         const queryFilter: any = {
             include: {
                 model: Products, as: 'product',
-                where: {
-                    isActive: true
-                }
+                where: {}
             },
             where: {}
         };
-
-        queryFilter.include.where = this.productService.buildFilterByProductFields(
-            queryFilter.include.where, 
-            brandIds, 
-            typesPackagingIds, 
-            minPrice, 
-            maxPrice
-        );
-
-        const snacks = await this.getList(page, limitPage, queryFilter, sort);
-        return snacks;
+        
+        const findQuery = (query) => {return this.findAndCountAll(query)};
+        queryFilter.include.where = this.productService.buildFilterByProductFields(queryFilter.include.where, filter);
+        return this.productService.getList(page, limitPage, queryFilter, findQuery, sort);
     }
 
-    async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
-        const query = {
+    async getByProductId(id: number): Promise<Snack> {
+        const res = await this.snackRepo.findOne({
             include: {
-                model: Products, as: 'product',
-                where: {
-                    isActive: true,
-                    [Op.or] : [
-                        {title: {[Op.iLike]: `%${q}%`}}, 
-                        {description: {[Op.iLike]: `%${q}%`}}
-                    ]
-                }
-            }
-        };
-        return await this.getList(page, limitPage, query, sort);
+                all: true,
+                nested: true
+            },
+            where: { productId: id }
+        });
+        return res;
+    }
+
+    findAndCountAll(query) {
+        return this.snackRepo.findAndCountAll(query);
     }
 }

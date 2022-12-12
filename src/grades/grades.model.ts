@@ -12,9 +12,6 @@ export class Grades extends Model<Grades> {
   @Column({type: DataType.STRING, allowNull: false})
   name: string;
 
-  @Column({type: DataType.STRING, allowNull: false})
-  code: string;
-
   @BelongsToMany(() => Beers, () => BeerGrades)
   beers: Beers[]
 }

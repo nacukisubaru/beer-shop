@@ -13,26 +13,29 @@ export class Order extends Model<Order> {
   @ForeignKey(() => Users)
   userId: number;
 
-  @BelongsTo(() => Users)
+  @BelongsTo(() => Users, {as: 'customer'})
   customer: Users;
 
-  @ForeignKey(() => Delivery)
-  deliveryId: number;
-
-  @BelongsTo(() => Delivery)
-  deliveryInfo: Delivery;
-
-  @ForeignKey(() => PaymentMethod)
-  paymentMethodId: number;
-
-  @BelongsTo(() => PaymentMethod)
-  paymentMethod: PaymentMethod
+  @Column({ type: DataType.FLOAT, allowNull: false})
+  amount: number;
 
   @Column({type: DataType.BOOLEAN})
   isPayed: boolean;
 
-  @HasOne(() => Basket)
+  @HasOne(() => Basket, {as: 'basket'})
   basket: Basket
 
   products: [];
+
+  // @ForeignKey(() => Delivery)
+  // deliveryId: number;
+
+  // @BelongsTo(() => Delivery)
+  // deliveryInfo: Delivery;
+
+  // @ForeignKey(() => PaymentMethod)
+  // paymentMethodId: number;
+
+  // @BelongsTo(() => PaymentMethod)
+  // paymentMethod: PaymentMethod
 }

@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Model, Op } from 'sequelize';
 import { GradesService } from 'src/grades/grades.service';
-import { paginate } from 'src/helpers/paginationHelper';
+import { paginate, defaultLimitPage } from 'src/helpers/paginationHelper';
 import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
 import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
 import { Products } from 'src/products/products.model';
@@ -10,22 +10,37 @@ import { ProductsService } from 'src/products/products.service';
 import { Beers } from './beers.model';
 import { CreateBeerDto } from './dto/create-beer.dto';
 import { UpdateBeerDto } from './dto/update-beer.dto';
-
 interface IVolume {
     minVolume: number,
     maxVolume: number
 }
-
-interface IFortress { 
+interface IFortress {
     minFortress: number,
     maxFortress: number,
 }
-
-interface IStateBeer {
-    forBottling:any,
-    filtered:any
+interface ISort {
+    sortField: string,
+    order: string
 }
-
+interface IBeerFilter {
+    id?: number,
+    title?: string,
+    description?: string,
+    grades?: number[],
+    brandIds?: number[],
+    typesPackagingIds?: number[],
+    minPrice?: number,
+    maxPrice?: number,
+    volume?: IVolume,
+    fortress?: IFortress,
+    forBottling?: any,
+    filtered?: any
+    isActive?: string,
+    sort?: ISort,
+    compound?: string,
+    inStock?: boolean,
+    page?: number, limitPage?: number
+}
 @Injectable()
 export class BeersService {
 
@@ -37,29 +52,35 @@ export class BeersService {
         const productData = {
             title: dto.title,
             description: dto.description,
-            price: dto.price,
-            quantity: dto.quantity,
-            brandId: dto.brandId,
-            typePackagingId: dto.typePackagingId
+            price: Number(dto.price),
+            quantity: Number(dto.quantity),
+            brandId: Number(dto.brandId),
+            typePackagingId: Number(dto.typePackagingId),
+            isActive: dto.isActive === 'true' ? true : false,
+            inStock: dto.inStock === 'true' ? true : false
         };
 
         const beerData = {
             compound: dto.compound,
-            volume: dto.volume,
-            fortress: dto.fortress,
-            ibu: dto.ibu,
-            forBottling: dto.forBottling,
-            filtered: dto.filtered
+            volume: Number(dto.volume),
+            fortress: Number(dto.fortress),
+            ibu: Number(dto.ibu),
+            forBottling: dto.forBottling === 'true' ? true : false,
+            filtered: dto.filtered === 'true' ? true : false 
         };
+
+        const productNameExist = await this.productService.getByTitle(dto.title);
+        if(productNameExist) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
+        }
 
         const grades = await this.gradeService.findByIds(dto.gradeIds);
         if (grades.length !== dto.gradeIds.length) {
             throw new HttpException('Сорт пива не был найден', HttpStatus.BAD_REQUEST);
         }
 
-        const product = await this.productService.create(productData, image);
-
         try {
+            const product = await this.productService.create(productData, image);
             const beer = await this.beerRepo.create(beerData);
 
             beer.$set('grades', dto.gradeIds);
@@ -73,30 +94,41 @@ export class BeersService {
         }
     }
 
-    async update(id: number, dto: UpdateBeerDto) {
+    async update(id: number, dto: UpdateBeerDto, image: BinaryData) {
 
         const prodData = {
             title: dto.title,
             description: dto.description,
-            price: dto.price,
-            quantity: dto.quantity,
-            typePackagingId: dto.typePackagingId
+            price: Number(dto.price),
+            quantity: Number(dto.quantity),
+            typePackagingId: Number(dto.typePackagingId),
+            brandId: Number(dto.brandId),
+            isActive: dto.isActive === 'true' ? true : false,
+            inStock: dto.inStock === 'true' ? true : false,
         };
 
         const beerData = {
             compound: dto.compound,
-            volume: dto.volume,
-            fortress: dto.fortress,
-            ibu: dto.ibu,
-            price: dto.price,
-            name: dto.title,
-            forBottling: dto.forBottling,
-            filtered: dto.filtered
+            volume: Number(dto.volume),
+            fortress: Number(dto.fortress),
+            ibu: Number(dto.ibu),
+            forBottling: dto.forBottling === 'true' ? true : false,
+            filtered: dto.filtered === 'true' ? true : false 
         };
 
-        const beer = await this.beerRepo.findByPk(id);
+
+        if(!isNumber(id)) {
+            throw new HttpException('Параметр id не является строкой', HttpStatus.BAD_REQUEST);
+        }
+
+        const beer = await this.getByProductId(id);
         if (!beer) {
             throw new HttpException("Товар не найден!", HttpStatus.BAD_REQUEST);
+        }
+       
+        const productNameExist = await this.productService.getByTitle(dto.title);
+        if(productNameExist && dto.title !== beer.product.title) {
+            throw new HttpException('Товар с данным именем уже существует', HttpStatus.BAD_REQUEST);
         }
 
         const grades = await this.gradeService.findByIds(dto.gradeIds);
@@ -109,116 +141,158 @@ export class BeersService {
         }
 
         const productId = beer.productId;
-        await this.productService.update(productId, prodData);
-        if (this.beerRepo.update({ ...beerData }, { where: { id } })) {
+        await this.productService.update(productId, prodData, image);
+        if (this.beerRepo.update({ ...beerData }, { where: { productId: id } })) {
             return true;
         }
 
         return false;
     }
 
-    async remove(id) {
-        const beer = await this.getById(id)
-        if (!beer) {
-            throw new HttpException("Товара не существует!", HttpStatus.NOT_FOUND);
-        }
-
-        await this.productService.remove(beer.productId);
-        return await this.beerRepo.destroy({ where: { id } });
+    async getByProductId(id: number): Promise<Beers> {
+        const res = await this.beerRepo.findOne({
+            include: {
+                all: true,
+                nested: true
+            },
+            where: { productId: id }
+        });
+        return res;
     }
 
-    async getById(id: number): Promise<Beers> {
-        return await this.beerRepo.findByPk(id, { include: { all: true } });
+    async getByids(id: number[]) {
+        const res = await this.beerRepo.findAll({
+            include: {all: true},
+            where: {id}
+        })
+        return res;
     }
 
-    async getList(page: number, limitPage: number = 0, filter: object = {}, sort: [string, string] = ['price', 'ASC']) {
+    async getList(page: number, limitPage: number = defaultLimitPage, filter: object = {}, sort: ISort = { sortField: '', order: '' }) {
         if (isNumber(page)) {
             if (isEmptyObject(filter)) {
-                filter = { 
+                filter = {
                     include: {
-                        all: true, 
-                    } 
+                        model: Products, as: 'product',
+                        where: {
+
+                        }
+                    }
                 };
             }
-            
-            const query:any = paginate(filter, page, limitPage);
-            query.order = [[
-                "product",
-                ...sort
-            ]]; //сортировка по полю из связной таблицы
-        
+
+            const { sortField, order } = sort;
+            const query: any = paginate(filter, page, limitPage);
+
+            if (sortField && order) {
+                const sortArray = [
+                    sortField,
+                    order
+                ];
+                if (this.productService.isProductTableFields(sortField)) {
+                    sortArray.unshift("product");
+                }
+                query.order = [sortArray]; //сортировка по полю из связной таблицы
+            }
+
             const beerList = await this.beerRepo.findAndCountAll(query);
-            
+
             if (beerList.rows.length <= 0) {
                 throw new HttpException('Page not found', HttpStatus.NOT_FOUND);
             }
 
-            return { ...beerList, nextPage: page + 1 };
+            const lastPage = Math.ceil(beerList.count / limitPage) - 1;
+            let nextPage = 0;
+            if (lastPage > 0) {
+                nextPage = page + 1;
+            }
+
+            return { ...beerList, nextPage, lastPage };
         }
 
         throw new HttpException('Параметр page не был передан', HttpStatus.BAD_REQUEST);
     }
 
-    async getListByFilter(grades: number[] = [], brandIds: number[] = [], typesPackagingIds: number[] = [], minPrice: number = 0, 
-        maxPrice: number = 0, volume: IVolume, fortress: IFortress, stateBeer: IStateBeer, sort:[string, string] = ['price', 'ASC'], page: number, limitPage: number) {
+    async getListByFilter(filter: IBeerFilter) {
+        const {
+            id = 0,
+            title,
+            description,
+            grades = [],
+            brandIds = [],
+            typesPackagingIds = [],
+            minPrice = 0,
+            maxPrice = 0,
+            volume,
+            fortress,
+            forBottling,
+            filtered,
+            sort = { sortField: '', order: '' },
+            isActive,
+            inStock,
+            compound,
+            page, limitPage
+        } = filter
 
-        const { minVolume, maxVolume } = volume;
-        const { minFortress, maxFortress } = fortress;
-        
         //фильтрация по полю из связной таблицы
         let queryFilter: any = {
             include: {
                 model: Products, as: 'product',
-                where: {
-                    isActive: true
-                }
+                where: {}
             },
             where: {}
         };
 
-        queryFilter.include.where = this.productService.buildFilterByProductFields(
-            queryFilter.include.where, 
-            brandIds, 
-            typesPackagingIds, 
-            minPrice, 
-            maxPrice
-        );
+        queryFilter.include.where = this.productService.buildFilterByProductFields(queryFilter.include.where, {
+            id,
+            brandIds,
+            typesPackagingIds,
+            minPrice,
+            maxPrice,
+            title,
+            description,
+            isActive,
+            inStock,
+        });
 
-        if (grades.length > 0) {
+        if (Array.isArray(grades) && grades.length > 0) {
             const beerIds = await this.gradeService.getBeersIdsByGrades(grades);
             queryFilter.where.id = beerIds;
         }
-        
-        if(minVolume && maxVolume  && minVolume > 0 && maxVolume > 0) {
+
+        if (volume && volume.minVolume && volume.maxVolume) {
             queryFilter.where.volume = {
-                [Op.gte]: minVolume, 
-                [Op.lte]: maxVolume
+                [Op.gte]: volume.minVolume,
+                [Op.lte]: volume.maxVolume
             };
         }
 
-        if(minFortress && maxFortress && minFortress > 0 && maxFortress > 0) {
+        if (fortress && fortress.minFortress && fortress.maxFortress) {
             queryFilter.where.fortress = {
-                [Op.gte]: minFortress, 
-                [Op.lte]: maxFortress
+                [Op.gte]: fortress.minFortress,
+                [Op.lte]: fortress.maxFortress
             };
         }
-        
-        const {forBottling, filtered} = stateBeer;
-        if(forBottling == 'true' || forBottling == 'false') {
-            queryFilter.where.forBottling = forBottling;
+   
+        if (forBottling) {
+            queryFilter.where.forBottling = forBottling === 'true' ? true : false;
         }
 
-        if(filtered == 'true' || filtered == 'false') {
-            queryFilter.where.filtered = filtered;
+        if (filtered) {
+            queryFilter.where.filtered = filtered === 'true' ? true : false;
         }
-        
-        const beers = await this.getList(page, limitPage, queryFilter, sort);
-        return beers;
+
+        if(compound) {
+            queryFilter.where.compound = { [Op.iLike]: `%${compound}%` } 
+        }
+
+        const findQuery = (query) => {return this.beerRepo.findAndCountAll(query)};
+        return this.productService.getList(page, limitPage, queryFilter, findQuery, sort);
     }
 
     async getMinAndMaxVolume() {
         let where = {};
-        const query: any[] = getMinMaxQuery({colMin:'volume', colMax: 'volume', minOutput: 'minVolume', maxOutput: 'maxVolume'});
+        const query: any[] = getMinMaxQuery({ colMin: 'volume', colMax: 'volume', minOutput: 'minVolume', maxOutput: 'maxVolume' });
         return await this.beerRepo.findAll({
             attributes: query,
             where
@@ -227,26 +301,14 @@ export class BeersService {
 
     async getMinAndMaxFortress() {
         let where = {};
-        const query: any[] = getMinMaxQuery({colMin:'fortress', colMax: 'fortress', minOutput: 'minFortress', maxOutput: 'maxFortress'});
+        const query: any[] = getMinMaxQuery({ colMin: 'fortress', colMax: 'fortress', minOutput: 'minFortress', maxOutput: 'maxFortress' });
         return await this.beerRepo.findAll({
             attributes: query,
             where
         });
     }
 
-    async searchByName(q: string, page: number, limitPage: number = 0, sort:[string, string] = ['price', 'ASC']) {
-        const query = {
-            include: {
-                model: Products, as: 'product',
-                where: {
-                    isActive: true,
-                    [Op.or] : [
-                        {title: {[Op.iLike]: `%${q}%`}}, 
-                        {description: {[Op.iLike]: `%${q}%`}}
-                    ]
-                }
-            }
-        };
-        return await this.getList(page, limitPage, query, sort);
+    findAndCountAll(query) {
+        return this.beerRepo.findAndCountAll(query);
     }
 }
