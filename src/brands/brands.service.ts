@@ -30,6 +30,9 @@ export class BrandsService {
 
     async getByProductType(type: string) {
         const prodType = await this.productTypeService.getByCode(type);
+        if(!prodType) {
+            throw new HttpException('Тип продукта не найден', HttpStatus.NOT_FOUND);
+        }
         return await this.brandRepo.findAll({where:{productTypeId: prodType.id}})
     }
 

@@ -36,7 +36,7 @@ export class OrdersService {
         if (!basketHash) {
             throw new HttpException('Не передан хеш код корзины!', HttpStatus.BAD_REQUEST);
         }
-        const basket: Basket = await this.basketService.getBasketByHash(basketHash);
+        const basket: Basket = await this.basketService.getBasketByHash(basketHash, true);
         const productsNotInStock = await this.basketService.getProductsNotInStock(basket.id);
 
         if (productsNotInStock) {
