@@ -42,7 +42,7 @@ export class BasketController {
 
     @Post('/getBasket')
     getBasket(@Body() getBasketDto: GetBasketDto) {
-        return this.basketService.getBasketByHash(getBasketDto.hash);
+        return this.basketService.getBasketByHash(getBasketDto.hash, true);
     }
 
     // @Get()

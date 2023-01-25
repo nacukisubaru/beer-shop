@@ -23,6 +23,9 @@ export class TypePackagingService {
 
     async getListByProductType(productType: string) {
         const prodType = await this.productTypeService.getByCode(productType);
+        if(!prodType) {
+            throw new HttpException('Тип продукта не найден', HttpStatus.NOT_FOUND);
+        }
         return await this.typePackagingRepo.findAll({where:{productTypeId: prodType.id}})
     }
 

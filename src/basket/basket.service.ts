@@ -71,7 +71,7 @@ export class BasketService {
     }
 
     public async updateProduct(updateBasketDto: UpdateBasketDto) {
-        const basket = await this.getBasketByHash(updateBasketDto.hash);
+        const basket = await this.getBasketByHash(updateBasketDto.hash, true);
         if (basket && basket.products.length > 0) {
             const product: any = basket.products.filter((product) => {
                 if (product.id === updateBasketDto.productId) {
@@ -94,7 +94,7 @@ export class BasketService {
     }
 
     public async removeProduct(ids: number[], basketHash: string) {
-        const basket = await this.getBasketByHash(basketHash);
+        const basket = await this.getBasketByHash(basketHash, true);
         if (basket) {
             this.basketProductRepo.destroy({ where: { productId: { [Op.or]: ids } } });
             return true;
@@ -223,13 +223,13 @@ export class BasketService {
         return false;
     }
 
-    public async getBasketByHash(hash: string) {
+    public async getBasketByHash(hash: string, checkProductExist: boolean = false) {
         const basket = await this.basketRepo.findOne({ where: { hash }, include: { all: true }, nest: true });
         this.products = basket.products;
         if (!basket) {
             throw new HttpException('Корзина не существует', HttpStatus.BAD_REQUEST);
         }
-        if (!basket.products.length) {
+        if (!basket.products.length && checkProductExist) {
             throw new HttpException('Продукты в корзине не найдены', HttpStatus.NOT_FOUND);
         }
 
