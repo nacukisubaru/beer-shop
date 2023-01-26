@@ -22,7 +22,8 @@ export class BasketController {
         const userId = request.user.id;
         return this.basketService.addProduct(createBasketDto, userId);
     }
-
+    
+    @UsePipes(ValidationPipe)
     @Post('/updProduct')
     updateProduct(@Body() updateBasketDto: UpdateBasketDto) {
         return this.basketService.updateProduct(updateBasketDto);
