@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException, Ip, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException, Ip, Query, UsePipes } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -6,6 +6,12 @@ import { AuthUserDto } from './dto/auth-user.dto';
 import { response } from 'express';
 import { setCookiesRefreshToken } from 'src/helpers/cookiesHelper';
 import { AuthUserByCodeDto } from './dto/auth-user-by-code.dto';
+import { ValidationPipe } from 'src/pipes/validation.pipe';
+import { ChangeNumberDto } from './dto/change-number.dto';
+import { ChangeEmailDto } from './dto/change-email.dto';
+import { ChangeFioDto } from './dto/change-fio.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { VerifyUserByCodeDto } from './dto/verify-user-by-code.dto';
 
 @Controller('users')
 export class UsersController {
@@ -63,10 +69,51 @@ export class UsersController {
         return {result};
     }
 
+    @UsePipes(ValidationPipe)
+    @Post('/verifyUserByCode')
+    async verifyByCode(@Body() verifyDto: VerifyUserByCodeDto) {
+       return await this.usersService.verifyUserByCode(verifyDto.phone, verifyDto.code);
+    }
+
+    @UsePipes(ValidationPipe)
+    @Post('/verifyPhoneByCode')
+    async verifyPhoneByCode(@Body() verifyDto: VerifyUserByCodeDto) {
+       return await this.usersService.verifyPhoneByCode(verifyDto.phone, verifyDto.code);
+    }
+   
     @Get('/activate/:id')
     activate(@Param('id') activationLink: string) {
        return this.usersService.activate(activationLink);
     }
+
+    @UsePipes(ValidationPipe)
+    @Post('/changeNumber')
+    async changePhoneNumber(numberData: ChangeNumberDto, @Req() request) {
+        const userId = request.user.id;
+        return this.usersService.changePhoneNumber(parseInt(userId), numberData.phone);
+    }
+
+    @UsePipes(ValidationPipe)
+    @Post('/changeEmail')
+    async changeEmail(emailData: ChangeEmailDto, @Req() request) {
+        const userId = request.user.id;
+        return this.usersService.changeEmail(parseInt(userId), emailData.email);
+    }
+
+    @UsePipes(ValidationPipe)
+    @Post('/changeFio')
+    async changeFio(fioData: ChangeFioDto, @Req() request) {
+        const userId = request.user.id;
+        return this.usersService.changeFio(parseInt(userId), fioData.name, fioData.surname);
+    }
+
+    @UsePipes(ValidationPipe)
+    @Post('/changePassword')
+    async changePassword(passwordData: ChangePasswordDto, @Req() request) {
+        const userId = request.user.id;
+        return this.usersService.changePassword(parseInt(userId), passwordData.password);
+    }
+    
 
     create(@Body() createUserDto: CreateUserDto) {
         return this.usersService.create(createUserDto);

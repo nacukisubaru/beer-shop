@@ -65,6 +65,14 @@ export class UsersService {
         return user;
     }
 
+    async verifyPhoneByCode(phone: string, code: string) {
+        const isVerify = await this.verificationService.verifyCode(phone, code);
+        if (!isVerify) {
+            throw new UnauthorizedException({message: 'Неверный код!'});
+        }
+        return true;
+    }
+
     async login(authUserDto: AuthUserDto) {
         const user = await this.validateUser(authUserDto);
         return await this.createTokensAndSave(user);
@@ -167,6 +175,36 @@ export class UsersService {
 
     async getById(id: number) {
        return await this.userRepo.findOne({where: {id}, include: { all: true }});
+    }
+
+    async changePassword(userId: number, password: string) {
+        const hashPassword = await bcrypt.hash(password, 5);
+        const user = await this.getById(userId);
+        user.password = hashPassword;
+        user.save();
+        return true;
+    }
+
+    async changePhoneNumber(userId: number, phoneNumber: string) {
+       const user = await this.getById(userId);
+       user.phone = phoneNumber;
+       user.save();
+       return true;
+    }
+
+    async changeEmail(userId: number, email: string) {
+        const user = await this.getById(userId);
+        user.email = email;
+        user.save();
+        return true;
+    }
+
+    async changeFio(userId: number, name: string, surname: string) {
+        const user = await this.getById(userId);
+        user.name = name;
+        user.surname = surname;
+        user.save();
+        return true;
     }
 
     create(createUserDto: CreateUserDto) {

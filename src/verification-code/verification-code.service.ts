@@ -124,10 +124,10 @@ export class VerificationCodeService {
 
     async verifyCode(phone: string, code: string) {
         if(!phone) {
-            throw new HttpException('Не передан параметр phone', HttpStatus.BAD_REQUEST);
+            throw new HttpException('Номер телефона не заполнен', HttpStatus.BAD_REQUEST);
         }
         if(!code) {
-            throw new HttpException('Не передан параметр code', HttpStatus.BAD_REQUEST);
+            throw new HttpException('Код не заполнен', HttpStatus.BAD_REQUEST);
         }
         const record = await this.getRecordByPhone(phone);
         if (record && record.code === code) {
