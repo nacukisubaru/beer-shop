@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException, Ip, Query, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException, Ip, Query, UsePipes, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -12,6 +12,7 @@ import { ChangeEmailDto } from './dto/change-email.dto';
 import { ChangeFioDto } from './dto/change-fio.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { VerifyUserByCodeDto } from './dto/verify-user-by-code.dto';
+import { JwtAuthGuard } from 'src/token/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -63,6 +64,11 @@ export class UsersController {
        return await this.usersService.checkUserExistByPhone(phone);
     }
 
+    @Get('/checkUserNotExistByPhone/')
+    async checkUserNotExistByPhone(@Query('phone') phone: string) {
+       return await this.usersService.checkUserNotExistByPhone(phone);
+    }
+
     @Get('/checkUserNotExistByEmailAndPhone/')
     async checkUserNotExistByEmailAndPhone(@Query('phone') phone: string, @Query('email') email: string) {
         const result = await this.usersService.checkUserNotExistByEmailAndPhone(phone, email);
@@ -86,16 +92,17 @@ export class UsersController {
        return this.usersService.activate(activationLink);
     }
 
+    @UseGuards(JwtAuthGuard)
     @UsePipes(ValidationPipe)
-    @Post('/changeNumber')
-    async changePhoneNumber(numberData: ChangeNumberDto, @Req() request) {
+    @Post('/changePhone')
+    async changePhoneNumber(@Body() numberData: ChangeNumberDto, @Req() request) {
         const userId = request.user.id;
         return this.usersService.changePhoneNumber(parseInt(userId), numberData.phone);
     }
 
     @UsePipes(ValidationPipe)
     @Post('/changeEmail')
-    async changeEmail(emailData: ChangeEmailDto, @Req() request) {
+    async changeEmail(@Body() emailData: ChangeEmailDto, @Req() request) {
         const userId = request.user.id;
         return this.usersService.changeEmail(parseInt(userId), emailData.email);
     }

@@ -148,7 +148,16 @@ export class UsersService {
             return true;
         }
         
-        throw new HttpException({message:`${'Пользователя с номером ' + phone + ' не существует'}`}, HttpStatus.NOT_FOUND);
+        throw new HttpException({message:`${'Пользователь с номером ' + phone + ' не зарегистрирован'}`}, HttpStatus.NOT_FOUND);
+    }
+
+    async checkUserNotExistByPhone(phone: string) {
+        const user = await this.getUserByPhone(phone);
+        if (user) {
+            throw new HttpException({message:`${'Пользователь с номером ' + phone + ' уже зарегистрирован'}`}, HttpStatus.NOT_FOUND);
+        }
+        
+        return true;
     }
 
     async checkUserNotExistByEmailAndPhone(phone: string, email: string) {
@@ -186,10 +195,18 @@ export class UsersService {
     }
 
     async changePhoneNumber(userId: number, phoneNumber: string) {
-       const user = await this.getById(userId);
-       user.phone = phoneNumber;
-       user.save();
-       return true;
+        if (!phoneNumber) {
+            throw new HttpException(`Номер телефона не заполнен`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
+    
+        const user = await this.getById(userId);
+        user.phone = phoneNumber;
+        user.save();
+        return true;
     }
 
     async changeEmail(userId: number, email: string) {
