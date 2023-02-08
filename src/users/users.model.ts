@@ -9,11 +9,8 @@ export class Users extends Model<Users> {
   @Column({type: DataType.INTEGER, unique: true, autoIncrement: true, primaryKey: true})
   id: number;
 
-  @Column({type: DataType.STRING, allowNull: false})
-  name: string;
-
-  @Column({type: DataType.STRING, allowNull: false})
-  surname: string;
+  @Column({type: DataType.STRING, allowNull: true})
+  fio: string;
 
   @Column({type: DataType.STRING, allowNull: false})
   email: string;
@@ -21,7 +18,7 @@ export class Users extends Model<Users> {
   @Column({type: DataType.STRING, allowNull: false})
   phone: string;
   
-  @Column({type: DataType.STRING})
+  @Column({type: DataType.STRING, allowNull: true})
   avatar: string;
 
   @Column({type: DataType.STRING, allowNull: false})

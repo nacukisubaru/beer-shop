@@ -13,8 +13,7 @@ import { Order } from './orders.model';
 interface IFilter {
     id: number,
     userId: number,
-    customerName: string,
-    customerSurname: string
+    customerFio: string,
     customerEmail: string
     customerPhone: string,
 }
@@ -73,12 +72,8 @@ export class OrdersService {
             query.where.userId = filter.userId;
         }
 
-        if(filter.customerName) {
-            query.include[0].where.name = { [Op.iLike]: `%${filter.customerName}%` };
-        }
-
-        if(filter.customerSurname) {
-            query.include[0].where.surname = { [Op.iLike]: `%${filter.customerSurname}%` };
+        if(filter.customerFio) {
+            query.include[0].where.fio = { [Op.iLike]: `%${filter.customerFio}%` };
         }
 
         if(filter.customerPhone) {
@@ -146,9 +141,8 @@ export class OrdersService {
 
                 return { 
                     id, 
-                    userId, 
-                    customerName: customer.name, 
-                    customerSurname: customer.surname, 
+                    userId,
+                    customerFio: customer.fio,
                     customerPhone: customer.phone,
                     customerEmail: customer.email,
                     amount: amount,

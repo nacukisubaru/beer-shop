@@ -12,8 +12,7 @@ module.exports = {
       [
         {
           id: 1,
-          name: 'Admin',
-          surname: 'Admin',
+          fio: 'Admin',
           email: 'incloudff@gmail.com',
           phone: '79953276845',
           password: password,

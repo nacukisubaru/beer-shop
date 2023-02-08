@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException, Ip, Query, UsePipes, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException, Ip, Query, UsePipes, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthUserDto } from './dto/auth-user.dto';
-import { response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { setCookiesRefreshToken } from 'src/helpers/cookiesHelper';
 import { AuthUserByCodeDto } from './dto/auth-user-by-code.dto';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
@@ -100,6 +100,7 @@ export class UsersController {
         return this.usersService.changePhoneNumber(parseInt(userId), numberData.phone);
     }
 
+    @UseGuards(JwtAuthGuard)
     @UsePipes(ValidationPipe)
     @Post('/changeEmail')
     async changeEmail(@Body() emailData: ChangeEmailDto, @Req() request) {
@@ -107,20 +108,29 @@ export class UsersController {
         return this.usersService.changeEmail(parseInt(userId), emailData.email);
     }
 
+    @UseGuards(JwtAuthGuard)
     @UsePipes(ValidationPipe)
     @Post('/changeFio')
-    async changeFio(fioData: ChangeFioDto, @Req() request) {
+    async changeFio(@Body() fioData: ChangeFioDto, @Req() request) {
         const userId = request.user.id;
-        return this.usersService.changeFio(parseInt(userId), fioData.name, fioData.surname);
+        return this.usersService.changeFio(parseInt(userId), fioData.fio);
     }
 
+    @UseGuards(JwtAuthGuard)
     @UsePipes(ValidationPipe)
     @Post('/changePassword')
-    async changePassword(passwordData: ChangePasswordDto, @Req() request) {
+    async changePassword(@Body() passwordData: ChangePasswordDto, @Req() request) {
         const userId = request.user.id;
         return this.usersService.changePassword(parseInt(userId), passwordData.password);
     }
-    
+
+    @UseGuards(JwtAuthGuard)
+    @UseInterceptors(FileInterceptor('image'))
+    @Post('/uploadAvatar')
+    async uploadAvatar(@UploadedFile() image: BinaryData, @Req() request) {
+        const userId = request.user.id;
+        return this.usersService.uploadAvatar(userId, image);
+    }
 
     create(@Body() createUserDto: CreateUserDto) {
         return this.usersService.create(createUserDto);

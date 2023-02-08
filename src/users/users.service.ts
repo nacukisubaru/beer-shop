@@ -10,6 +10,7 @@ import { MailService } from 'src/mail/mail.service';
 import { VerificationCodeService } from 'src/verification-code/verification-code.service';
 import { AuthUserByCodeDto } from './dto/auth-user-by-code.dto';
 import { RolesService } from 'src/roles/roles.service';
+import { FilesService } from 'src/files/filtes.service';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +19,8 @@ export class UsersService {
                 private tokenService: TokenService,
                 private mailService: MailService,
                 private verificationService: VerificationCodeService,
-                private roleService: RolesService
+                private roleService: RolesService,
+                private fileService: FilesService,
                 ) { }
 
     async registrate(createUserDto: CreateUserDto) {
@@ -31,8 +33,7 @@ export class UsersService {
                 password: hashPassword,
                 activationLink: hashPassword,
                 isActivated: false,
-                name: '',
-                surname: ''
+                fio: '',
             }
         );
     
@@ -187,8 +188,19 @@ export class UsersService {
     }
 
     async changePassword(userId: number, password: string) {
+        if (!password) {
+            throw new HttpException(`Пароль не заполнен`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
+
         const hashPassword = await bcrypt.hash(password, 5);
         const user = await this.getById(userId);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
         user.password = hashPassword;
         user.save();
         return true;
@@ -204,24 +216,68 @@ export class UsersService {
         }
     
         const user = await this.getById(userId);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
         user.phone = phoneNumber;
         user.save();
         return true;
     }
 
     async changeEmail(userId: number, email: string) {
+        if (!email) {
+            throw new HttpException(`Email не заполнен`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
         const user = await this.getById(userId);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
         user.email = email;
         user.save();
         return true;
     }
 
-    async changeFio(userId: number, name: string, surname: string) {
+    async changeFio(userId: number, fio: string) {
+        if (!fio) {
+            throw new HttpException(`ФИО не заполнен`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
         const user = await this.getById(userId);
-        user.name = name;
-        user.surname = surname;
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
+        user.fio = fio;
         user.save();
         return true;
+    }
+
+    async uploadAvatar(userId: number, image: BinaryData) {
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
+        
+        const user = await this.getById(userId);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
+        
+        if (!image) {
+            throw new HttpException(`Изображение не передано`, HttpStatus.BAD_REQUEST);
+        }
+
+        const fileName = await this.fileService.createFile(image, 'user-images');
+        if (fileName) {
+            user.avatar = fileName;
+            user.save();
+            return true;
+        }    
     }
 
     create(createUserDto: CreateUserDto) {
