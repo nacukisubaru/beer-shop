@@ -276,7 +276,7 @@ export class UsersService {
         if (fileName) {
             user.avatar = fileName;
             user.save();
-            return true;
+            return fileName;
         }    
     }
 
