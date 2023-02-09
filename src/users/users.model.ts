@@ -27,6 +27,9 @@ export class Users extends Model<Users> {
   @Column({type: DataType.BOOLEAN, allowNull: false})
   isActivated: boolean;
 
+  @Column({type: DataType.BOOLEAN, allowNull: false})
+  isActivatedEmail: boolean;
+
   @Column({type: DataType.STRING, allowNull: false})
   activationLink: string;
 

@@ -20,10 +20,10 @@ export class MailService {
         await this.transporter.sendMail({
             from: process.env.SMTP_USER,
             to,
-            subject: 'Активация аккаунта на ' + process.env.API_URL,
+            subject: 'Активация email на сайте ' + process.env.API_URL,
             text: '',
             html: ` <div>
-                        <h1>Для активации аккаунта перейдите по ссылке<h1>
+                        <h1>Для активации email перейдите по ссылке<h1>
                         <a href="${link}">${link}</a>
                     </div>`
         });

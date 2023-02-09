@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException, Ip, Query, UsePipes, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Req, Request, UnauthorizedException, Ip, Query, UsePipes, UseGuards, UploadedFile, UseInterceptors, HttpException, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -21,8 +21,6 @@ export class UsersController {
     @Post('/registration')
     async registration(@Body() createUserDto: CreateUserDto, @Res({ passthrough: true }) response) {
         return await this.usersService.registrate(createUserDto);
-        //setCookiesRefreshToken(response, userData);
-        //return userData;
     }
 
     @Post('/login')
@@ -88,8 +86,11 @@ export class UsersController {
     }
    
     @Get('/activate/:id')
-    activate(@Param('id') activationLink: string) {
-       return this.usersService.activate(activationLink);
+    async activate(@Param('id') activationLink: string, @Res() res) {
+        const isActivate = await this.usersService.activateEmail(activationLink);
+        if (isActivate) {
+            return res.redirect(process.env.ORIGIN_URL+'/account?activate=true');
+        }
     }
 
     @UseGuards(JwtAuthGuard)
@@ -143,7 +144,11 @@ export class UsersController {
 
     @Get(':id')
     getById(@Param('id') id: string) {
-        return this.usersService.getById(+id);
+        const user = this.usersService.getById(+id);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
+        return user;
     }
 
     @Patch(':id')

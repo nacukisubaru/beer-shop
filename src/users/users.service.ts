@@ -11,6 +11,7 @@ import { VerificationCodeService } from 'src/verification-code/verification-code
 import { AuthUserByCodeDto } from './dto/auth-user-by-code.dto';
 import { RolesService } from 'src/roles/roles.service';
 import { FilesService } from 'src/files/filtes.service';
+import { emailPattern } from 'src/helpers/validationHelper';
 
 @Injectable()
 export class UsersService {
@@ -24,7 +25,7 @@ export class UsersService {
                 ) { }
 
     async registrate(createUserDto: CreateUserDto) {
-        this.checkUserNotExistByEmailAndPhone(createUserDto.phone, createUserDto.email);
+        this.checkUserNotExistByPhone(createUserDto.phone);
 
         const hashPassword = await bcrypt.hash(createUserDto.password, 5);
         const user = await this.userRepo.create(
@@ -33,14 +34,15 @@ export class UsersService {
                 password: hashPassword,
                 activationLink: hashPassword,
                 isActivated: false,
+                isActivatedEmail: false,
                 fio: '',
+                email: ''
             }
         );
     
         if(user) {
             await this.roleService.bindRole({userId: user.id, role: 'USER'});
             this.createTokensAndSave(user);
-            this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
             return true;
         }
 
@@ -102,13 +104,13 @@ export class UsersService {
         return await this.createTokensAndSave(user);
     }
 
-    async activate(activationLink) {
+    async activateEmail(activationLink) {
         const user = await this.userRepo.findOne({where: {activationLink}});
         if(!user) {
             throw new HttpException("Некорректная ссылка активации", HttpStatus.NOT_FOUND);
         }
 
-        user.isActivated = true;
+        user.isActivatedEmail = true;
         user.save();
         return true;
     }
@@ -229,6 +231,10 @@ export class UsersService {
             throw new HttpException(`Email не заполнен`, HttpStatus.BAD_REQUEST);
         }
 
+        if (!email.match(emailPattern)) {
+            throw new HttpException(`Неверно указан email`, HttpStatus.BAD_REQUEST);
+        }
+
         if (!userId) {
             throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
         }
@@ -236,8 +242,10 @@ export class UsersService {
         if (!user) {
             throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
         }
+       
         user.email = email;
         user.save();
+        this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
         return true;
     }
 
@@ -277,7 +285,7 @@ export class UsersService {
             user.avatar = fileName;
             user.save();
             return fileName;
-        }    
+        }
     }
 
     create(createUserDto: CreateUserDto) {
