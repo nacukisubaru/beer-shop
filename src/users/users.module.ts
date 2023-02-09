@@ -7,6 +7,7 @@ import { TokenModule } from 'src/token/token.module';
 import { MailModule } from 'src/mail/mail.module';
 import { VerificationCodeModule } from 'src/verification-code/verification-code.module';
 import { RolesModule } from 'src/roles/roles.module';
+import { FilesModule } from 'src/files/files.module';
 
 @Module({
     controllers: [UsersController],
@@ -16,7 +17,8 @@ import { RolesModule } from 'src/roles/roles.module';
         TokenModule,
         MailModule,
         VerificationCodeModule,
-        RolesModule
+        RolesModule,
+        FilesModule
     ],
     exports: [UsersService, UsersModule]
 })

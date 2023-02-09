@@ -10,6 +10,8 @@ import { MailService } from 'src/mail/mail.service';
 import { VerificationCodeService } from 'src/verification-code/verification-code.service';
 import { AuthUserByCodeDto } from './dto/auth-user-by-code.dto';
 import { RolesService } from 'src/roles/roles.service';
+import { FilesService } from 'src/files/filtes.service';
+import { emailPattern } from 'src/helpers/validationHelper';
 
 @Injectable()
 export class UsersService {
@@ -18,11 +20,12 @@ export class UsersService {
                 private tokenService: TokenService,
                 private mailService: MailService,
                 private verificationService: VerificationCodeService,
-                private roleService: RolesService
+                private roleService: RolesService,
+                private fileService: FilesService,
                 ) { }
 
     async registrate(createUserDto: CreateUserDto) {
-        this.checkUserNotExistByEmailAndPhone(createUserDto.phone, createUserDto.email);
+        this.checkUserNotExistByPhone(createUserDto.phone);
 
         const hashPassword = await bcrypt.hash(createUserDto.password, 5);
         const user = await this.userRepo.create(
@@ -31,15 +34,15 @@ export class UsersService {
                 password: hashPassword,
                 activationLink: hashPassword,
                 isActivated: false,
-                name: '',
-                surname: ''
+                isActivatedEmail: false,
+                fio: '',
+                email: ''
             }
         );
     
         if(user) {
             await this.roleService.bindRole({userId: user.id, role: 'USER'});
             this.createTokensAndSave(user);
-            this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
             return true;
         }
 
@@ -63,6 +66,14 @@ export class UsersService {
         }
 
         return user;
+    }
+
+    async verifyPhoneByCode(phone: string, code: string) {
+        const isVerify = await this.verificationService.verifyCode(phone, code);
+        if (!isVerify) {
+            throw new UnauthorizedException({message: 'Неверный код!'});
+        }
+        return true;
     }
 
     async login(authUserDto: AuthUserDto) {
@@ -93,13 +104,13 @@ export class UsersService {
         return await this.createTokensAndSave(user);
     }
 
-    async activate(activationLink) {
+    async activateEmail(activationLink) {
         const user = await this.userRepo.findOne({where: {activationLink}});
         if(!user) {
             throw new HttpException("Некорректная ссылка активации", HttpStatus.NOT_FOUND);
         }
 
-        user.isActivated = true;
+        user.isActivatedEmail = true;
         user.save();
         return true;
     }
@@ -140,7 +151,16 @@ export class UsersService {
             return true;
         }
         
-        throw new HttpException({message:`${'Пользователя с номером ' + phone + ' не существует'}`}, HttpStatus.NOT_FOUND);
+        throw new HttpException({message:`${'Пользователь с номером ' + phone + ' не зарегистрирован'}`}, HttpStatus.NOT_FOUND);
+    }
+
+    async checkUserNotExistByPhone(phone: string) {
+        const user = await this.getUserByPhone(phone);
+        if (user) {
+            throw new HttpException({message:`${'Пользователь с номером ' + phone + ' уже зарегистрирован'}`}, HttpStatus.NOT_FOUND);
+        }
+        
+        return true;
     }
 
     async checkUserNotExistByEmailAndPhone(phone: string, email: string) {
@@ -167,6 +187,105 @@ export class UsersService {
 
     async getById(id: number) {
        return await this.userRepo.findOne({where: {id}, include: { all: true }});
+    }
+
+    async changePassword(userId: number, password: string) {
+        if (!password) {
+            throw new HttpException(`Пароль не заполнен`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
+
+        const hashPassword = await bcrypt.hash(password, 5);
+        const user = await this.getById(userId);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
+        user.password = hashPassword;
+        user.save();
+        return true;
+    }
+
+    async changePhoneNumber(userId: number, phoneNumber: string) {
+        if (!phoneNumber) {
+            throw new HttpException(`Номер телефона не заполнен`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
+    
+        const user = await this.getById(userId);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
+        user.phone = phoneNumber;
+        user.save();
+        return true;
+    }
+
+    async changeEmail(userId: number, email: string) {
+        if (!email) {
+            throw new HttpException(`Email не заполнен`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!email.match(emailPattern)) {
+            throw new HttpException(`Неверно указан email`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
+        const user = await this.getById(userId);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
+       
+        user.email = email;
+        user.save();
+        this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);
+        return true;
+    }
+
+    async changeFio(userId: number, fio: string) {
+        if (!fio) {
+            throw new HttpException(`ФИО не заполнен`, HttpStatus.BAD_REQUEST);
+        }
+
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
+        const user = await this.getById(userId);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
+        user.fio = fio;
+        user.save();
+        return true;
+    }
+
+    async uploadAvatar(userId: number, image: BinaryData) {
+        if (!userId) {
+            throw new HttpException(`Идентификатор пользователя не передан`, HttpStatus.BAD_REQUEST);
+        }
+        
+        const user = await this.getById(userId);
+        if (!user) {
+            throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
+        }
+        
+        if (!image) {
+            throw new HttpException(`Изображение не передано`, HttpStatus.BAD_REQUEST);
+        }
+
+        const fileName = await this.fileService.createFile(image, 'user-images');
+        if (fileName) {
+            user.avatar = fileName;
+            user.save();
+            return fileName;
+        }
     }
 
     create(createUserDto: CreateUserDto) {

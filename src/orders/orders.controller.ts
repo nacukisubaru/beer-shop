@@ -26,8 +26,7 @@ export class OrdersController {
         @Query('limitPage') limitPage: number,
         @Query('orderId') orderId: number,
         @Query('userId') userId: number,
-        @Query('customerName') customerName: string,
-        @Query('customerSurname') customerSurname: string,
+        @Query('customerFio') customerFio: string,
         @Query('customerPhone') customerPhone: string,
         @Query('sortField') sortField: string, @Query('order') order: string
     ) {
@@ -36,12 +35,8 @@ export class OrdersController {
             limitPage = defaultLimitPage;
         }
 
-        if(customerName) {
-            filter.customerName = customerName;
-        }
-
-        if(customerSurname) {
-            filter.customerSurname = customerSurname;
+        if(customerFio) {
+            filter.customerFio = customerFio;
         }
 
         if(customerPhone) {
