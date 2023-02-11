@@ -1,11 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, or } from 'sequelize';
 import { Basket } from 'src/basket/basket.model';
 import { BasketService } from 'src/basket/basket.service';
 import { paginate } from 'src/helpers/paginationHelper';
 import { isModelTableFields } from 'src/helpers/sequlizeHelper';
 import { isNumber } from 'src/helpers/typesHelper';
+import { OrderStatus } from 'src/order-status/order-status.model';
 import { Users } from 'src/users/users.model';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './orders.model';
@@ -47,7 +48,7 @@ export class OrdersService {
         }
 
         const amount = await this.basketService.getBasketAmount(basket.id);
-        const order = await this.orderRepo.create({ userId, isPayed: false, amount });
+        const order = await this.orderRepo.create({ userId, amount });
         basket.orderId = order.id;
         basket.save();
         return order;
@@ -62,7 +63,11 @@ export class OrdersService {
             throw new HttpException('Параметр limitPage не был передан', HttpStatus.BAD_REQUEST);
         }
         
-        let query: any = { include: [{ model: Users, as: 'customer', where: {} }, { model: Basket, as: 'basket', where: {} }], where: {}};
+        let query: any = { include: [
+            { model: Users, as: 'customer', where: {} }, 
+            { model: Basket, as: 'basket', where: {} },
+            { model: OrderStatus, as: 'status', where: {} }
+        ], where: {}};
 
         if(filter.id) {
             query.where.id = filter.id;
@@ -126,7 +131,7 @@ export class OrdersService {
             }
        
             const mapOrders = orders.rows.map((order) => {
-                const { id, userId, amount, customer } = order;
+                const { id, userId, amount, customer, status } = order;
                 const products = order.getDataValue("products");
                 const productsMap = products.map((product: any) => {
                     return {
@@ -145,8 +150,8 @@ export class OrdersService {
                     customerFio: customer.fio,
                     customerPhone: customer.phone,
                     customerEmail: customer.email,
-                    amount: amount,
-                    //status: "payed",
+                    amount,
+                    status,
                     products: productsMap
                 };
             });
