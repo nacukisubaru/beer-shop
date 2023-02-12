@@ -17,6 +17,7 @@ import { Order } from './orders.model';
 interface IFilter {
     id: number,
     userId: number,
+    statusId: number,
     customerFio: string,
     customerEmail: string
     customerPhone: string,
@@ -90,6 +91,10 @@ export class OrdersService {
 
         if(filter.customerPhone) {
             query.include[0].where.phone = filter.customerPhone;
+        }
+
+        if(filter.statusId) {
+            query.where.statusId = filter.statusId;
         }
 
         const prepareFind: any = paginate(query, page, limitPage);

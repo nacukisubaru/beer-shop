@@ -28,6 +28,7 @@ export class OrdersController {
         @Query('userId') userId: number,
         @Query('customerFio') customerFio: string,
         @Query('customerPhone') customerPhone: string,
+        @Query('statusId') statusId: number,
         @Query('sortField') sortField: string, @Query('order') order: string
     ) {
         const filter: any = {};
@@ -41,6 +42,10 @@ export class OrdersController {
 
         if(customerPhone) {
             filter.customerPhone = customerPhone;
+        }
+
+        if(statusId) {
+            filter.statusId = statusId;
         }
 
         if(orderId) {
