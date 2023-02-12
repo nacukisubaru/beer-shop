@@ -7,6 +7,7 @@ import { paginate } from 'src/helpers/paginationHelper';
 import { isModelTableFields } from 'src/helpers/sequlizeHelper';
 import { isNumber } from 'src/helpers/typesHelper';
 import { OrderStatus } from 'src/order-status/order-status.model';
+import { OrderStatusService } from 'src/order-status/order-status.service';
 import { Users } from 'src/users/users.model';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './orders.model';
@@ -29,7 +30,8 @@ export class OrdersService {
 
     constructor(
         @InjectModel(Order) private orderRepo: typeof Order,
-        private basketService: BasketService
+        private basketService: BasketService,
+        private orderStatusService: OrderStatusService
     ) { }
 
     async create(basketHash: string, userId: number) {
@@ -177,7 +179,37 @@ export class OrdersService {
         return order;
     }
 
-    update(id: number, updateOrderDto: UpdateOrderDto) {
-        return `This action updates a #${id} order`;
+    async getOrder(id: number) {
+        const order = this.orderRepo.findOne({where: {id}});
+        if (!order) {
+            throw new HttpException('Заказ не найден', HttpStatus.NOT_FOUND);
+        }
+        return order;
+    }
+
+    async update(updateOrderDto: UpdateOrderDto) {
+        const orderId = updateOrderDto.id;
+        const statusId = updateOrderDto.statusId;
+        
+        if (!orderId) {
+            throw new HttpException('Не передан айди заказа', HttpStatus.BAD_REQUEST);
+        }
+
+        if (!statusId) {
+            throw new HttpException('Не передан айди статуса', HttpStatus.BAD_REQUEST);
+        }
+
+        const order = await this.getOrder(orderId);
+        order.statusId = statusId;
+        order.save();
+
+        const status = await this.orderStatusService.getStatusById(statusId);
+        if (status.status === "ready") {
+            //отправлять смс клиенту о том что заказ можно забрать
+        } else if (status.status === "in_work") {
+            //отправлять смс клиенту о том что начали подготовку заказа 
+        }
+
+        return true;
     }
 }

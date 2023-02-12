@@ -74,8 +74,8 @@ export class OrdersController {
         return this.ordersService.getOrderWithProduct(Number(id));
     }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-        return this.ordersService.update(+id, updateOrderDto);
+    @Post('/update/')
+    update(@Body() updateOrderDto: UpdateOrderDto) {
+        return this.ordersService.update(updateOrderDto);
     }
 }

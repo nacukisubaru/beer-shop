@@ -5,10 +5,13 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { OrderStatus } from './order-status.model';
 
 @Module({
-  controllers: [OrderStatusController],
-  providers: [OrderStatusService],
-  imports: [
-    SequelizeModule.forFeature([OrderStatus])
-  ]
+    controllers: [OrderStatusController],
+    providers: [OrderStatusService],
+    imports: [
+        SequelizeModule.forFeature([OrderStatus])
+    ],
+    exports: [
+        OrderStatusService
+    ]
 })
-export class OrderStatusModule {}
+export class OrderStatusModule { }

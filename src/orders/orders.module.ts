@@ -9,6 +9,7 @@ import { BasketModule } from 'src/basket/basket.module';
 import { TokenModule } from 'src/token/token.module';
 import { RolesModule } from 'src/roles/roles.module';
 import { OrderStatus } from '../order-status/order-status.model';
+import { OrderStatusModule } from 'src/order-status/order-status.module';
 
 @Module({
   controllers: [OrdersController],
@@ -17,7 +18,8 @@ import { OrderStatus } from '../order-status/order-status.model';
     SequelizeModule.forFeature([Basket, Users, Order, OrderStatus]),
     TokenModule,
     BasketModule,
-    RolesModule
+    RolesModule,
+    OrderStatusModule
   ]
 })
 export class OrdersModule {}
