@@ -6,6 +6,7 @@ import { BasketService } from 'src/basket/basket.service';
 import { paginate } from 'src/helpers/paginationHelper';
 import { isModelTableFields } from 'src/helpers/sequlizeHelper';
 import { isNumber } from 'src/helpers/typesHelper';
+import { MailService } from 'src/mail/mail.service';
 import { OrderStatus } from 'src/order-status/order-status.model';
 import { OrderStatusService } from 'src/order-status/order-status.service';
 import { Users } from 'src/users/users.model';
@@ -31,7 +32,8 @@ export class OrdersService {
     constructor(
         @InjectModel(Order) private orderRepo: typeof Order,
         private basketService: BasketService,
-        private orderStatusService: OrderStatusService
+        private orderStatusService: OrderStatusService,
+        private mailService: MailService,
     ) { }
 
     async create(basketHash: string, userId: number) {
@@ -202,12 +204,20 @@ export class OrdersService {
         const order = await this.getOrder(orderId);
         order.statusId = statusId;
         order.save();
-
+        
+        const customerEmail = order.customer.email;
         const status = await this.orderStatusService.getStatusById(statusId);
+      
         if (status.status === "ready") {
             //отправлять смс клиенту о том что заказ можно забрать
+            if (customerEmail) {
+                this.mailService.sendOrderReadyMail(customerEmail, orderId);
+            }
         } else if (status.status === "in_work") {
-            //отправлять смс клиенту о том что начали подготовку заказа 
+            //отправлять смс клиенту о том что начали подготовку заказа
+            if (customerEmail) {
+                this.mailService.sendOrderInWorkMail(customerEmail, orderId);
+            }
         }
 
         return true;

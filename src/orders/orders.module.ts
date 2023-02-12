@@ -10,6 +10,7 @@ import { TokenModule } from 'src/token/token.module';
 import { RolesModule } from 'src/roles/roles.module';
 import { OrderStatus } from '../order-status/order-status.model';
 import { OrderStatusModule } from 'src/order-status/order-status.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   controllers: [OrdersController],
@@ -19,7 +20,8 @@ import { OrderStatusModule } from 'src/order-status/order-status.module';
     TokenModule,
     BasketModule,
     RolesModule,
-    OrderStatusModule
+    OrderStatusModule,
+    MailModule
   ]
 })
 export class OrdersModule {}
