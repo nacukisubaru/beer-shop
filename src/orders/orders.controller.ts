@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Req, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -74,6 +74,9 @@ export class OrdersController {
         return this.ordersService.getOrderWithProduct(Number(id));
     }
 
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
+    @UsePipes(ValidationPipe)
     @Post('/update/')
     update(@Body() updateOrderDto: UpdateOrderDto) {
         return this.ordersService.update(updateOrderDto);

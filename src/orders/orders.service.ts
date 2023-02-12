@@ -10,6 +10,7 @@ import { MailService } from 'src/mail/mail.service';
 import { OrderStatus } from 'src/order-status/order-status.model';
 import { OrderStatusService } from 'src/order-status/order-status.service';
 import { Users } from 'src/users/users.model';
+import { UsersService } from 'src/users/users.service';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './orders.model';
 
@@ -34,6 +35,7 @@ export class OrdersService {
         private basketService: BasketService,
         private orderStatusService: OrderStatusService,
         private mailService: MailService,
+        private userService: UsersService
     ) { }
 
     async create(basketHash: string, userId: number) {
@@ -51,8 +53,9 @@ export class OrdersService {
             await this.basketService.removeProduct(productsIds, basketHash);
         }
 
+        const status = await this.orderStatusService.getStatusByCode("new");
         const amount = await this.basketService.getBasketAmount(basket.id);
-        const order = await this.orderRepo.create({ userId, amount });
+        const order = await this.orderRepo.create({ userId, amount, statusId: status.id });
         basket.orderId = order.id;
         basket.save();
         return order;
@@ -204,18 +207,25 @@ export class OrdersService {
         const order = await this.getOrder(orderId);
         order.statusId = statusId;
         order.save();
-        
-        const customerEmail = order.customer.email;
+
+        const userId = order.getDataValue("userId");
+        const user = await this.userService.getById(userId);
+        const customerEmail = user.email;
+
         const status = await this.orderStatusService.getStatusById(statusId);
-      
+        
+        if (!user.isActivatedEmail) {
+            throw new HttpException('Email пользователя не подтвержден, уведомление отправить невозможно', HttpStatus.BAD_REQUEST);
+        }
+
         if (status.status === "ready") {
             //отправлять смс клиенту о том что заказ можно забрать
-            if (customerEmail) {
+            if (customerEmail && user.isActivatedEmail) {
                 this.mailService.sendOrderReadyMail(customerEmail, orderId);
             }
         } else if (status.status === "in_work") {
             //отправлять смс клиенту о том что начали подготовку заказа
-            if (customerEmail) {
+            if (customerEmail && user.isActivatedEmail) {
                 this.mailService.sendOrderInWorkMail(customerEmail, orderId);
             }
         }

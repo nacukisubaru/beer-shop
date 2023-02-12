@@ -242,7 +242,12 @@ export class UsersService {
         if (!user) {
             throw new HttpException(`Пользователь не найден`, HttpStatus.BAD_REQUEST);
         }
-       
+
+        const userByEmailExist = await this.getUserByEmail(email);
+        if (userByEmailExist) {
+            throw new HttpException(`Пользователь c данным email уже зарегистрирован`, HttpStatus.BAD_REQUEST);
+        }
+
         user.email = email;
         user.save();
         this.mailService.sendActivationMail(user.email, `${process.env.API_URL}/users/activate/${user.activationLink}`);

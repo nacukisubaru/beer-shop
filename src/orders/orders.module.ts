@@ -11,6 +11,7 @@ import { RolesModule } from 'src/roles/roles.module';
 import { OrderStatus } from '../order-status/order-status.model';
 import { OrderStatusModule } from 'src/order-status/order-status.module';
 import { MailModule } from 'src/mail/mail.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   controllers: [OrdersController],
@@ -21,7 +22,8 @@ import { MailModule } from 'src/mail/mail.module';
     BasketModule,
     RolesModule,
     OrderStatusModule,
-    MailModule
+    MailModule,
+    UsersModule
   ]
 })
 export class OrdersModule {}
