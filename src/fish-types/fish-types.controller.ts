@@ -12,16 +12,6 @@ export class FishTypesController {
         return this.fishTypesService.create(createFishTypeDto);
     }
 
-    @Get()
-    findAll() {
-        return this.fishTypesService.findAll();
-    }
-
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.fishTypesService.findOne(+id);
-    }
-
     @Patch(':id')
     update(@Param('id') id: string, @Body() updateFishTypeDto: UpdateFishTypeDto) {
         return this.fishTypesService.update(+id, updateFishTypeDto);
@@ -30,5 +20,10 @@ export class FishTypesController {
     @Delete(':id')
     remove(@Param('id') id: string) {
         return this.fishTypesService.remove(+id);
+    }
+
+    @Get('/getList')
+    getList() {
+        return this.fishTypesService.getList();
     }
 }
