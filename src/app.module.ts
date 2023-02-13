@@ -44,6 +44,10 @@ import { UserRoles } from './roles/user-roles.model';
 import { Role } from './roles/roles.model';
 import { OrderStatusModule } from './order-status/order-status.module';
 import { OrderStatus } from './order-status/order-status.model';
+import { FishModule } from './fish/fish.module';
+import { FishTypesModule } from './fish-types/fish-types.module';
+import { Fish } from './fish/fish.model';
+import { FishType } from './fish-types/fish-types.model';
 
 @Module({
     imports: [
@@ -70,6 +74,8 @@ import { OrderStatus } from './order-status/order-status.model';
                 UserRoles,
                 Role,
                 OrderStatus,
+                Fish,
+                FishType,
                 ProductTypes, PaymentMethod, Brand, Snack, Token, VerificationCodes],
             autoLoadModels: true
         }),
@@ -95,7 +101,9 @@ import { OrderStatus } from './order-status/order-status.model';
         VerificationCodeModule,
         TaskManagerModule,
         RolesModule,
-        OrderStatusModule
+        OrderStatusModule,
+        FishModule,
+        FishTypesModule
     ],
     controllers: [],
     providers: [],

@@ -3,6 +3,7 @@ import { BasketProducts } from 'src/basket/basket-products.model';
 import { Basket } from 'src/basket/basket.model';
 import { Beers } from 'src/beers/beers.model';
 import { Brand } from 'src/brands/brands.model';
+import { Fish } from 'src/fish/fish.model';
 import { Snack } from 'src/snacks/snacks.model';
 import { TypePackaging } from 'src/type-packaging/type-packaging.model';
 
@@ -48,6 +49,9 @@ export class Products extends Model<Products> {
     @HasOne(() => Snack)
     snack: Snack;
 
+    @HasOne(() => Fish)
+    fish: Fish;
+
     @ForeignKey(() => Beers)
     @Column({type: DataType.INTEGER})
     beerId: number;
@@ -55,6 +59,10 @@ export class Products extends Model<Products> {
     @ForeignKey(() => Snack)
     @Column({type: DataType.INTEGER})
     snackId: number;
+
+    @ForeignKey(() => Fish)
+    @Column({type: DataType.INTEGER})
+    fishId: number;
 
     @BelongsTo(() => Brand)
     brand: Brand;

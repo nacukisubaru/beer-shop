@@ -8,16 +8,6 @@ import { UpdateSnackDto } from './dto/update-snack.dto';
 import { Snack } from './snacks.model';
 import { Products } from 'src/products/products.model';
 import { Op } from 'sequelize';
-interface ISnackFilter {
-    id: number,
-    title: string,
-    description: string,
-    brandIds: number[], 
-    typesPackagingIds: number[], 
-    minPrice: number, 
-    maxPrice: number, 
-    isActive: string,
-}
 
 @Injectable()
 export class SnacksService {
@@ -123,7 +113,7 @@ export class SnacksService {
         return await this.snackRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getListByFilter(filter: ISnackFilter, sort: ISort, page: number, limitPage: number) {
+    async getListByFilter(filter: IProductFilter, sort: ISort, page: number, limitPage: number) {
         const queryFilter: any = {
             include: {
                 model: Products, as: 'product',
