@@ -8,15 +8,22 @@ import { Order } from './orders.model';
 import { BasketModule } from 'src/basket/basket.module';
 import { TokenModule } from 'src/token/token.module';
 import { RolesModule } from 'src/roles/roles.module';
+import { OrderStatus } from '../order-status/order-status.model';
+import { OrderStatusModule } from 'src/order-status/order-status.module';
+import { MailModule } from 'src/mail/mail.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   controllers: [OrdersController],
   providers: [OrdersService],
   imports: [
-    SequelizeModule.forFeature([Basket, Users, Order]),
+    SequelizeModule.forFeature([Basket, Users, Order, OrderStatus]),
     TokenModule,
     BasketModule,
-    RolesModule
+    RolesModule,
+    OrderStatusModule,
+    MailModule,
+    UsersModule
   ]
 })
 export class OrdersModule {}

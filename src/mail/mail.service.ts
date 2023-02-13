@@ -28,4 +28,30 @@ export class MailService {
                     </div>`
         });
     }
+
+    async sendOrderReadyMail(to: string, orderNumber: number) {
+        await this.transporter.sendMail({
+            from: process.env.SMTP_USER,
+            to,
+            subject: 'Ваш заказ готов ' + process.env.API_URL,
+            text: '',
+            html: `<div>
+                        <h1>Ваш заказ №${orderNumber} готов можно забрать<h1>
+                        По адресу ул. Братьев Луканиных, 7, Калуга Пивградъ
+                    </div>`
+        });
+    }
+
+    async sendOrderInWorkMail(to: string, orderNumber: number) {
+        await this.transporter.sendMail({
+            from: process.env.SMTP_USER,
+            to,
+            subject: 'Мы подготавливаем ваш заказ ' + process.env.API_URL,
+            text: '',
+            html: `<div>
+                        <h1>Ваш заказ №${orderNumber} взят в работу<h1>
+                        Мы начали сборку вашего заказа ожидайте. Вам придет оповещение на почту когда все будет готово или вам позвонят.
+                    </div>`
+        });
+    }
 }

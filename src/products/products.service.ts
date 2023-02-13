@@ -8,11 +8,12 @@ import { BrandsService } from 'src/brands/brands.service';
 import { FilesService } from 'src/files/filtes.service';
 import { Op, where } from 'sequelize';
 import sequelize from 'sequelize';
-import { getMinMaxQuery } from 'src/helpers/sequlizeHelper';
+import { getMinMaxQuery, isModelTableFields } from 'src/helpers/sequlizeHelper';
 import { TypePackagingService } from 'src/type-packaging/type-packaging.service';
 import { defaultLimitPage, paginate } from 'src/helpers/paginationHelper';
 import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
 import { isObject } from 'class-validator';
+import { Beers } from 'src/beers/beers.model';
 interface IProductFilter {
     id?: number,
     brandIds?: number[],
@@ -244,10 +245,13 @@ export class ProductsService {
                 sort.sortField,
                 sort.order
             ];
+            
             if (this.isProductTableFields(sort.sortField)) {
                 sortArray.unshift("product");
+                query.order = [sortArray]; //сортировка по полю из связной таблицы
+            } else if (isModelTableFields(sort.sortField, Beers)) {
+                query.order = [sortArray]; //сортировка по полю из связной таблицы
             }
-            query.order = [sortArray]; //сортировка по полю из связной таблицы
         }
         
         const data: any = await callback(query);

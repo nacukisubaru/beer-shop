@@ -42,6 +42,8 @@ import { TaskManagerModule } from './tasks-manager/tasks-manager.module';
 import { RolesModule } from './roles/roles.module';
 import { UserRoles } from './roles/user-roles.model';
 import { Role } from './roles/roles.model';
+import { OrderStatusModule } from './order-status/order-status.module';
+import { OrderStatus } from './order-status/order-status.model';
 
 @Module({
     imports: [
@@ -67,6 +69,7 @@ import { Role } from './roles/roles.model';
                 TypePackaging,
                 UserRoles,
                 Role,
+                OrderStatus,
                 ProductTypes, PaymentMethod, Brand, Snack, Token, VerificationCodes],
             autoLoadModels: true
         }),
@@ -91,7 +94,8 @@ import { Role } from './roles/roles.model';
         HttpModule,
         VerificationCodeModule,
         TaskManagerModule,
-        RolesModule
+        RolesModule,
+        OrderStatusModule
     ],
     controllers: [],
     providers: [],

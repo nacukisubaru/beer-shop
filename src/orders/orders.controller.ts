@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Req, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -28,6 +28,7 @@ export class OrdersController {
         @Query('userId') userId: number,
         @Query('customerFio') customerFio: string,
         @Query('customerPhone') customerPhone: string,
+        @Query('statusId') statusId: number,
         @Query('sortField') sortField: string, @Query('order') order: string
     ) {
         const filter: any = {};
@@ -41,6 +42,10 @@ export class OrdersController {
 
         if(customerPhone) {
             filter.customerPhone = customerPhone;
+        }
+
+        if(statusId) {
+            filter.statusId = statusId;
         }
 
         if(orderId) {
@@ -74,8 +79,11 @@ export class OrdersController {
         return this.ordersService.getOrderWithProduct(Number(id));
     }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-        return this.ordersService.update(+id, updateOrderDto);
+    @Roles("ADMIN")
+    @UseGuards(RolesGuard)
+    @UsePipes(ValidationPipe)
+    @Post('/update/')
+    update(@Body() updateOrderDto: UpdateOrderDto) {
+        return this.ordersService.update(updateOrderDto);
     }
 }

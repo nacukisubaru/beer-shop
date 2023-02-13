@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { defaultLimitPage, paginate } from 'src/helpers/paginationHelper';
+import { isModelTableFields } from 'src/helpers/sequlizeHelper';
 import { isNumber } from 'src/helpers/typesHelper';
 import { ProductTypesService } from 'src/product-types/product-types.service';
 import { Brand } from './brands.model';
@@ -69,7 +70,9 @@ export class BrandsService {
                 sort.sortField,
                 sort.order
             ];
-            query.order = [sortArray];
+            if (isModelTableFields(sort.sortField, Brand)) {
+                query.order = [sortArray];
+            }
         }
     
         const data = await this.brandRepo.findAndCountAll(query);
