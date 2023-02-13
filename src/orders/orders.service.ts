@@ -103,10 +103,13 @@ export class OrdersService {
                 sort.sortField,
                 sort.order
             ];
-            if (isModelTableFields(sort.sortField, Users)) {
+            
+            if (isModelTableFields(sort.sortField, Users) && sort.sortField !== "id") {
                 sortArray.unshift("customer");
+                prepareFind.order = [sortArray];
+            } else if (isModelTableFields(sort.sortField, Order)) {
+                prepareFind.order = [sortArray];   
             }
-            prepareFind.order = [sortArray];
         }
 
         const orders: IPaginateResponse = await this.orderRepo.findAndCountAll(prepareFind);
@@ -115,7 +118,7 @@ export class OrdersService {
         }
 
         if (orders.rows) {
-            const basketIds: number[] =  orders.rows.map(order => {
+            const basketIds: number[] = orders.rows.map(order => {
                 if (order.basket) {
                     return order.basket.id;
                 }
@@ -159,9 +162,9 @@ export class OrdersService {
                 return { 
                     id, 
                     userId,
-                    customerFio: customer.fio,
-                    customerPhone: customer.phone,
-                    customerEmail: customer.email,
+                    fio: customer.fio,
+                    phone: customer.phone,
+                    email: customer.email,
                     amount,
                     status,
                     products: productsMap
