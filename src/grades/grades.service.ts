@@ -8,6 +8,7 @@ import { BeerGrades } from './beers-grades.model';
 import { defaultLimitPage, paginate } from 'src/helpers/paginationHelper';
 import { isNumber } from 'src/helpers/typesHelper';
 import { ProductsService } from 'src/products/products.service';
+import { isModelTableFields } from 'src/helpers/sequlizeHelper';
 
 interface IFilter {
     id: number,
@@ -64,7 +65,9 @@ export class GradesService {
                 sort.sortField,
                 sort.order
             ];
-            query.order = [sortArray];
+            if (isModelTableFields(sort.sortField, Grades)) {
+                query.order = [sortArray];
+            }
         }
     
         const data = await this.gradesRepo.findAndCountAll(query);

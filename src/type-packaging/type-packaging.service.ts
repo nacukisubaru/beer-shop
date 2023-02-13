@@ -7,6 +7,7 @@ import { UpdateTypePackagingDto } from './dto/update-type-packaging.dto';
 import { TypePackaging } from './type-packaging.model';
 import { isNumber } from 'src/helpers/typesHelper';
 import { Op } from 'sequelize';
+import { isModelTableFields } from 'src/helpers/sequlizeHelper';
 interface IFilter {
     id: number,
     name: string,
@@ -62,7 +63,9 @@ export class TypePackagingService {
                 sort.sortField,
                 sort.order
             ];
-            query.order = [sortArray];
+            if (isModelTableFields(sort.sortField, TypePackaging)) {
+                query.order = [sortArray];
+            }
         }
     
         const data = await this.typePackagingRepo.findAndCountAll(query);
