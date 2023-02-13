@@ -59,9 +59,21 @@ export class OrdersController {
         return this.ordersService.getOrdersWithProducts(Number(page), Number(limitPage), filter, { sortField, order });
     }
 
-    @Get('/users/:id')
-    getListByUserId(@Param('id') userId: string) {
-       // return this.ordersService.getOrdersWithProducts({userId});
+    @UseGuards(JwtAuthGuard)
+    @Get('/user/:id')
+    getListByUserId(
+        @Query('page') page: string, 
+        @Query('limitPage') limitPage: number,
+        @Query('sortField') sortField: string, @Query('order') order: string,
+        @Req() request
+    ) {
+        const filter: any = {};
+        const userId: number = request.user.id;
+        if(userId) {
+            filter.userId = userId;
+        }
+
+        return this.ordersService.getOrdersWithProducts(Number(page), Number(limitPage), filter, { sortField, order });
     }
 
     @Get('/delivery/:id')

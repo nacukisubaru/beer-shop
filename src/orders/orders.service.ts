@@ -146,7 +146,7 @@ export class OrdersService {
             }
        
             const mapOrders = orders.rows.map((order) => {
-                const { id, userId, amount, customer, status } = order;
+                const { id, userId, amount, customer, status, createdAt } = order;
                 const products = order.getDataValue("products");
                 const productsMap = products.map((product: any) => {
                     return {
@@ -167,7 +167,8 @@ export class OrdersService {
                     email: customer.email,
                     amount,
                     status,
-                    products: productsMap
+                    products: productsMap,
+                    createdAt
                 };
             });
 

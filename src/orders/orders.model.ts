@@ -3,7 +3,7 @@ import { Basket } from 'src/basket/basket.model';
 import { Users } from 'src/users/users.model';
 import { OrderStatus } from '../order-status/order-status.model';
 
-@Table({tableName: 'orders',  createdAt: false, updatedAt: false })
+@Table({tableName: 'orders'})
 export class Order extends Model<Order> {
 
   @Column({type: DataType.INTEGER, unique: true, autoIncrement: true, primaryKey: true})
