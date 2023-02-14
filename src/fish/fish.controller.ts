@@ -27,8 +27,8 @@ export class FishController {
     @UseGuards(RolesGuard)
     @Post('/update')
     @UseInterceptors(FileInterceptor('image'))
-    update(@Param('id') id: string, @Body() updateFishDto: UpdateFishDto, @UploadedFile() image: BinaryData) {
-        return this.fishService.update(+id, updateFishDto, image);
+    update(@Body() updateFishDto: UpdateFishDto, @UploadedFile() image: BinaryData) {
+        return this.fishService.update(updateFishDto.id, updateFishDto, image);
     }
 
     @Get('getById/:id')

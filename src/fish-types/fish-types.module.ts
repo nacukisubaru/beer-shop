@@ -10,6 +10,9 @@ import { FishType } from './fish-types.model';
     providers: [FishTypesService],
     imports: [
         SequelizeModule.forFeature([Fish, FishType])
+    ],
+    exports: [
+        FishTypesService
     ]
 })
 export class FishTypesModule {}

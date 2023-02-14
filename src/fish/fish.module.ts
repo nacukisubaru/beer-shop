@@ -8,6 +8,7 @@ import { ProductsModule } from 'src/products/products.module';
 import { Products } from 'src/products/products.model';
 import { RolesModule } from 'src/roles/roles.module';
 import { TokenModule } from 'src/token/token.module';
+import { FishTypesModule } from 'src/fish-types/fish-types.module';
 
 @Module({
   controllers: [FishController],
@@ -15,9 +16,9 @@ import { TokenModule } from 'src/token/token.module';
   imports: [
     SequelizeModule.forFeature([Fish, FishType, Products]),
     ProductsModule,
-    FishModule,
     RolesModule,
-    TokenModule
+    TokenModule,
+    FishTypesModule
   ]
 })
 export class FishModule {}

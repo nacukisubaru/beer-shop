@@ -74,7 +74,7 @@ export class SnacksService {
 
         const productId = snack.productId;
         await this.productService.update(productId, prodData, image);
-        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { id } })) {
+        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { productId: id } })) {
             return true;
         }
 

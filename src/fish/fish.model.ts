@@ -12,6 +12,9 @@ export class Fish extends Model<Fish> {
   @Column({type: DataType.INTEGER, allowNull: false})
   fishTypeId: number;
 
+  @Column({type: DataType.STRING, allowNull: false})
+  fishTypeName: string;
+
   @Column({type: DataType.FLOAT})
   weight: number;
 

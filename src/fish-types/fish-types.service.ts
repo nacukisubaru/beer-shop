@@ -20,6 +20,10 @@ export class FishTypesService {
         return `This action removes a #${id} fishType`;
     }
 
+    async getById(id: number) {
+       return await this.fishTypeRepo.findOne({where: {id}});
+    }
+
     getList() {
        return this.fishTypeRepo.findAll();
     }
