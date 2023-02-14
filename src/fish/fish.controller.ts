@@ -47,7 +47,8 @@ export class FishController {
         @Query('isActive') isActive: string,
         @Query('description') description: string,
         @Query('fishTypeId') fishTypeId: string,
-        @Query('brandIds') brandIds: string[], 
+        @Query('brandIds') brandIds: string[],
+        @Query('fishTypes') fishTypes: string[],
         @Query('typesPackagingIds') typesPackagingIds: string[],
         @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, 
         @Query('sortField') sortField: string = '', @Query('order') order: string = '',
@@ -63,7 +64,8 @@ export class FishController {
             typesPackagingIds, 
             minPrice, 
             maxPrice,
-            fishTypeId
+            fishTypeId,
+            fishTypes
         };
 
         if(sortField && order) {

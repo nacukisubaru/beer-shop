@@ -10,7 +10,8 @@ import { UpdateFishDto } from './dto/update-fish.dto';
 import { Fish } from './fish.model';
 
 interface IFishFilter extends IProductFilter {
-    fishTypeId: number
+    fishTypeId: number,
+    fishTypes: string[]
 }
 
 @Injectable()
@@ -115,8 +116,13 @@ export class FishService {
 
         const findQuery = (query) => { return this.findAndCountAll(query) };
         queryFilter.include.where = this.productService.buildFilterByProductFields(queryFilter.include.where, filter);
+        
         if (filter.fishTypeId) {
             queryFilter.where.fishTypeId = filter.fishTypeId;
+        }
+
+        if (filter.fishTypes) {
+            queryFilter.where.fishTypeId = filter.fishTypes;
         }
 
         return this.productService.getList(page, limitPage, queryFilter, findQuery, sort);
