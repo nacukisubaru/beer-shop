@@ -32,6 +32,7 @@ export class FishService {
             typePackagingId: Number(createFishDto.typePackagingId),
             isActive: createFishDto.isActive === 'true' ? true : false,
             inStock: createFishDto.inStock === 'true' ? true : false,
+            isPromote: createFishDto.isPromote === 'true' ? true : false,
         };
 
         const productNameExist = await this.productService.getByTitle(createFishDto.title);
@@ -65,6 +66,7 @@ export class FishService {
             typePackagingId: Number(updateFishDto.typePackagingId),
             isActive: updateFishDto.isActive === 'true' ? true : false,
             inStock: updateFishDto.inStock === 'true' ? true : false,
+            isPromote: updateFishDto.isPromote === 'true' ? true : false,
         };
 
         if (!isNumber(id)) {

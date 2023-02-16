@@ -39,6 +39,7 @@ interface IBeerFilter {
     sort?: ISort,
     compound?: string,
     inStock?: boolean,
+    isPromote?: boolean,
     page?: number, limitPage?: number
 }
 @Injectable()
@@ -57,7 +58,8 @@ export class BeersService {
             brandId: Number(dto.brandId),
             typePackagingId: Number(dto.typePackagingId),
             isActive: dto.isActive === 'true' ? true : false,
-            inStock: dto.inStock === 'true' ? true : false
+            inStock: dto.inStock === 'true' ? true : false,
+            isPromote: dto.isPromote === 'true' ? true : false,
         };
 
         const beerData = {
@@ -105,6 +107,7 @@ export class BeersService {
             brandId: Number(dto.brandId),
             isActive: dto.isActive === 'true' ? true : false,
             inStock: dto.inStock === 'true' ? true : false,
+            isPromote: dto.isPromote === 'true' ? true : false,
         };
 
         const beerData = {
@@ -231,6 +234,7 @@ export class BeersService {
             isActive,
             inStock,
             compound,
+            isPromote,
             page, limitPage
         } = filter
 
@@ -253,6 +257,7 @@ export class BeersService {
             description,
             isActive,
             inStock,
+            isPromote
         });
 
         if (Array.isArray(grades) && grades.length > 0) {

@@ -27,6 +27,7 @@ interface IProductFilter {
     description?: string,
     isActive?: string,
     inStock?: boolean,
+    isPromote?: boolean
 }
 @Injectable()
 export class ProductsService {
@@ -152,6 +153,7 @@ export class ProductsService {
             description = "",
             isActive,
             inStock,
+            isPromote
         } = filter;
         
         if(id) {
@@ -187,6 +189,10 @@ export class ProductsService {
 
         if(inStock) {
             filterObj.inStock = inStock;
+        }
+
+        if (isPromote) {
+            filterObj.isPromote = isPromote;
         }
 
         return filterObj;

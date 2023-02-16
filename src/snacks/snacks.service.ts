@@ -25,6 +25,7 @@ export class SnacksService {
             typePackagingId: Number(createSnackDto.typePackagingId),
             isActive: createSnackDto.isActive === 'true' ? true : false,
             inStock: createSnackDto.inStock === 'true' ? true : false,
+            isPromote: createSnackDto.isPromote === 'true' ? true : false,
         };
 
         const productNameExist = await this.productService.getByTitle(createSnackDto.title);
@@ -56,6 +57,7 @@ export class SnacksService {
             typePackagingId: Number(updateSnackDto.typePackagingId),
             isActive: updateSnackDto.isActive === 'true' ? true : false,
             inStock: updateSnackDto.inStock === 'true' ? true : false,
+            isPromote: updateSnackDto.isPromote === 'true' ? true : false,
         };
 
         if(!isNumber(id)) {

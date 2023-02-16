@@ -26,5 +26,8 @@ export class CreateSnackDto {
     isActive: string;
 
     @IsString({message: 'Обязательное поле'})
-    inStock: string; 
+    inStock: string;
+
+    @IsString({message: 'Обязательное поле'})
+    isPromote: string;
 }

@@ -79,4 +79,7 @@ export class Products extends Model<Products> {
 
     @Column({ type: DataType.INTEGER, defaultValue: 0, allowNull: false })
     show: number;
+
+    @Column({ type: DataType.BOOLEAN, allowNull: false })
+    isPromote: boolean;
 }
