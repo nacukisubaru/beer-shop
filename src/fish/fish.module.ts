@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { FishService } from './fish.service';
 import { FishController } from './fish.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
@@ -9,6 +9,7 @@ import { Products } from 'src/products/products.model';
 import { RolesModule } from 'src/roles/roles.module';
 import { TokenModule } from 'src/token/token.module';
 import { FishTypesModule } from 'src/fish-types/fish-types.module';
+import { FishTypesService } from 'src/fish-types/fish-types.service';
 
 @Module({
   controllers: [FishController],
@@ -19,6 +20,7 @@ import { FishTypesModule } from 'src/fish-types/fish-types.module';
     RolesModule,
     TokenModule,
     FishTypesModule
-  ]
+  ],
+  exports: [FishService]
 })
 export class FishModule {}

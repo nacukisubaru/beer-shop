@@ -43,10 +43,9 @@ export class FishService {
         
         try {
             const product = await this.productService.create(productData, image);
-            const fish = await this.fishRepo.create({ weight: createFishDto.weight, fishTypeId: createFishDto.fishTypeId });
+            const fish = await this.fishRepo.create({ weight: createFishDto.weight, fishTypeId: createFishDto.fishTypeId, fishTypeName: fishType.name });
 
             fish.productId = product.id;
-            fish.fishTypeName = fishType.name;
             product.fishId = fish.id;
             product.save();
             fish.save();
@@ -126,6 +125,10 @@ export class FishService {
         }
 
         return this.productService.getList(page, limitPage, queryFilter, findQuery, sort);
+    }
+
+    async getListByFishTypeId(fishTypeId: number) {
+      return await this.fishRepo.findAll({where: {fishTypeId}});
     }
 
     findAndCountAll(query) {
