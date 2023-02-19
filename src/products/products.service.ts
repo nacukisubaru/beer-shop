@@ -14,6 +14,9 @@ import { defaultLimitPage, paginate } from 'src/helpers/paginationHelper';
 import { isEmptyObject, isNumber } from 'src/helpers/typesHelper';
 import { isObject } from 'class-validator';
 import { Beers } from 'src/beers/beers.model';
+import { Snack } from 'src/snacks/snacks.model';
+import { Fish } from 'src/fish/fish.model';
+
 interface IProductFilter {
     id?: number,
     brandIds?: number[],
@@ -24,6 +27,7 @@ interface IProductFilter {
     description?: string,
     isActive?: string,
     inStock?: boolean,
+    isPromote?: boolean
 }
 @Injectable()
 export class ProductsService {
@@ -149,6 +153,7 @@ export class ProductsService {
             description = "",
             isActive,
             inStock,
+            isPromote
         } = filter;
         
         if(id) {
@@ -184,6 +189,10 @@ export class ProductsService {
 
         if(inStock) {
             filterObj.inStock = inStock;
+        }
+
+        if (isPromote) {
+            filterObj.isPromote = isPromote;
         }
 
         return filterObj;
@@ -249,7 +258,7 @@ export class ProductsService {
             if (this.isProductTableFields(sort.sortField)) {
                 sortArray.unshift("product");
                 query.order = [sortArray]; //сортировка по полю из связной таблицы
-            } else if (isModelTableFields(sort.sortField, Beers)) {
+            } else if (isModelTableFields(sort.sortField, Beers) || isModelTableFields(sort.sortField, Snack) || isModelTableFields(sort.sortField, Fish)) {
                 query.order = [sortArray]; //сортировка по полю из связной таблицы
             }
         }

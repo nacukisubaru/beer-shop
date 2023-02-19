@@ -48,6 +48,7 @@ export class SnacksController {
     getListByFilter(@Query('id') id: string, @Query('title') title: string, @Query('isActive') isActive: string,
     @Query('description') description: string, @Query('brandIds') brandIds: string[], @Query('typesPackagingIds') typesPackagingIds: string[],
     @Query('minPrice') minPrice: number, @Query('maxPrice') maxPrice: number, @Query('sortField') sortField: string = '', @Query('order') order: string = '',
+    @Query('isPromote') isPromote: string, @Query('inStock') inStock: string,
     @Query('page') page: string, @Query('limitPage') limitPage: string) {
 
         let sort: any = {sortField: 'price', order: 'ASC'};
@@ -59,7 +60,9 @@ export class SnacksController {
             brandIds,
             typesPackagingIds, 
             minPrice, 
-            maxPrice
+            maxPrice,
+            isPromote,
+            inStock
         };
 
         if(sortField && order) {

@@ -32,7 +32,7 @@ export class BeersController {
         @Query('maxFortress') maxFortress: string, @Query('forBottling') forBottling: string, 
         @Query('filtered') filtered: string, @Query('title') title: string, @Query('isActive') isActive: string,
         @Query('description') description: string, @Query('inStock') inStock: string,
-        @Query('compound') compound: string,
+        @Query('compound') compound: string, @Query('isPromote') isPromote: string,
         @Query('page') page: string, @Query('limitPage') limitPage: string, 
         @Query('sortField') sortField: string = '', @Query('order') order: string = '') {
 
@@ -48,6 +48,7 @@ export class BeersController {
             maxPrice,
             inStock,
             compound,
+            isPromote,
             sort: {sortField, order},
             page: Number(page), 
             limitPage: Number(limitPage)

@@ -1,6 +1,6 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsString } from "class-validator";
 
-export class CreateSnackDto {
+export class CreateFishDto {
     @IsString({message: 'Обязательное поле'})
     title: string;
 
@@ -15,6 +15,9 @@ export class CreateSnackDto {
 
     @IsString({message: 'Обязательное поле'})
     weight: number;
+
+    @IsString({message: 'Обязательное поле'})
+    fishTypeId: number;
     
     @IsString({message: 'Обязательное поле'})
     brandId: number;
@@ -26,7 +29,7 @@ export class CreateSnackDto {
     isActive: string;
 
     @IsString({message: 'Обязательное поле'})
-    inStock: string;
+    inStock: string; 
 
     @IsString({message: 'Обязательное поле'})
     isPromote: string;

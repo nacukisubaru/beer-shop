@@ -83,21 +83,21 @@ export class TypePackagingService {
     }
 
 
-    async update(id: number, updateBrandDto: UpdateTypePackagingDto) {
+    async update(id: number, updateTypeDto: UpdateTypePackagingDto) {
         const type = await this.getById(id);
         const productTypeId = type.getDataValue("productTypeId")
         const products = type.products;
-        if(products.length && updateBrandDto.productTypeId != productTypeId) {
+        if(products.length && updateTypeDto.productTypeId != productTypeId) {
             throw new HttpException(`У данного типа упаковки есть привязки к товарам с этими идентификаторами(id) 
             ${products.map((product) => product.getDataValue("id")).toString()} нужно отвязать после можно изменить тип товара у типа упаковки`, HttpStatus.BAD_REQUEST)
         }
         
-        return await this.typePackagingRepo.update(updateBrandDto, {where: {id}});
+        return await this.typePackagingRepo.update(updateTypeDto, {where: {id}});
     }
 
     async remove(id: number) {
-        const brand = await this.getById(id);
-        const products = brand.products;
+        const type = await this.getById(id);
+        const products = type.products;
         if(products.length) {
             throw new HttpException(`У данного типа упаковки есть привязки к товарам с этими идентификаторами(id) 
             ${products.map((product) => product.getDataValue("id")).toString()} нужно отвязать после удалить тип упаковки`, HttpStatus.BAD_REQUEST)

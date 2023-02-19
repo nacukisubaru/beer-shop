@@ -76,16 +76,6 @@ export class OrdersController {
         return this.ordersService.getOrdersWithProducts(Number(page), Number(limitPage), filter, { sortField, order });
     }
 
-    @Get('/delivery/:id')
-    getListByDeliveryId(@Param('id') deliveryId: string) {
-        //return this.ordersService.getOrdersWithProducts({deliveryId});
-    }
-
-    @Get('/paymentMetods/:id')
-    getListByPaymentMethod(@Param('id') paymentMethodId: string) {
-        //return this.ordersService.getOrdersWithProducts({paymentMethodId});
-    }
-
     @Get(':id')
     getById(@Param('id') id: string) {
         return this.ordersService.getOrderWithProduct(Number(id));

@@ -8,16 +8,6 @@ import { UpdateSnackDto } from './dto/update-snack.dto';
 import { Snack } from './snacks.model';
 import { Products } from 'src/products/products.model';
 import { Op } from 'sequelize';
-interface ISnackFilter {
-    id: number,
-    title: string,
-    description: string,
-    brandIds: number[], 
-    typesPackagingIds: number[], 
-    minPrice: number, 
-    maxPrice: number, 
-    isActive: string,
-}
 
 @Injectable()
 export class SnacksService {
@@ -35,6 +25,7 @@ export class SnacksService {
             typePackagingId: Number(createSnackDto.typePackagingId),
             isActive: createSnackDto.isActive === 'true' ? true : false,
             inStock: createSnackDto.inStock === 'true' ? true : false,
+            isPromote: createSnackDto.isPromote === 'true' ? true : false,
         };
 
         const productNameExist = await this.productService.getByTitle(createSnackDto.title);
@@ -66,6 +57,7 @@ export class SnacksService {
             typePackagingId: Number(updateSnackDto.typePackagingId),
             isActive: updateSnackDto.isActive === 'true' ? true : false,
             inStock: updateSnackDto.inStock === 'true' ? true : false,
+            isPromote: updateSnackDto.isPromote === 'true' ? true : false,
         };
 
         if(!isNumber(id)) {
@@ -84,7 +76,7 @@ export class SnacksService {
 
         const productId = snack.productId;
         await this.productService.update(productId, prodData, image);
-        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { id } })) {
+        if (this.snackRepo.update({ ...snack, weight: updateSnackDto.weight }, { where: { productId: id } })) {
             return true;
         }
 
@@ -123,7 +115,7 @@ export class SnacksService {
         return await this.snackRepo.findByPk(id, { include: { all: true } });
     }
 
-    async getListByFilter(filter: ISnackFilter, sort: ISort, page: number, limitPage: number) {
+    async getListByFilter(filter: IProductFilter, sort: ISort, page: number, limitPage: number) {
         const queryFilter: any = {
             include: {
                 model: Products, as: 'product',
