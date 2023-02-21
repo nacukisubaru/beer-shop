@@ -16,7 +16,7 @@ export class Products extends Model<Products> {
     @Column({ type: DataType.STRING, allowNull: false })
     title: string;
 
-    @Column({ type: DataType.STRING, allowNull: false })
+    @Column({ type: DataType.STRING(800), allowNull: false })
     description: string;
 
     @Column({type: DataType.STRING})
