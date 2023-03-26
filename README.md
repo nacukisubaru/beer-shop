@@ -24,6 +24,12 @@
 
 ## Description
 
+Посмотреть на то как все работает и выглядит можно тут https://beer-grad.ru
+Доступ от админ панели:
+Перейти в https://beer-grad.ru/account/profile
+login +79953276845
+пароль ten9285ten
+
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Installation
