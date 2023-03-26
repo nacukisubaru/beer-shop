@@ -89,7 +89,7 @@ export class UsersController {
     async activate(@Param('id') activationLink: string, @Res() res) {
         const isActivate = await this.usersService.activateEmail(activationLink);
         if (isActivate) {
-            return res.redirect(process.env.ORIGIN_URL+'/account?activate=true');
+            return res.redirect(process.env.ORIGIN_URL+'/account/profile?activate=true');
         }
     }
 
