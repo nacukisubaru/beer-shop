@@ -22,13 +22,14 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
-
-Посмотреть на то как все работает и выглядит можно тут https://beer-grad.ru
+## Рабочий сайт(тестовый стенд)
+https://beer-grad.ru/
 Доступ от админ панели:
 Перейти в https://beer-grad.ru/account/profile
 login +79953276845
 пароль ten9285ten
+
+## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
