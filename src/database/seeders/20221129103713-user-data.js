@@ -16,6 +16,7 @@ module.exports = {
           email: 'incloudff@gmail.com',
           phone: '79953276845',
           password: password,
+          isActivatedEmail: true,
           isActivated: true,
           activationLink: '',
           createdAt: new Date(),
